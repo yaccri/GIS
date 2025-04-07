@@ -1,0 +1,180 @@
+// routes/authUser.js
+const express = require("express");
+const router = express.Router();
+const User = require("../models/User");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const HttpStatus = require("http-status-codes");
+const Gender = require("../models/enums");
+const { verifyToken } = require("../middleware/authMiddleware");
+
+// User registration
+router.post("/register", async (req, res) => {
+  try {
+    console.log("start register");
+    const {
+      firstName,
+      lastName,
+      username,
+      password,
+      email,
+      gender,
+      dateOfBirth,
+      preferences,
+    } = req.body; // Extract all fields
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    let genderValue;
+    switch (gender) {
+      case "Male":
+        genderValue = Gender.Male;
+        break;
+      case "Female":
+        genderValue = Gender.Female;
+        break;
+      case "Other":
+        genderValue = Gender.Other;
+        break;
+      default:
+        genderValue = Gender.Unknown;
+    }
+
+    const user = new User({
+      // Create user with all fields
+      firstName,
+      lastName,
+      username,
+      password: hashedPassword,
+      email,
+      gender: genderValue,
+      dateOfBirth,
+      preferences,
+    });
+
+    console.log(`user: ${user} created`);
+    await user.save();
+    res
+      .status(HttpStatus.StatusCodes.CREATED)
+      .json({ message: "User registered successfully" }); // status 201
+  } catch (error) {
+    console.error("Registration error:", error); // Log the error for debugging
+
+    if (error.name === "ValidationError") {
+      // Mongoose validation error
+      const validationErrors = {};
+      for (const field in error.errors) {
+        validationErrors[field] = error.errors[field].message;
+      }
+      return res
+        .status(HttpStatus.StatusCodes.BAD_REQUEST)
+        .json({ error: "Validation failed", details: validationErrors }); // status 400
+    } else if (error.code === 11000) {
+      // MongoDB duplicate key error
+      return res
+        .status(HttpStatus.StatusCodes.BAD_REQUEST)
+        .json({ error: "Username or email already exists" }); // status 400
+    } else {
+      // Other errors
+      return res
+        .status(HttpStatus.StatusCodes.INTERNAL_SERVER_ERROR)
+        .json({ error: "Registration failed" }); // status 500
+    }
+  }
+  console.log("end register");
+});
+
+// User login
+router.post("/login", async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    const user = await User.findOne({ username });
+    if (!user) {
+      return res
+        .status(HttpStatus.StatusCodes.UNAUTHORIZED)
+        .json({ error: "Authentication failed" }); // status 401
+    }
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    if (!passwordMatch) {
+      return res
+        .status(HttpStatus.StatusCodes.UNAUTHORIZED)
+        .json({ error: "Authentication failed" }); // status 401
+    }
+    const token = jwt.sign(
+      { userId: user._id, isAdmin: user.isAdmin },
+      "your-secret-key",
+      {
+        expiresIn: "1h",
+      }
+    );
+    res.status(HttpStatus.StatusCodes.OK).json({
+      token,
+      isAdmin: user.isAdmin,
+      fullName: `${user.firstName} ${user.lastName}`,
+      itemsPerPage: user.preferences.itemsPerPage,
+      subscribe: user.preferences.subscribe,
+    }); // status 200
+  } catch (error) {
+    console.error("Login error:", error);
+    res
+      .status(HttpStatus.StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ error: "Login failed" }); // status 500
+  }
+});
+
+// GET /authUser/preferences (Protected route)
+router.get("/preferences", verifyToken, async (req, res) => {
+  //router.get("/preferences", async (req, res) => {
+  console.log(req.headers.authorization);
+  const authHeader = req.header("Authorization");
+  const token = authHeader && authHeader.split(" ")[1]; // Extract token after "Bearer "
+  console.log("middleware.js: token:", token);
+  try {
+    // Find the user by ID (assuming the token contains the user ID)
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Extract preferences from the user object
+    const preferences = {
+      email: user.email,
+      itemsPerPage: user.preferences.itemsPerPage,
+      subscribe: user.preferences.subscribe,
+    };
+
+    console.log("preferences:", preferences);
+    res.status(200).json(preferences);
+  } catch (err) {
+    console.error("Error fetching preferences:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// PUT /authUser/preferences (Protected route)
+router.put("/preferences", verifyToken, async (req, res) => {
+  try {
+    // Find the user by ID (assuming the token contains the user ID)
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    console.log("user found:", user);
+    console.log("req.body:", req.body);
+    // Update preferences from the request body
+    user.preferences.itemsPerPage = req.body.itemsPerPage;
+    user.preferences.subscribe = req.body.subscribe;
+    user.email = req.body.email;
+
+    // Save the updated user
+    await user.save();
+
+    res.status(200).json({ message: "Preferences updated successfully" });
+  } catch (err) {
+    console.error("Error updating preferences:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+module.exports = router;

@@ -1,0 +1,107 @@
+/* src/pages/PropertyForm.css */
+.property-page-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f4f4f4;
+}
+
+.property-container {
+  background-color: #fff;
+  padding-left: 30px;
+  padding-right: 30px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 600px; /* Adjust as needed */
+}
+
+.property-container h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+.form-group input[readonly] {
+  background-color: #f0f0f0;
+  color: #555;
+}
+.form-group textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.button-group {
+  display: flex;
+  justify-content: space-between;
+}
+
+.subscribe-btn,
+.cancel-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.subscribe-btn {
+  background-color: #007bff;
+  color: white;
+}
+
+.cancel-btn {
+  background-color: #dc3545;
+  color: white;
+}
+
+.form-group input[type="checkbox"] {
+  width: auto;
+  margin-right: 10px;
+}
+
+.currency-display {
+  font-size: 0.9em;
+  color: #555;
+  margin-top: 2px;
+}
+
+.edit-btn {
+  background-color: #007bff;
+  color: white;
+  padding: 8px 80px;
+  margin-right: 30px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.delete-btn {
+  background-color: #dc3545;
+  color: white;
+  padding: 8px 80px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}

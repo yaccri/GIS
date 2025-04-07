@@ -1,0 +1,84 @@
+/* src/components/TopBar.css */
+.top-bar {
+  height: 12vh;
+  background-color: #1a3c5a; /* Deep Navy Blue for professionalism */
+  color: #ffffff; /* White text for contrast */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+}
+
+.welcome-message {
+  font-size: 26px;
+  color: #ffffff;
+}
+
+.top-bar-title {
+  font-size: 26px;
+  color: #d4af37;
+  font-weight: bold;
+}
+
+/* Menu styles */
+.menu-container {
+  position: relative;
+}
+
+.menu-button {
+  background-color: transparent;
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 10px;
+}
+
+/* src/components/TopBar.css */
+.menu-list {
+  position: absolute;
+  top: 100%;
+  right: 10px;
+  background-color: #6b7280;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  z-index: 10;
+  min-width: 200px;
+  border: 1px solid #e5e7eb;
+}
+
+.menu-list li {
+  padding: 10px 20px;
+  text-align: right;
+}
+
+.menu-list li a,
+.menu-list li button {
+  color: #ffffff;
+  text-decoration: none;
+  display: block;
+  width: 100%;
+  text-align: right;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.menu-list li:hover {
+  background-color: #1a5f7a;
+}
+
+/* Separator line */
+.menu-separator {
+  border-top: 1px solid #e5e7eb;
+  margin: 5px 0;
+}
+.menu-icon {
+  width: 50px;
+  height: 50px;
+  background-color: #ffffff;
+  border-radius: 50%; /* make it circular */
+}
