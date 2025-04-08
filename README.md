@@ -12,7 +12,7 @@ This application consists of a backend server (invest_BE) built with Node.js, Ex
 To download, install, and run the project locally, ensure you have Git, Node.js (v16 or higher), and MongoDB installed.
 Clone the repository with 'git clone https://github.com/yaccri/invest.git' and navigate into the project directory with 'cd invest'.
 
-### Backend installation (invest_FE):
+### Backend installation (invest_BE):
 
 Navigate to the backend folder ('cd invest_BE'), and run 'npm install'.
 
