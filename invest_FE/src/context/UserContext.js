@@ -13,8 +13,13 @@ export const UserProvider = ({ children }) => {
   };
 
   const [user, setUser] = useState(() => {
-    const storedUser = localStorage.getItem("user");
-    return storedUser ? JSON.parse(storedUser) : initialUser;
+    try {
+      const storedUser = localStorage.getItem("user");
+      return storedUser ? JSON.parse(storedUser) : initialUser;
+    } catch (error) {
+      console.error("Error parsing user data from localStorage:", error);
+      return initialUser;
+    }
   });
 
   useEffect(() => {

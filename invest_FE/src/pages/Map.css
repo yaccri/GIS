@@ -1,0 +1,29 @@
+.map-container {
+  padding: 10px;
+  height: calc(100vh - 120px); /* Adjust height to fit between top and bottom bars */
+  width: 50%; /* Take half of the screen width */
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  left: 0;
+  top: 60px; /* Adjust based on your TopBar height */
+}
+
+.map-container h1 {
+  margin-bottom: 10px;
+  color: #333;
+  font-size: 1.5em;
+}
+
+.map-wrapper {
+  flex: 1;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Override Leaflet default styles */
+.leaflet-container {
+  height: 100%;
+  width: 100%;
+} 

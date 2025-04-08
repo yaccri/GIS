@@ -14,6 +14,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 // import AdminRoute from "./components/AdminRoute";
 import NoPage from "./pages/NoPage";
 import Preferences from "./pages/Preferences";
+import MapComponent from "./pages/Map";
 
 function App() {
   return (
@@ -43,6 +44,9 @@ function App() {
                     <li>
                       <Link to="/properties">US Real Estate</Link>
                     </li>
+                    <li>
+                      <Link to="/map">Map View</Link>
+                    </li>
                   </ul>
                 )
               }
@@ -59,7 +63,8 @@ function App() {
               {/* Protected Routes */}
               <Route element={<ProtectedRoute />}>
                 <Route path="/properties" element={<Properties />} />
-                <Route path="/preferences" element={<Preferences />} />{" "}
+                <Route path="/preferences" element={<Preferences />} />
+                <Route path="/map" element={<MapComponent />} />{" "}
                 {/* Admin Routes */}
                 {/* <Route element={<AdminRoute />}>
                     <Route
