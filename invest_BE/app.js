@@ -16,7 +16,7 @@ app.use("/protected", protectedRoute);
 mongoose
   //  .connect("mongodb+srv://yaccri:x3Xoi0o5BWB1mkZ9@cluster0.oroua.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0", {
   .connect(
-    "mongodb+srv://yaccri:x3Xoi0o5BWB1mkZ9@cluster0.oroua.mongodb.net/investDB",
+    "mongodb+srv://yaccri:x3Xoi0o5BWB1mkZ9@cluster0.oroua.mongodb.net/GIS",
     {
       useNewUrlParser: true,
       useUnifiedTopology: true,
