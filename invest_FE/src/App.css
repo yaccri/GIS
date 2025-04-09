@@ -46,9 +46,11 @@
 }
 
 .working-area {
-  flex-grow: 1;
-  overflow-y: auto;
-  overflow-x: hidden; /* Prevent horizontal scrolling */
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0; /* Important for flex child to take remaining height */
+  overflow: auto;
   padding: 20px;
   background-color: #f9fafb;
   margin-left: 220px; /* Account for the left bar */
@@ -67,4 +69,12 @@
   z-index: 100; /* Ensure it stays on top */
   height: 50px;
   color: #ffffff;
+}
+
+/* Remove any fixed positioning that might interfere with the map layout */
+.map-page-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex: 1;
 }
