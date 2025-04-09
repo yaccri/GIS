@@ -18,11 +18,25 @@ const propertySchema = new mongoose.Schema({
   lotSize: { type: Number },
   tenantInPlace: { type: Boolean },
   yearBuilt: { type: Number },
+  location: {
+    type: {
+      type: String,
+      enum: ['Point'],
+      default: 'Point'
+    },
+    coordinates: {
+      type: [Number], // [longitude, latitude]
+      required: true
+    }
+  },
   createdOn: {
     type: Date,
     default: Date.now,
   },
 });
+
+// Add 2dsphere index for geo queries
+propertySchema.index({ location: "2dsphere" });
 
 const Property = mongoose.model("Property", propertySchema);
 

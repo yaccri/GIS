@@ -140,4 +140,45 @@ router.post("/property/add", verifyToken, isAdmin, async (req, res) => {
   }
 });
 
+// Search for properties within a radius
+router.get('/radius', async (req, res) => {
+  try {
+    const { lat, lon, radius } = req.query;
+    
+    // Validate inputs
+    if (!lat || !lon || !radius) {
+      return res.status(400).json({ error: 'Missing parameters: lat, lon, and radius are required' });
+    }
+
+    // Convert to numbers
+    const latitude = parseFloat(lat);
+    const longitude = parseFloat(lon);
+    const radiusInMiles = parseFloat(radius);
+
+    // Validate numeric values
+    if (isNaN(latitude) || isNaN(longitude) || isNaN(radiusInMiles)) {
+      return res.status(400).json({ error: 'Invalid parameters: lat, lon, and radius must be numbers' });
+    }
+
+    // Perform geo search
+    // Example MongoDB query using $geoWithin
+    const properties = await Property.find({
+      location: {
+        $nearSphere: {
+          $geometry: {
+            type: "Point",
+            coordinates: [longitude, latitude] // MongoDB uses [longitude, latitude] format
+          },
+          $maxDistance: radiusInMiles * 1609.34 // Convert miles to meters
+        }
+      }
+    }).limit(20); // Limit to 20 results for performance
+
+    res.json(properties);
+  } catch (error) {
+    console.error('Error searching properties by radius:', error);
+    res.status(500).json({ error: 'Server error during radius search' });
+  }
+});
+
 module.exports = router;
