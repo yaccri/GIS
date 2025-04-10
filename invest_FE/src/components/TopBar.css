@@ -1,30 +1,93 @@
 /* src/components/TopBar.css */
+
+/* Top bar container */
 .top-bar {
-  height: 12vh;
-  background-color: #1a3c5a; /* Deep Navy Blue for professionalism */
-  color: #ffffff; /* White text for contrast */
+  background-color: #1a3c5a; /* Deep Navy Blue */
+  color: #ffffff;
+  padding: 5px 10px;  /* Reduced padding */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+/* Top-bar header now uses a column layout */
+.top-bar-header {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 10px;
+}
+
+/* Container for welcome message and title on the same row */
+.header-top {
+  width: 100%;
+  position: relative;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 20px;
+  justify-content: center;
+  margin-bottom: 5px;
 }
 
 .welcome-message {
-  font-size: 26px;
+  position: absolute;
+  left: 20px;
+  font-size: 18px;
   color: #ffffff;
 }
 
 .top-bar-title {
-  font-size: 26px;
-  color: #d4af37;
+  font-size: 22px;
+  color: #d4af37; /* Gold for emphasis */
   font-weight: bold;
+  text-align: center;
 }
 
-/* Menu styles */
-.menu-container {
-  position: relative;
+/* Horizontal navigation menu and menu button within same container */
+.horizontal-nav {
+  display: flex;
+  justify-content: flex-start; /* Left-justify the buttons */
+  align-items: center;
+  width: 100%;
+  background-color: #0f2842; /* Dark blue background */
+  padding: 2px 0;  /* Reduced vertical padding */
+  height: 35px;   /* Fixed height; adjust as needed */
 }
 
+/* Search input styling */
+.search-input {
+  margin: 0 10px;
+  padding: 4px 8px;
+  font-size: 12px;
+  border: none;
+  border-radius: 4px;
+  min-width: 350px;  /* Adjust this value as needed to fully show the placeholder text */
+}
+
+/* Navigation button styling */
+.nav-button {
+  margin: 0 10px;
+  padding: 2px 16px;
+  background-color: #f39c12; /* Bright orange */
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.nav-button:hover {
+  background-color: #e67e22;
+}
+
+.nav-button:focus {
+  outline: none;
+  box-shadow: 0 0 4px #ffffff;
+}
+
+/* Menu button styling */
 .menu-button {
   background-color: transparent;
   color: #ffffff;
@@ -32,13 +95,21 @@
   cursor: pointer;
   font-size: 16px;
   padding: 10px;
+  margin-left: auto; /* Push menu button to the far right */
 }
 
-/* src/components/TopBar.css */
+.menu-icon {
+  width: 50px;
+  height: 50px;
+  background-color: #ffffff;
+  border-radius: 50%;
+}
+
+/* Menu list styling */
 .menu-list {
   position: absolute;
   top: 100%;
-  right: 10px;
+  right: 0;
   background-color: #6b7280;
   list-style: none;
   padding: 0;
@@ -71,14 +142,7 @@
   background-color: #1a5f7a;
 }
 
-/* Separator line */
 .menu-separator {
   border-top: 1px solid #e5e7eb;
   margin: 5px 0;
-}
-.menu-icon {
-  width: 50px;
-  height: 50px;
-  background-color: #ffffff;
-  border-radius: 50%; /* make it circular */
 }
