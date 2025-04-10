@@ -116,7 +116,7 @@ const PropertyForm = ({
 
       // Extract coordinates from the GeoJSON geometry
       const coordinates = geometry?.coordinates || [];
-      const [lng, lat] = coordinates;
+      //      const [lng, lat] = coordinates;
 
       // Extract address components from properties
       const { components, address } = properties || {};

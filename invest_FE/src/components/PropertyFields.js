@@ -74,7 +74,8 @@ const PropertyFields = ({
           value={formData.city}
           onChange={handleChange} // Still use standard handleChange here
           required
-          readOnly={isReadOnly} // City might be auto-filled by AddressSearch, but allow manual override/view
+          //          readOnly={isReadOnly} // City might be auto-filled by AddressSearch, but allow manual override/view
+          disabled={true}
         />
       </div>
 
@@ -87,7 +88,8 @@ const PropertyFields = ({
           value={formData.state}
           onChange={handleChange} // Still use standard handleChange here
           required
-          disabled={isReadOnly} // State might be auto-filled, but allow manual override/view
+          //          disabled={isReadOnly} // State might be auto-filled, but allow manual override/view
+          disabled={true}
         >
           <option value="">Select State</option>
           {states.map((state) => (
@@ -108,7 +110,8 @@ const PropertyFields = ({
           value={formData.zipCode}
           onChange={handleChange} // Use standard handler
           required
-          readOnly={isReadOnly} // Zip might be auto-filled
+          //          readOnly={isReadOnly} // Zip might be auto-filled
+          disabled={true}
           maxLength="10" // Optional: Limit length
         />
       </div>
