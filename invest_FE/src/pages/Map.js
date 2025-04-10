@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap, Circle, Polygon, FeatureGroup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap, Circle, Polygon, FeatureGroup, GeoJSON } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import 'leaflet-draw';
@@ -236,6 +236,11 @@ const MapComponent = () => {
   const [drawnShape, setDrawnShape] = useState(null);
   const featureGroupRef = useRef();
   const mapRef = useRef();
+  const [coordinates, setCoordinates] = useState({
+    longitude: '',
+    latitude: ''
+  });
+  const [neighborhoodData, setNeighborhoodData] = useState(null);
 
   const searchAddress = async (query) => {
     if (!query) {
@@ -652,6 +657,54 @@ const MapComponent = () => {
     linkElement.click();
   };
 
+  // Function to handle coordinate inputs
+  const handleCoordinateChange = (e) => {
+    const { name, value } = e.target;
+    setCoordinates(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  // Function to find neighborhood
+  const findNeighborhood = async () => {
+    try {
+      const response = await fetch('/api/find-neighborhood', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          coordinates: [
+            parseFloat(coordinates.longitude),
+            parseFloat(coordinates.latitude)
+          ]
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch neighborhood data');
+      }
+
+      const data = await response.json();
+      setNeighborhoodData(data);
+
+      // If neighborhood found, center map on it
+      if (data && data.geometry) {
+        // Calculate center of the polygon
+        const bounds = L.geoJSON(data.geometry).getBounds();
+        const center = bounds.getCenter();
+        setMapState({
+          center: [center.lat, center.lng],
+          zoom: 14
+        });
+      }
+    } catch (error) {
+      console.error('Error finding neighborhood:', error);
+      alert('Error finding neighborhood. Please try again.');
+    }
+  };
+
   return (
     <div className="map-page-container">
       <div className="map-container">
@@ -667,6 +720,22 @@ const MapComponent = () => {
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             />
+            {/* Display neighborhood polygon if exists */}
+            {neighborhoodData && neighborhoodData.geometry && (
+              <GeoJSON 
+                data={neighborhoodData.geometry}
+                style={{
+                  color: '#ff7800',
+                  weight: 3,
+                  opacity: 0.65,
+                  fillOpacity: 0.3
+                }}
+              >
+                <Popup>
+                  <strong>Neighborhood:</strong> {neighborhoodData.name || 'Unknown'}
+                </Popup>
+              </GeoJSON>
+            )}
             {selectedLocation && (
               <Marker position={[selectedLocation.geometry.coordinates[1], selectedLocation.geometry.coordinates[0]]}>
                 <Popup>
@@ -686,6 +755,41 @@ const MapComponent = () => {
         </div>
       </div>
       <div className="search-container">
+        <div className="neighborhood-finder">
+          <h3>Find Neighborhood</h3>
+          <div className="coordinate-inputs">
+            <input
+              type="number"
+              name="longitude"
+              value={coordinates.longitude}
+              onChange={handleCoordinateChange}
+              placeholder="Longitude (e.g. -73.93414657)"
+              step="any"
+            />
+            <input
+              type="number"
+              name="latitude"
+              value={coordinates.latitude}
+              onChange={handleCoordinateChange}
+              placeholder="Latitude (e.g. 40.82302903)"
+              step="any"
+            />
+          </div>
+          <button 
+            onClick={findNeighborhood}
+            disabled={!coordinates.longitude || !coordinates.latitude}
+            className="find-neighborhood-btn"
+          >
+            Find Neighborhood
+          </button>
+          {neighborhoodData && (
+            <div className="neighborhood-result">
+              <h4>Found Neighborhood:</h4>
+              <p>{neighborhoodData.name || 'Unknown'}</p>
+            </div>
+          )}
+        </div>
+
         <h2>Search US Addresses</h2>
         <input
           type="text"
