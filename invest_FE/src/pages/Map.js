@@ -6,6 +6,7 @@ import 'leaflet-draw';
 import 'leaflet-draw/dist/leaflet.draw.css';
 import 'leaflet-geometryutil';
 import './Map.css';
+import { searchPropertiesInRadius } from '../components/SearchRadius';
 
 // Fix for default marker icon
 delete L.Icon.Default.prototype._getIconUrl;
@@ -14,6 +15,47 @@ L.Icon.Default.mergeOptions({
   iconUrl: require('leaflet/dist/images/marker-icon.png'),
   shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
 });
+
+// Dummy implementation for createCircleGeometry
+function createCircleGeometry(center, radius, segments) {
+  // Create a simple circular geometry approximation (in degrees).
+  // Note: This conversion factor is approximate.
+  const factor = 0.0000089; // ~meters to degrees conversion factor
+  const points = [];
+  for (let i = 0; i <= segments; i++) {
+    const angle = (i / segments) * Math.PI * 2;
+    const dx = radius * Math.cos(angle) * factor;
+    const dy = radius * Math.sin(angle) * factor;
+    points.push([center[0] + dx, center[1] + dy]);
+  }
+  return points;
+}
+
+// Dummy implementation for generateRandomPointInCircle
+function generateRandomPointInCircle(center, radius) {
+  // Generate a random point within the circle (radius in meters)
+  const factor = 0.0000089;
+  const angle = Math.random() * Math.PI * 2;
+  const r = radius * Math.sqrt(Math.random());
+  const dx = r * Math.cos(angle) * factor;
+  const dy = r * Math.sin(angle) * factor;
+  return [center[0] + dx, center[1] + dy];
+}
+
+// Dummy implementation for exportSavedSearches
+function exportSavedSearches() {
+  alert('Export saved searches is not implemented yet.');
+}
+
+// Dummy implementation for viewSavedSearch
+function viewSavedSearch(search) {
+  alert(`Viewing details for saved search: ${search.centerName}`);
+}
+
+// Dummy implementation for searchPropertiesInPolygon
+function searchPropertiesInPolygon(polygon) {
+  alert('searchPropertiesInPolygon is not implemented yet.');
+}
 
 // Component to update map view
 function ChangeView({ center, zoom }) {
@@ -334,97 +376,17 @@ const MapComponent = () => {
     linkElement.click();
   };
 
-  const handleRadiusChange = (e) => {
+  const handleRadiusChange = async (e) => {
     const radius = parseFloat(e.target.value);
     setSearchRadius(radius);
-    
+
     if (radius > 0 && selectedLocation) {
-      searchPropertiesInRadius(selectedLocation.geometry.coordinates, radius);
+      setIsSearching(true);
+      const results = await searchPropertiesInRadius(selectedLocation.geometry.coordinates, radius);
+      setRadiusSearchResults(results);
+      setIsSearching(false);
     } else {
       setRadiusSearchResults([]);
-    }
-  };
-
-  const searchPropertiesInRadius = async (coordinates, radius) => {
-    // Only search if we have a location and radius
-    if (!coordinates || radius <= 0) return;
-    
-    setIsSearching(true);
-    
-    try {
-      // Construct coordinates for the API call
-      const lat = coordinates[1]; // Note: GeoJSON is [lon, lat]
-      const lon = coordinates[0];
-      
-      // Example API call - replace with your actual backend API
-      const response = await fetch(`http://localhost:4000/api/properties/radius?lat=${lat}&lon=${lon}&radius=${radius}`);
-      
-      if (!response.ok) {
-        throw new Error(`Failed to fetch: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      setRadiusSearchResults(data);
-      
-      // Example for console visualization if API is not ready
-      console.log(`Found ${data.length} properties within ${radius} miles of [${lat}, ${lon}]`);
-      
-    } catch (error) {
-      console.error('Error searching properties in radius:', error);
-      // Display dummy results for demo purposes
-      const dummyResults = [
-        { id: 1, title: 'Demo Property 1', price: '$450,000', location: 'Near search area' },
-        { id: 2, title: 'Demo Property 2', price: '$320,000', location: 'Inside radius' },
-        { id: 3, title: 'Demo Property 3', price: '$550,000', location: 'Within search radius' }
-      ];
-      setRadiusSearchResults(dummyResults);
-    } finally {
-      setIsSearching(false);
-    }
-  };
-
-  // New function to search properties within a polygon
-  const searchPropertiesInPolygon = async (polygon) => {
-    if (!polygon || !polygon.coordinates || polygon.coordinates.length < 3) {
-      alert('Please select a valid polygon with at least 3 points');
-      return;
-    }
-    
-    setIsSearching(true);
-    
-    try {
-      // Format coordinates for API call
-      const coordinates = polygon.coordinates.map(coord => [coord[1], coord[0]]); // Convert to [lon, lat] format if needed
-      
-      // Example API call - replace with your actual backend API
-      const response = await fetch('http://localhost:4000/api/properties/polygon', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ coordinates }),
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Failed to fetch: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      setRadiusSearchResults(data); // Reuse the same state for results
-      
-      console.log(`Found ${data.length} properties within the polygon`);
-      
-    } catch (error) {
-      console.error('Error searching properties in polygon:', error);
-      // Display dummy results for demo purposes
-      const dummyResults = [
-        { id: 4, title: 'Demo Property 4', price: '$520,000', location: 'Inside polygon area' },
-        { id: 5, title: 'Demo Property 5', price: '$375,000', location: 'Within selected region' },
-        { id: 6, title: 'Demo Property 6', price: '$480,000', location: 'Polygon zone' }
-      ];
-      setRadiusSearchResults(dummyResults);
-    } finally {
-      setIsSearching(false);
     }
   };
 
@@ -514,79 +476,6 @@ const MapComponent = () => {
     alert('Search saved successfully');
   };
 
-  // Helper function to create a circle as GeoJSON LineString
-  const createCircleGeometry = (center, radiusInMeters, segments = 64) => {
-    const coords = [];
-    const [centerLng, centerLat] = center;
-    
-    for (let i = 0; i <= segments; i++) {
-      const bearing = (i * 360) / segments;
-      const point = destinationPoint(centerLat, centerLng, bearing, radiusInMeters);
-      coords.push([point.longitude, point.latitude]);
-    }
-    
-    return {
-      type: 'LineString',
-      coordinates: coords
-    };
-  };
-
-  // Calculate destination point given origin, bearing and distance
-  const destinationPoint = (lat, lng, bearing, distance) => {
-    const R = 6371e3; // Earth's radius in meters
-    const d = distance / R; // angular distance
-    const lat1 = lat * Math.PI / 180;
-    const lng1 = lng * Math.PI / 180;
-    const brng = bearing * Math.PI / 180;
-
-    const lat2 = Math.asin(
-      Math.sin(lat1) * Math.cos(d) + Math.cos(lat1) * Math.sin(d) * Math.cos(brng)
-    );
-    
-    const lng2 = lng1 + Math.atan2(
-      Math.sin(brng) * Math.sin(d) * Math.cos(lat1),
-      Math.cos(d) - Math.sin(lat1) * Math.sin(lat2)
-    );
-    
-    return {
-      latitude: lat2 * 180 / Math.PI,
-      longitude: lng2 * 180 / Math.PI
-    };
-  };
-
-  // Generate a random point within the circle (for dummy data)
-  const generateRandomPointInCircle = (center, radius) => {
-    const [centerLng, centerLat] = center;
-    const r = radius * Math.sqrt(Math.random()); // account for density
-    const theta = Math.random() * 2 * Math.PI;
-    
-    const point = destinationPoint(centerLat, centerLng, theta * 180 / Math.PI, r);
-    return [point.longitude, point.latitude];
-  };
-
-  // Export saved searches to file
-  const exportSavedSearches = () => {
-    if (savedSearches.length === 0) {
-      alert('No saved searches to export');
-      return;
-    }
-    
-    const dataStr = JSON.stringify(savedSearches, null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-    
-    const exportFileDefaultName = 'radius-searches.json';
-    
-    const linkElement = document.createElement('a');
-    linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', exportFileDefaultName);
-    linkElement.click();
-  };
-
-  // View details of a saved search
-  const viewSavedSearch = (search) => {
-    setActiveSearch(search);
-  };
-
   const handleMapClick = async (latlng) => {
     // Format to 6 decimal places for precision
     const lat = parseFloat(latlng.lat.toFixed(6));
@@ -621,7 +510,6 @@ const MapComponent = () => {
       
       const data = await response.json();
       
-      // Create GeoJSON with detailed information
       const detailedPointGeoJSON = {
         type: 'Feature',
         geometry: {
@@ -639,19 +527,20 @@ const MapComponent = () => {
       
       console.log('Location details:', data);
       
-      // Update with detailed information
       setClickedPoint(detailedPointGeoJSON);
       setSelectedLocation(detailedPointGeoJSON);
       
-      // If radius is set, search in the radius
+      // If radius is set, search within the radius using the imported function
       if (searchRadius > 0) {
-        searchPropertiesInRadius([lng, lat], searchRadius);
+        setIsSearching(true);
+        const results = await searchPropertiesInRadius([lng, lat], searchRadius);
+        setRadiusSearchResults(results);
+        setIsSearching(false);
       }
       
     } catch (error) {
       console.error('Error fetching location details:', error);
       
-      // Fallback to basic point if API fails
       const fallbackPointGeoJSON = {
         type: 'Feature',
         geometry: {
@@ -669,11 +558,14 @@ const MapComponent = () => {
       setSelectedLocation(fallbackPointGeoJSON);
       
       if (searchRadius > 0) {
-        searchPropertiesInRadius([lng, lat], searchRadius);
+        setIsSearching(true);
+        const results = await searchPropertiesInRadius([lng, lat], searchRadius);
+        setRadiusSearchResults(results);
+        setIsSearching(false);
       }
     }
   };
-  
+
   const downloadClickedPointData = () => {
     if (!clickedPoint) return;
     
@@ -1151,4 +1043,4 @@ const MapComponent = () => {
   );
 };
 
-export default MapComponent; 
+export default MapComponent;
