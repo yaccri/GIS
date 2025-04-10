@@ -2,9 +2,10 @@
 import React, { useState, useEffect, useContext, useCallback } from "react";
 import "./PropertyForm.css";
 import { UserContext } from "../context/UserContext";
-import PropertyFields from "../components/PropertyFields";
+import PropertyFields from "../components/PropertyFields"; // Keep this
 import usePropertyApi from "../hooks/usePropertyApi";
 import { parseCurrency } from "../utils/currencyFormatter";
+// NOTE: No need to import AddressSearch here, it's used in PropertyFields
 
 const PropertyForm = ({
   mode,
@@ -18,6 +19,8 @@ const PropertyForm = ({
   const { user } = useContext(UserContext);
   const [formData, setFormData] = useState(null);
   const currentYear = new Date().getFullYear();
+  // Store the full address selected from Google separately if needed for display
+  const [displayAddress, setDisplayAddress] = useState("");
 
   const {
     isLoading,
@@ -34,6 +37,7 @@ const PropertyForm = ({
       address: "",
       city: "",
       state: "",
+      zipCode: "",
       type: "",
       description: "",
       price: "",
@@ -47,7 +51,12 @@ const PropertyForm = ({
       tenantInPlace: false,
       yearBuilt: "",
       createdOn: "",
+      location: {
+        type: "Point",
+        coordinates: [], // [longitude, latitude]
+      },
     });
+    setDisplayAddress(""); // Reset display address
     setError(null); // Clear any existing errors
   }, [setError]); // Dependency for setError
 
@@ -56,7 +65,11 @@ const PropertyForm = ({
     if (mode === "edit" || (mode === "view" && !property)) {
       const loadProperty = async () => {
         const data = await fetchProperty();
-        if (data) setFormData(data);
+        if (data) {
+          setFormData(data);
+          // Set display address for edit/view using the street address
+          setDisplayAddress(data.address || "");
+        }
       };
       loadProperty();
     } else if (mode === "add") {
@@ -68,9 +81,12 @@ const PropertyForm = ({
   useEffect(() => {
     if (mode === "view" && property) {
       setFormData(property);
+      // Make sure we show the street address in view mode
+      setDisplayAddress(property.address || ""); // Use the street address component
     }
   }, [mode, property]);
 
+  // General change handler for standard inputs
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     if (["price", "hoa", "propertyTax", "insurance"].includes(name)) {
@@ -84,6 +100,44 @@ const PropertyForm = ({
         ...prev,
         [name]: type === "checkbox" ? checked : value,
       }));
+    }
+  };
+  console.log("Form Data:", formData);
+
+  // Updated handler for AddressSearch component selection
+  const handleAddressSelect = (selectedAddressData) => {
+    console.log("Selected Address Data:", selectedAddressData);
+
+    if (!selectedAddressData) return;
+
+    // Handle the GeoJSON format coming from GoogleAddressSearch
+    if (selectedAddressData.type === "Feature") {
+      const { geometry, properties } = selectedAddressData;
+
+      // Extract coordinates from the GeoJSON geometry
+      const coordinates = geometry?.coordinates || [];
+      const [lng, lat] = coordinates;
+
+      // Extract address components from properties
+      const { components, address } = properties || {};
+
+      // Update the form state with extracted data
+      setFormData((prev) => ({
+        ...prev,
+        // Use the street_address from components if available
+        address: components?.street_address || address || prev.address,
+        city: components?.city || prev.city,
+        state: components?.state || prev.state,
+        zipCode: components?.ZIP || prev.zipCode,
+        // Set location only if coordinates are available
+        location:
+          coordinates.length === 2
+            ? { type: "Point", coordinates: coordinates } // Already in [lng, lat] order
+            : prev.location, // Keep previous location if no new coords
+      }));
+
+      // Update the display address shown in the AddressSearch input
+      setDisplayAddress(address || "");
     }
   };
 
@@ -106,7 +160,8 @@ const PropertyForm = ({
   }
 
   if (!formData) {
-    return <p>Property not found.</p>;
+    // Added a check for null formData before rendering
+    return <p>Initializing form or property not found...</p>;
   }
 
   const isReadOnly = mode === "view";
@@ -134,13 +189,17 @@ const PropertyForm = ({
             </button>
           </div>
         )}
+        {/* Pass formData (including location) to handleSubmit */}
         <form onSubmit={(e) => handleSubmit(e, formData)}>
           <PropertyFields
             formData={formData}
             handleChange={handleChange}
+            handleAddressSelect={handleAddressSelect}
             isReadOnly={isReadOnly}
             currentYear={currentYear}
             mode={mode}
+            // Pass the displayAddress to AddressSearch component
+            displayAddress={displayAddress}
           />
           {!isReadOnly && (
             <div className="button-group">
@@ -157,6 +216,13 @@ const PropertyForm = ({
             </div>
           )}
         </form>
+        {/* Optional: Display coordinates for debugging/verification */}
+        {!isReadOnly && formData.location?.coordinates?.length === 2 && (
+          <div style={{ marginTop: "10px", fontSize: "0.8em", color: "#555" }}>
+            Coords: [{formData.location.coordinates[1].toFixed(6)},{" "}
+            {formData.location.coordinates[0].toFixed(6)}] {/* Lat, Lng */}
+          </div>
+        )}
       </div>
     </div>
   );

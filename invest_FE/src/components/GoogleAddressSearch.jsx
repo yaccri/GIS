@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { GOOGLE_MAPS_API_KEY } from "../utils/config";
 
-const AddressSearch = ({ onSelect }) => {
+const AddressSearch = ({ onAddressSelect }) => {
   const [address, setAddress] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [error, setError] = useState(null);
@@ -100,7 +100,7 @@ const AddressSearch = ({ onSelect }) => {
       },
     };
 
-    if (onSelect) onSelect(location);
+    if (onAddressSelect) onAddressSelect(location);
   };
 
   return (

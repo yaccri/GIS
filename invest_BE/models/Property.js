@@ -6,6 +6,7 @@ const propertySchema = new mongoose.Schema({
   address: { type: String, required: true },
   city: { type: String, required: true },
   state: { type: String, required: true },
+  zipCode: { type: String, required: true },
   type: { type: String, required: true },
   description: { type: String },
   price: { type: Number, required: true },
@@ -21,13 +22,14 @@ const propertySchema = new mongoose.Schema({
   location: {
     type: {
       type: String,
-      enum: ['Point'],
-      default: 'Point'
+      enum: ["Point"],
+      default: "Point",
+      required: true,
     },
     coordinates: {
       type: [Number], // [longitude, latitude]
-      required: true
-    }
+      required: true,
+    },
   },
   createdOn: {
     type: Date,

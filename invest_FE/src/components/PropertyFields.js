@@ -3,6 +3,8 @@ import React from "react";
 import { states } from "../utils/states";
 import { formatCurrencyForDisplay } from "../utils/currencyFormatter";
 import { format } from "date-fns"; // to format createdOn date
+import AddressSearch from "./GoogleAddressSearch"; // *** IMPORT AddressSearch ***
+
 // Options for property type
 const PROPERTY_TYPES = [
   "Single-family",
@@ -16,9 +18,11 @@ const PROPERTY_TYPES = [
 const PropertyFields = ({
   formData,
   handleChange,
+  handleAddressSelect,
   isReadOnly,
   currentYear,
   mode,
+  displayAddress,
 }) => {
   // Format the createdOn date if it exists, otherwise display "N/A"
   const formattedCreatedOn = formData.createdOn
@@ -42,18 +46,22 @@ const PropertyFields = ({
         />
       </div>
 
-      {/* address */}
+      {/* address - *** Use AddressSearch, passing displayAddress *** */}
       <div className="form-group">
-        <label htmlFor="address">Address:</label>
-        <input
-          type="text"
-          id="address"
-          name="address"
-          value={formData.address}
-          onChange={handleChange}
-          required
-          readOnly={isReadOnly}
+        <label htmlFor="address">Address Search:</label>
+        <AddressSearch
+          id="address" // Keep id for label association
+          // Use displayAddress for the input value, formData.address holds the component part
+          initialValue={displayAddress}
+          onAddressSelect={handleAddressSelect} // Use the passed handler
+          disabled={isReadOnly} // Pass read-only state
+          required // Keep required if needed
+          placeholder="Start typing address..."
+          // Add any other necessary props for AddressSearch
         />
+        {/* Hidden input or just rely on formData state for the actual street address */}
+        {/* You could show the extracted street address for confirmation if needed: */}
+        {/* {!isReadOnly && formData.address && <p style={{fontSize: '0.8em', marginTop: '2px'}}>Street Address: {formData.address}</p>} */}
       </div>
 
       {/* city */}
@@ -64,9 +72,9 @@ const PropertyFields = ({
           id="city"
           name="city"
           value={formData.city}
-          onChange={handleChange}
+          onChange={handleChange} // Still use standard handleChange here
           required
-          readOnly={isReadOnly}
+          readOnly={isReadOnly} // City might be auto-filled by AddressSearch, but allow manual override/view
         />
       </div>
 
@@ -77,17 +85,32 @@ const PropertyFields = ({
           id="state"
           name="state"
           value={formData.state}
-          onChange={handleChange}
+          onChange={handleChange} // Still use standard handleChange here
           required
-          disabled={isReadOnly}
+          disabled={isReadOnly} // State might be auto-filled, but allow manual override/view
         >
           <option value="">Select State</option>
           {states.map((state) => (
             <option key={state.value} value={state.value}>
-              {state.label}
+              {state.label} {/* Display full name */}
             </option>
           ))}
         </select>
+      </div>
+
+      {/* zipCode */}
+      <div className="form-group">
+        <label htmlFor="zipCode">Zip Code:</label>
+        <input
+          type="text" // Use text for zip codes (e.g., 12345-6789)
+          id="zipCode"
+          name="zipCode"
+          value={formData.zipCode}
+          onChange={handleChange} // Use standard handler
+          required
+          readOnly={isReadOnly} // Zip might be auto-filled
+          maxLength="10" // Optional: Limit length
+        />
       </div>
 
       {/* type */}
@@ -242,7 +265,7 @@ const PropertyFields = ({
           type="checkbox"
           id="tenantInPlace"
           name="tenantInPlace"
-          checked={formData.tenantInPlace}
+          checked={!!formData.tenantInPlace} // Ensure boolean value
           onChange={handleChange}
           disabled={isReadOnly}
         />
