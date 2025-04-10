@@ -241,6 +241,7 @@ const MapComponent = () => {
     latitude: ''
   });
   const [neighborhoodData, setNeighborhoodData] = useState(null);
+  const [showRawJson, setShowRawJson] = useState(false);
 
   const searchAddress = async (query) => {
     if (!query) {
@@ -695,6 +696,8 @@ const MapComponent = () => {
       }
 
       const data = await response.json();
+      console.log('Neighborhood data received:', data);
+      
       setNeighborhoodData(data);
 
       // If neighborhood found, center map on it
@@ -706,6 +709,15 @@ const MapComponent = () => {
           center: [center.lat, center.lng],
           zoom: 14
         });
+
+        console.log('Neighborhood found:', {
+          name: data.name,
+          borough: data.borough,
+          population: data.population,
+          bounds: bounds
+        });
+      } else {
+        console.log('No neighborhood data or geometry found');
       }
     } catch (error) {
       console.error('Error finding neighborhood:', error);
@@ -792,8 +804,14 @@ const MapComponent = () => {
           </button>
           {neighborhoodData && (
             <div className="neighborhood-result">
-              <h4>Found Neighborhood:</h4>
-              <p>{neighborhoodData.name || 'Unknown'}</p>
+              <h4>Neighborhood Information:</h4>
+              <div className="neighborhood-details">
+                <p className="neighborhood-name"><strong>Name:</strong> {neighborhoodData.name || 'Unknown'}</p>
+                <p className="neighborhood-borough"><strong>Borough:</strong> {neighborhoodData.borough || 'N/A'}</p>
+                {neighborhoodData.population && (
+                  <p className="neighborhood-population"><strong>Population:</strong> {neighborhoodData.population.toLocaleString()}</p>
+                )}
+              </div>
             </div>
           )}
         </div>
@@ -990,31 +1008,64 @@ const MapComponent = () => {
           </div>
         )}
         
-        {selectedLocation && (
-          <div className="geojson-display">
-            <h3>Selected Location (GeoJSON):</h3>
-            <div className="geojson-scroll">
-              <pre>{JSON.stringify(selectedLocation, null, 2)}</pre>
+        <div className="selected-location-info">
+          <h3>Selected Location Information</h3>
+          {selectedLocation && (
+            <div className="location-details">
+              <table className="info-table">
+                <tbody>
+                  <tr>
+                    <td>Location Name:</td>
+                    <td>{selectedLocation.properties.name || 'N/A'}</td>
+                  </tr>
+                  <tr>
+                    <td>Neighborhood:</td>
+                    <td>{selectedLocation.properties.address?.neighbourhood || 
+                        (selectedLocation.properties.name && selectedLocation.properties.name.split(',')[2]?.trim()) || 
+                        'N/A'}</td>
+                  </tr>
+                  <tr>
+                    <td>Borough:</td>
+                    <td>{selectedLocation.properties.address?.borough || 
+                        (selectedLocation.properties.name && selectedLocation.properties.name.split(',')[3]?.trim()) || 
+                        'N/A'}</td>
+                  </tr>
+                  <tr>
+                    <td>Latitude:</td>
+                    <td>{selectedLocation.geometry.coordinates[1].toFixed(6)}</td>
+                  </tr>
+                  <tr>
+                    <td>Longitude:</td>
+                    <td>{selectedLocation.geometry.coordinates[0].toFixed(6)}</td>
+                  </tr>
+                  <tr>
+                    <td>Street:</td>
+                    <td>{selectedLocation.properties.address?.road || 
+                        (selectedLocation.properties.name && selectedLocation.properties.name.split(',')[0]?.trim()) || 
+                        'N/A'}</td>
+                  </tr>
+                  <tr>
+                    <td>House Number:</td>
+                    <td>{selectedLocation.properties.address?.house_number || 'N/A'}</td>
+                  </tr>
+                  <tr>
+                    <td>City:</td>
+                    <td>{selectedLocation.properties.address?.city || 'N/A'}</td>
+                  </tr>
+                  <tr>
+                    <td>State:</td>
+                    <td>{selectedLocation.properties.address?.state || 'N/A'}</td>
+                  </tr>
+                  <tr>
+                    <td>Postal Code:</td>
+                    <td>{selectedLocation.properties.address?.postcode || 'N/A'}</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
-            <div className="geojson-actions">
-              <button 
-                className="export-button"
-                onClick={() => {
-                  const dataStr = JSON.stringify(selectedLocation, null, 2);
-                  const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-                  const exportFileDefaultName = 'selected-location.geojson';
-                  const linkElement = document.createElement('a');
-                  linkElement.setAttribute('href', dataUri);
-                  linkElement.setAttribute('download', exportFileDefaultName);
-                  linkElement.click();
-                }}
-              >
-                Download Selected Location
-              </button>
-            </div>
-          </div>
-        )}
-
+          )}
+        </div>
+        
         {drawnItems.length > 0 && (
           <div className="saved-polygons">
             <h3>Saved Areas:</h3>

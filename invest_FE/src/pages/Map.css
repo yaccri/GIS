@@ -705,15 +705,135 @@
 }
 
 .neighborhood-result h4 {
-  margin: 0 0 10px 0;
+  margin: 0 0 15px 0;
   color: #333;
   font-size: 1.1em;
   font-weight: bold;
+  border-bottom: 2px solid #007bff;
+  padding-bottom: 8px;
 }
 
-.neighborhood-result p {
+.neighborhood-details {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.neighborhood-details p {
   margin: 0;
-  color: #007bff;
-  font-size: 1.1em;
+  color: #333;
+  font-size: 1em;
+  line-height: 1.4;
+}
+
+.neighborhood-name {
+  color: #007bff !important;
+  font-size: 1.1em !important;
   font-weight: 500;
+}
+
+.neighborhood-borough {
+  color: #444 !important;
+}
+
+.neighborhood-population {
+  color: #666 !important;
+  font-size: 0.95em !important;
+}
+
+.selected-location-info {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.selected-location-info h3 {
+  margin: 0 0 15px 0;
+  color: #333;
+  font-size: 1.2em;
+  font-weight: bold;
+  border-bottom: 2px solid #007bff;
+  padding-bottom: 8px;
+}
+
+.location-details {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.detail-item strong {
+  color: #666;
+  font-size: 0.9em;
+  text-transform: uppercase;
+}
+
+.detail-item span {
+  color: #333;
+  font-size: 1em;
+  line-height: 1.4;
+}
+
+.address-details {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding-left: 10px;
+  border-left: 2px solid #e9ecef;
+  margin-top: 5px;
+}
+
+.toggle-json-btn {
+  margin-top: 5px;
+  padding: 6px 12px;
+  background-color: #f8f9fa;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  color: #666;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: all 0.2s;
+}
+
+.toggle-json-btn:hover {
+  background-color: #e9ecef;
+  border-color: #ccc;
+}
+
+.json-display {
+  margin-top: 10px;
+  padding: 10px;
+  background-color: #f8f9fa;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 0.9em;
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.info-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.info-table td {
+  padding: 5px;
+  border-bottom: 1px solid #eee;
+}
+
+.info-table td:first-child {
+  font-weight: bold;
+  width: 120px;
 } 
