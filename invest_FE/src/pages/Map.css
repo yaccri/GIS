@@ -1,11 +1,7 @@
 .map-page-container {
-  display: flex;
+  position: relative;
+  height: 100vh;
   width: 100%;
-  height: calc(100vh - 120px); /* Subtract topbar and bottombar height */
-  position: fixed;
-  top: 60px; /* Height of topbar */
-  left: 0;
-  background: #fff;
 }
 
 .map-container {
@@ -101,9 +97,83 @@
 
 /* Override Leaflet default styles */
 .leaflet-container {
-  height: 100% !important;
+  height: 100%;
   width: 100%;
-  position: relative;
+}
+
+/* Drawing Controls */
+.leaflet-draw.leaflet-control {
+  margin-top: 10px !important;
+  margin-left: 10px !important;
+}
+
+.leaflet-draw-toolbar.leaflet-bar {
+  border: 2px solid rgba(0,0,0,0.2);
+  border-radius: 4px;
+  background-color: white;
+}
+
+.leaflet-draw-toolbar a {
+  background-color: white;
+  border-bottom: 1px solid #ccc;
+  width: 26px;
+  height: 26px;
+  line-height: 26px;
+  display: block;
+  text-align: center;
+  text-decoration: none;
+  color: black;
+}
+
+.leaflet-draw-toolbar a:hover {
+  background-color: #f4f4f4;
+}
+
+.leaflet-draw-toolbar a:first-child {
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+}
+
+.leaflet-draw-toolbar a:last-child {
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
+  border-bottom: none;
+}
+
+.leaflet-draw-actions {
+  left: 26px;
+  margin-top: 0;
+}
+
+.leaflet-draw-actions a {
+  background-color: white;
+  border-left: 1px solid #ccc;
+  color: #333;
+  font-size: 12px;
+  line-height: 28px;
+  text-decoration: none;
+  padding-left: 10px;
+  padding-right: 10px;
+  height: 28px;
+}
+
+.leaflet-draw-actions a:hover {
+  background-color: #f4f4f4;
+}
+
+.leaflet-draw-tooltip {
+  background: rgb(54, 54, 54);
+  background: rgba(0, 0, 0, 0.7);
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: white;
+  font: 12px/18px "Helvetica Neue", Arial, Helvetica, sans-serif;
+  margin-left: 20px;
+  margin-top: -21px;
+  padding: 4px 8px;
+  position: absolute;
+  white-space: nowrap;
+  z-index: 6;
 }
 
 /* Drawing Tools Styles */

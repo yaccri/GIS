@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap, Circle, Polygon } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap, Circle, Polygon, FeatureGroup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import 'leaflet-draw';
@@ -7,6 +7,7 @@ import 'leaflet-draw/dist/leaflet.draw.css';
 import 'leaflet-geometryutil';
 import './Map.css';
 import { searchPropertiesInRadius } from '../components/SearchRadius';
+import PolygonRectangleDrawingControls from '../components/PolygonRectangleDrawingControls';
 
 // Fix for default marker icon
 delete L.Icon.Default.prototype._getIconUrl;
@@ -58,11 +59,11 @@ function searchPropertiesInPolygon(polygon) {
 }
 
 // Component to update map view
-function ChangeView({ center, zoom }) {
+const ChangeView = ({ center, zoom }) => {
   const map = useMap();
   map.setView(center, zoom);
   return null;
-}
+};
 
 // Drawing control component
 function DrawControl({ onPolygonCreated }) {
@@ -94,7 +95,7 @@ function DrawControl({ onPolygonCreated }) {
           allowIntersection: false,
           drawError: {
             color: '#e1e100',
-            message: '<strong>Error:</strong> Shape edges cannot cross!'
+            message: 'צורות לא יכולות להצטלב'
           },
           shapeOptions: {
             color: '#3388ff',
@@ -113,37 +114,14 @@ function DrawControl({ onPolygonCreated }) {
     
     // Handle the drawing created event
     map.on(L.Draw.Event.CREATED, function (e) {
-      const type = e.layerType;
       const layer = e.layer;
-      console.log('Layer created:', layer);
-      
-      // Add drawn layer to feature group
       drawnItems.addLayer(layer);
       
-      // Get coordinates of the drawn shape
-      if (type === 'polygon' || type === 'rectangle') {
-        let coordinates;
-        
-        if (type === 'polygon') {
-          coordinates = layer.getLatLngs()[0].map(point => [point.lat, point.lng]);
-        } else {
-          // For rectangles, we need to extract corners
-          const bounds = layer.getBounds();
-          coordinates = [
-            [bounds.getNorthWest().lat, bounds.getNorthWest().lng],
-            [bounds.getNorthEast().lat, bounds.getNorthEast().lng],
-            [bounds.getSouthEast().lat, bounds.getSouthEast().lng],
-            [bounds.getSouthWest().lat, bounds.getSouthWest().lng],
-            [bounds.getNorthWest().lat, bounds.getNorthWest().lng] // Close the rectangle
-          ];
-        }
-        
-        console.log('Area defined:', coordinates);
-        
-        // Call the callback with the polygon data
+      if (onPolygonCreated) {
+        const coordinates = layer.getLatLngs()[0].map(point => [point.lat, point.lng]);
         onPolygonCreated({ 
           id: Date.now().toString(),
-          type: type,
+          type: e.layerType,
           coordinates: coordinates,
           center: layer.getBounds().getCenter(),
           area: L.GeometryUtil.geodesicArea(coordinates.map(coord => L.latLng(coord[0], coord[1])))
@@ -151,35 +129,11 @@ function DrawControl({ onPolygonCreated }) {
       }
     });
     
-    // Highlight when shapes enter edit mode
-    map.on(L.Draw.Event.EDITSTART, function() {
-      console.log('Edit mode started');
-    });
-    
-    // Handle edited shapes
-    map.on(L.Draw.Event.EDITED, function(e) {
-      console.log('Shapes edited');
-    });
-    
-    // Handle deleted items
-    map.on(L.Draw.Event.DELETED, function(e) {
-      console.log('Shapes deleted');
-      const layers = e.layers;
-      layers.eachLayer(function(layer) {
-        drawnItems.removeLayer(layer);
-      });
-    });
-    
-    console.log('Draw control initialized');
-    
     // Clean up on unmount
     return () => {
       map.removeLayer(drawnItems);
       map.removeControl(drawControl);
       map.off(L.Draw.Event.CREATED);
-      map.off(L.Draw.Event.EDITED);
-      map.off(L.Draw.Event.DELETED);
-      map.off(L.Draw.Event.EDITSTART);
     };
   }, [map, onPolygonCreated]);
   
@@ -266,9 +220,11 @@ const MapComponent = () => {
   const [searchInput, setSearchInput] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [selectedLocation, setSelectedLocation] = useState(null);
-  const [center, setCenter] = useState([40.7128, -74.0060]); // NYC default
-  const [zoom, setZoom] = useState(12);
-  const [drawnPolygons, setDrawnPolygons] = useState([]);
+  const [mapState, setMapState] = useState({
+    center: [31.7683, 35.2137],
+    zoom: 13
+  });
+  const [drawnItems, setDrawnItems] = useState([]);
   const [activePolygon, setActivePolygon] = useState(null);
   const [searchRadius, setSearchRadius] = useState(0); // 0 = no radius
   const [radiusSearchResults, setRadiusSearchResults] = useState([]);
@@ -277,6 +233,9 @@ const MapComponent = () => {
   const [activeSearch, setActiveSearch] = useState(null);
   const searchTimeout = useRef(null);
   const [clickedPoint, setClickedPoint] = useState(null);
+  const [drawnShape, setDrawnShape] = useState(null);
+  const featureGroupRef = useRef();
+  const mapRef = useRef();
 
   const searchAddress = async (query) => {
     if (!query) {
@@ -313,8 +272,10 @@ const MapComponent = () => {
 
   const handleSelectLocation = (location) => {
     const newCenter = [parseFloat(location.lat), parseFloat(location.lon)];
-    setCenter(newCenter);
-    setZoom(16);
+    setMapState({
+      center: newCenter,
+      zoom: 16
+    });
     setSelectedLocation(location);
     setSearchInput(location.display_name);
     setSuggestions([]);
@@ -337,11 +298,11 @@ const MapComponent = () => {
   };
 
   const handlePolygonCreated = (polygonData) => {
-    setDrawnPolygons(prev => [...prev, polygonData]);
+    setDrawnItems(prev => [...prev, polygonData]);
   };
 
   const handleDeletePolygon = (id) => {
-    setDrawnPolygons(prev => prev.filter(polygon => polygon.id !== id));
+    setDrawnItems(prev => prev.filter(polygon => polygon.id !== id));
     if (activePolygon && activePolygon.id === id) {
       setActivePolygon(null);
     }
@@ -360,12 +321,12 @@ const MapComponent = () => {
   };
 
   const exportToJson = () => {
-    if (drawnPolygons.length === 0) {
+    if (drawnItems.length === 0) {
       alert('No polygons to export');
       return;
     }
     
-    const dataStr = JSON.stringify(drawnPolygons, null, 2);
+    const dataStr = JSON.stringify(drawnItems, null, 2);
     const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
     
     const exportFileDefaultName = 'polygon-data.json';
@@ -496,7 +457,10 @@ const MapComponent = () => {
     
     setClickedPoint(tempPointGeoJSON);
     setSelectedLocation(tempPointGeoJSON);
-    setCenter([lat, lng]);
+    setMapState({
+      center: [lat, lng],
+      zoom: 18
+    });
     
     try {
       // Reverse geocoding using Nominatim API
@@ -578,17 +542,131 @@ const MapComponent = () => {
     linkElement.click();
   };
 
+  const handleShapeDrawn = (shape) => {
+    console.log('צורה חדשה נוצרה:', shape);
+    setDrawnShape(shape);
+  };
+
+  useEffect(() => {
+    // Wait for map to be initialized
+    const initDrawControls = () => {
+      if (!mapRef.current) return;
+
+      const map = mapRef.current;
+      
+      // Create a FeatureGroup to store editable layers
+      const editableLayers = new L.FeatureGroup();
+      map.addLayer(editableLayers);
+
+      // Initialize draw control
+      const drawControl = new L.Control.Draw({
+        position: 'topleft',
+        draw: {
+          polygon: {
+            allowIntersection: false,
+            drawError: {
+              color: '#e1e100',
+              message: 'Shape edges cannot intersect!'
+            },
+            shapeOptions: {
+              color: '#3388ff'
+            }
+          },
+          rectangle: {
+            shapeOptions: {
+              color: '#3388ff'
+            }
+          },
+          circle: false,
+          circlemarker: false,
+          marker: false,
+          polyline: false
+        },
+        edit: {
+          featureGroup: editableLayers,
+          remove: true
+        }
+      });
+
+      map.addControl(drawControl);
+
+      // Handle created shapes
+      map.on(L.Draw.Event.CREATED, (e) => {
+        const layer = e.layer;
+        editableLayers.addLayer(layer);
+        const geoJSON = layer.toGeoJSON();
+        setDrawnItems(prev => [...prev, geoJSON]);
+        console.log('New shape created:', geoJSON);
+      });
+
+      // Handle edited shapes
+      map.on(L.Draw.Event.EDITED, (e) => {
+        const layers = e.layers;
+        const updatedItems = [];
+        layers.eachLayer((layer) => {
+          updatedItems.push(layer.toGeoJSON());
+        });
+        setDrawnItems(updatedItems);
+        console.log('Shapes updated:', updatedItems);
+      });
+
+      // Handle deleted shapes
+      map.on(L.Draw.Event.DELETED, (e) => {
+        const remainingLayers = [];
+        editableLayers.eachLayer((layer) => {
+          remainingLayers.push(layer.toGeoJSON());
+        });
+        setDrawnItems(remainingLayers);
+        console.log('Shapes deleted');
+      });
+
+      return () => {
+        map.removeLayer(editableLayers);
+        map.removeControl(drawControl);
+        map.off(L.Draw.Event.CREATED);
+        map.off(L.Draw.Event.EDITED);
+        map.off(L.Draw.Event.DELETED);
+      };
+    };
+
+    // Initialize controls after map is ready
+    const timeoutId = setTimeout(initDrawControls, 1000);
+    return () => clearTimeout(timeoutId);
+  }, []);
+
+  // Export shapes to GeoJSON
+  const exportToGeoJSON = () => {
+    if (drawnItems.length === 0) {
+      alert('No shapes to export');
+      return;
+    }
+
+    const geoJSON = {
+      type: 'FeatureCollection',
+      features: drawnItems
+    };
+
+    const dataStr = JSON.stringify(geoJSON);
+    const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+    
+    const exportFileDefaultName = 'map_shapes.geojson';
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
+  };
+
   return (
     <div className="map-page-container">
       <div className="map-container">
-       
         <div className="map-wrapper">
           <MapContainer 
-            center={center} 
-            zoom={zoom} 
+            center={mapState.center} 
+            zoom={mapState.zoom} 
             style={{ height: "100%", width: "100%" }}
+            ref={mapRef}
           >
-            <ChangeView center={center} zoom={zoom} />
+            <ChangeView center={mapState.center} zoom={mapState.zoom} />
             <TileLayer
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -606,7 +684,7 @@ const MapComponent = () => {
                 radius={searchRadius}
               />
             )}
-            <DisplayPolygons polygons={drawnPolygons} />
+            <DisplayPolygons polygons={drawnItems} />
             <DrawControl onPolygonCreated={handlePolygonCreated} />
           </MapContainer>
         </div>
@@ -690,61 +768,9 @@ const MapComponent = () => {
                 <button 
                   className="save-search-button" 
                   style={{ marginTop: '10px' }}
-                  onClick={() => {
-                    if (!selectedLocation || searchRadius === 0) {
-                      alert('Please select a location and radius before downloading');
-                      return;
-                    }
-                    
-                    // Create a GeoJSON object from the search
-                    const geoJSON = {
-                      type: 'FeatureCollection',
-                      properties: {
-                        searchTime: new Date().toISOString(),
-                        searchRadius: searchRadius,
-                        searchRadiusUnit: 'miles'
-                      },
-                      features: [
-                        // Center point
-                        {
-                          type: 'Feature',
-                          geometry: {
-                            type: 'Point',
-                            coordinates: selectedLocation.geometry.coordinates
-                          },
-                          properties: {
-                            name: selectedLocation.properties.name,
-                            type: 'searchCenter'
-                          }
-                        },
-                        // Circle (as linestring approximation)
-                        {
-                          type: 'Feature',
-                          geometry: createCircleGeometry(
-                            selectedLocation.geometry.coordinates,
-                            searchRadius * 1609.34, // miles to meters
-                            64 // number of segments
-                          ),
-                          properties: {
-                            type: 'searchRadius',
-                            radius: searchRadius,
-                            unit: 'miles'
-                          }
-                        }
-                      ]
-                    };
-                    
-                    // Download as file
-                    const dataStr = JSON.stringify(geoJSON, null, 2);
-                    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-                    const exportFileDefaultName = `radius-${searchRadius}-miles.geojson`;
-                    const linkElement = document.createElement('a');
-                    linkElement.setAttribute('href', dataUri);
-                    linkElement.setAttribute('download', exportFileDefaultName);
-                    linkElement.click();
-                  }}
+                  onClick={exportToGeoJSON}
                 >
-                  Download Radius as GeoJSON
+                  Export All to GeoJSON
                 </button>
                 <button 
                   className="find-properties-button" 
@@ -881,11 +907,11 @@ const MapComponent = () => {
           </div>
         )}
 
-        {drawnPolygons.length > 0 && (
+        {drawnItems.length > 0 && (
           <div className="saved-polygons">
             <h3>Saved Areas:</h3>
             <ul className="polygons-list">
-              {drawnPolygons.map(polygon => (
+              {drawnItems.map(polygon => (
                 <li key={polygon.id} className="polygon-item">
                   <div className="polygon-header">
                     <strong>{polygon.type === 'polygon' ? 'Polygon' : 'Rectangle'}</strong>
@@ -958,7 +984,7 @@ const MapComponent = () => {
             </ul>
             <div className="polygon-actions">
               <button className="export-button" onClick={exportToJson}>
-                Export All to JSON
+                Export All to GeoJSON
               </button>
             </div>
           </div>
