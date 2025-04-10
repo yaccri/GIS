@@ -2,16 +2,13 @@
   position: relative;
   height: 100vh;
   width: 100%;
+  display: flex;
 }
 
 .map-container {
   width: 50%;
   height: 100%;
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
   position: relative;
-  overflow: hidden;
 }
 
 .search-container {
@@ -88,17 +85,15 @@
 }
 
 .map-wrapper {
-  flex: 1;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 100%;
   height: 100%;
+  position: relative;
 }
 
 /* Override Leaflet default styles */
 .leaflet-container {
-  height: 100%;
   width: 100%;
+  height: 100%;
 }
 
 /* Drawing Controls */
@@ -108,25 +103,26 @@
 }
 
 .leaflet-draw-toolbar.leaflet-bar {
-  border: 2px solid rgba(0,0,0,0.2);
+  border: 1px solid #ccc;
   border-radius: 4px;
   background-color: white;
+  box-shadow: 0 1px 5px rgba(0,0,0,0.2);
 }
 
 .leaflet-draw-toolbar a {
-  background-color: white;
+  background-color: white !important;
   border-bottom: 1px solid #ccc;
-  width: 26px;
-  height: 26px;
-  line-height: 26px;
-  display: block;
+  width: 30px !important;
+  height: 30px !important;
+  line-height: 30px !important;
   text-align: center;
+  display: block;
   text-decoration: none;
-  color: black;
+  color: #333;
 }
 
 .leaflet-draw-toolbar a:hover {
-  background-color: #f4f4f4;
+  background-color: #f4f4f4 !important;
 }
 
 .leaflet-draw-toolbar a:first-child {
@@ -162,7 +158,6 @@
 }
 
 .leaflet-draw-tooltip {
-  background: rgb(54, 54, 54);
   background: rgba(0, 0, 0, 0.7);
   border: 1px solid transparent;
   border-radius: 4px;

@@ -221,7 +221,7 @@ const MapComponent = () => {
   const [suggestions, setSuggestions] = useState([]);
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [mapState, setMapState] = useState({
-    center: [31.7683, 35.2137],
+    center: [40.7128, -74.0060], // New York coordinates
     zoom: 13
   });
   const [drawnItems, setDrawnItems] = useState([]);
@@ -569,14 +569,19 @@ const MapComponent = () => {
               message: 'Shape edges cannot intersect!'
             },
             shapeOptions: {
-              color: '#3388ff'
+              color: '#3388ff',
+              fillOpacity: 0.2,
+              weight: 2
             }
           },
           rectangle: {
             shapeOptions: {
-              color: '#3388ff'
+              color: '#3388ff',
+              fillOpacity: 0.2,
+              weight: 2
             }
           },
+          // Disable other drawing tools
           circle: false,
           circlemarker: false,
           marker: false,
@@ -595,37 +600,28 @@ const MapComponent = () => {
         const layer = e.layer;
         editableLayers.addLayer(layer);
         const geoJSON = layer.toGeoJSON();
-        setDrawnItems(prev => [...prev, geoJSON]);
-        console.log('New shape created:', geoJSON);
-      });
-
-      // Handle edited shapes
-      map.on(L.Draw.Event.EDITED, (e) => {
-        const layers = e.layers;
-        const updatedItems = [];
-        layers.eachLayer((layer) => {
-          updatedItems.push(layer.toGeoJSON());
-        });
-        setDrawnItems(updatedItems);
-        console.log('Shapes updated:', updatedItems);
-      });
-
-      // Handle deleted shapes
-      map.on(L.Draw.Event.DELETED, (e) => {
-        const remainingLayers = [];
-        editableLayers.eachLayer((layer) => {
-          remainingLayers.push(layer.toGeoJSON());
-        });
-        setDrawnItems(remainingLayers);
-        console.log('Shapes deleted');
+        
+        // Calculate area and other properties
+        const area = L.GeometryUtil.geodesicArea(layer.getLatLngs()[0]);
+        const center = layer.getBounds().getCenter();
+        
+        const shapeData = {
+          id: Date.now().toString(),
+          type: e.layerType,
+          geoJSON: geoJSON,
+          area: area,
+          center: center,
+          coordinates: layer.getLatLngs()[0].map(point => [point.lat, point.lng])
+        };
+        
+        setDrawnItems(prev => [...prev, shapeData]);
+        console.log('New shape created:', shapeData);
       });
 
       return () => {
         map.removeLayer(editableLayers);
         map.removeControl(drawControl);
         map.off(L.Draw.Event.CREATED);
-        map.off(L.Draw.Event.EDITED);
-        map.off(L.Draw.Event.DELETED);
       };
     };
 
