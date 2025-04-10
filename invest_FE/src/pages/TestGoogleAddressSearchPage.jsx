@@ -1,0 +1,22 @@
+// src/pages/TestGoogleAddressSearchPage.jsx
+import React, { useState } from "react";
+import AddressSearch from "../components/GoogleAddressSearch";
+
+const TestAddressSearchPage = () => {
+  const [selectedLocation, setSelectedLocation] = useState(null);
+
+  return (
+    <div style={{ padding: "2rem" }}>
+      <h1>Test Address Search</h1>
+      <AddressSearch onSelect={setSelectedLocation} />
+      {selectedLocation && (
+        <div className="result">
+          <h2>Selected Location (GeoJSON)</h2>
+          <pre>{JSON.stringify(selectedLocation, null, 2)}</pre>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default TestAddressSearchPage;
