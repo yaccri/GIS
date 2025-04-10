@@ -281,11 +281,8 @@ const MapComponent = () => {
       center: newCenter,
       zoom: 16
     });
-    setSelectedLocation(location);
-    setSearchInput(location.display_name);
-    setSuggestions([]);
-
-    // Create GeoJSON object
+    
+    // Create GeoJSON object for the selected location
     const geojson = {
       type: 'Feature',
       geometry: {
@@ -298,8 +295,19 @@ const MapComponent = () => {
         osm_id: location.osm_id
       }
     };
-
+    
     setSelectedLocation(geojson);
+    setSearchInput(location.display_name);
+    setSuggestions([]);
+
+    // Automatically fill the Find Neighborhood coordinates
+    setCoordinates({
+      longitude: location.lon,
+      latitude: location.lat
+    });
+
+    // Optionally, you can automatically trigger the neighborhood search
+    // findNeighborhood();
   };
 
   const handlePolygonCreated = (polygonData) => {
