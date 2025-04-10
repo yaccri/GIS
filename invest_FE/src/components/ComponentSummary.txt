@@ -1,0 +1,37 @@
+----------------------------------------------------------------
+Component: SearchRadius.js
+----------------------------------------------------------------
+Purpose:
+    - Provides an asynchronous function, searchPropertiesInRadius, to fetch properties (or dummy data)
+      within a given radius based on provided coordinates.
+    - Takes GeoJSON coordinates ([lon, lat]) and search radius (in miles) as inputs.
+    - Performs an API call (or returns dummy data on error) and returns the search results.
+    
+Key Comments:
+    - Uses a simple conversion from miles to meters (1 mile = 1609.34 meters).
+    - Contains error handling to return dummy results for demo purposes.
+    - This module is imported into Map.js and used within handleRadiusChange and map click handling to update search results.
+
+----------------------------------------------------------------
+Component: AddressSearch.js (if implemented)
+----------------------------------------------------------------
+Purpose:
+    - Encapsulates the address search functionality.
+    - Manages the search input state, debouncing, and fetching suggestions from the Nominatim API.
+    - Can be used standalone (or its logic delegated via a custom hook) to provide an autocomplete search for addresses.
+    
+Key Comments:
+    - Debouncing is implemented using setTimeout with a cleanup effect.
+    - Suggestions are updated based on user input.
+    - Make sure that the component accepts a placeholder prop to show "Enter an address, neighborhood, city, or ZIP code".
+    
+----------------------------------------------------------------
+Additional Notes:
+    - Dummy implementations for functions like generateRandomPointInCircle, exportSavedSearches,
+      viewSavedSearch, and searchPropertiesInPolygon that were previously in Map.js are meant to be temporary.
+    - Once real implementations are available, update these functions and remove dummy alerts.
+    - Each component should be self-contained with clear inputs/outputs so that Map.js acts as an orchestrator
+      calling these functions/components.
+
+----------------------------------------------------------------
+End of Summary.
