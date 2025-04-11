@@ -2,6 +2,8 @@
 const express = require("express");
 const router = express.Router();
 const Property = require("../models/Property");
+const Neighborhood = require("../models/neighborhood");
+const mongoose = require("mongoose");
 const { verifyToken, isAdmin } = require("../middleware/authMiddleware");
 
 // GET /api/properties - Get all or filtered properties
@@ -146,11 +148,9 @@ router.get("/radius", verifyToken, async (req, res) => {
 
     // Validate inputs
     if (!lat || !lon || !radius) {
-      return res
-        .status(400)
-        .json({
-          error: "Missing parameters: lat, lon, and radius are required",
-        });
+      return res.status(400).json({
+        error: "Missing parameters: lat, lon, and radius are required",
+      });
     }
 
     // Convert to numbers
@@ -160,11 +160,9 @@ router.get("/radius", verifyToken, async (req, res) => {
 
     // Validate numeric values
     if (isNaN(latitude) || isNaN(longitude) || isNaN(radiusInMiles)) {
-      return res
-        .status(400)
-        .json({
-          error: "Invalid parameters: lat, lon, and radius must be numbers",
-        });
+      return res.status(400).json({
+        error: "Invalid parameters: lat, lon, and radius must be numbers",
+      });
     }
 
     // Perform geo search
@@ -185,6 +183,59 @@ router.get("/radius", verifyToken, async (req, res) => {
   } catch (error) {
     console.error("Error searching properties by radius:", error);
     res.status(500).json({ error: "Server error during radius search" });
+  }
+});
+
+// Get properties within a specific neighborhood's geometry
+// GET /api/properties/in-neighborhood?neighborhoodId=...
+router.get("/in-neighborhood", verifyToken, async (req, res) => {
+  try {
+    const { neighborhoodId } = req.query;
+
+    // 1. Validate Input
+    if (!neighborhoodId) {
+      return res
+        .status(400)
+        .json({ error: "Missing required query parameter: neighborhoodId" });
+    }
+
+    // Optional but recommended: Validate if it's a valid MongoDB ObjectId
+    if (!mongoose.Types.ObjectId.isValid(neighborhoodId)) {
+      return res.status(400).json({ error: "Invalid neighborhoodId format" });
+    }
+
+    // 2. Find the Neighborhood to get its geometry
+    const neighborhood = await Neighborhood.findById(neighborhoodId);
+
+    if (!neighborhood) {
+      return res
+        .status(404)
+        .json({ error: "Neighborhood not found with the provided ID." });
+    }
+
+    if (!neighborhood.geometry) {
+      return res
+        .status(500)
+        .json({ error: "Neighborhood found but missing geometry data." });
+    }
+
+    // 3. Perform Geospatial Query using $geoWithin
+    // Find properties whose 'location' (Point) is within the neighborhood's 'geometry' (Polygon/MultiPolygon)
+    const properties = await Property.find({
+      location: {
+        $geoWithin: {
+          $geometry: neighborhood.geometry, // Use the geometry fetched from the neighborhood document
+        },
+      },
+    }); // Add .limit() if needed
+
+    // 4. Handle Results
+    res.status(200).json(properties);
+  } catch (error) {
+    console.error("Error fetching properties within neighborhood:", error);
+    res
+      .status(500)
+      .json({ error: "Internal server error while fetching properties." });
   }
 });
 
