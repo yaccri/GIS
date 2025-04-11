@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { GOOGLE_MAPS_API_KEY } from "../utils/config";
 
-const AddressSearch = ({ onSelect }) => {
+const AddressSearch = ({ onAddressSelect }) => {
   const [address, setAddress] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [error, setError] = useState(null);
@@ -23,8 +23,10 @@ const AddressSearch = ({ onSelect }) => {
   }, []);
 
   const getAddressFields = (components) => {
-    const getComponent = (type) =>
-      components.find((c) => c.types.includes(type))?.long_name || "";
+    const getComponent = (type, useShort = false) =>
+      components.find((c) => c.types.includes(type))?.[
+        useShort ? "short_name" : "long_name"
+      ] || "";
 
     const streetNumber = getComponent("street_number");
     const route = getComponent("route");
@@ -35,7 +37,7 @@ const AddressSearch = ({ onSelect }) => {
       city: getComponent("locality"),
       neighborhood: getComponent("sublocality") || getComponent("neighborhood"),
       county: getComponent("administrative_area_level_2"),
-      state: getComponent("administrative_area_level_1"),
+      state: getComponent("administrative_area_level_1", true), // use short_name here
       ZIP: getComponent("postal_code"),
     };
   };
@@ -100,7 +102,7 @@ const AddressSearch = ({ onSelect }) => {
       },
     };
 
-    if (onSelect) onSelect(location);
+    if (onAddressSelect) onAddressSelect(location);
   };
 
   return (
