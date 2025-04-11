@@ -54,7 +54,6 @@ router.get("/", verifyToken, async (req, res) => {
   }
 });
 
-
 //---------------------------------------------------------------------------------
 
 // GET /api/properties/property/:id - Get a single property by ID
@@ -141,13 +140,17 @@ router.post("/property/add", verifyToken, isAdmin, async (req, res) => {
 });
 
 // Search for properties within a radius
-router.get('/radius', async (req, res) => {
+router.get("/radius", verifyToken, async (req, res) => {
   try {
     const { lat, lon, radius } = req.query;
-    
+
     // Validate inputs
     if (!lat || !lon || !radius) {
-      return res.status(400).json({ error: 'Missing parameters: lat, lon, and radius are required' });
+      return res
+        .status(400)
+        .json({
+          error: "Missing parameters: lat, lon, and radius are required",
+        });
     }
 
     // Convert to numbers
@@ -157,7 +160,11 @@ router.get('/radius', async (req, res) => {
 
     // Validate numeric values
     if (isNaN(latitude) || isNaN(longitude) || isNaN(radiusInMiles)) {
-      return res.status(400).json({ error: 'Invalid parameters: lat, lon, and radius must be numbers' });
+      return res
+        .status(400)
+        .json({
+          error: "Invalid parameters: lat, lon, and radius must be numbers",
+        });
     }
 
     // Perform geo search
@@ -167,17 +174,17 @@ router.get('/radius', async (req, res) => {
         $nearSphere: {
           $geometry: {
             type: "Point",
-            coordinates: [longitude, latitude] // MongoDB uses [longitude, latitude] format
+            coordinates: [longitude, latitude], // MongoDB uses [longitude, latitude] format
           },
-          $maxDistance: radiusInMiles * 1609.34 // Convert miles to meters
-        }
-      }
+          $maxDistance: radiusInMiles * 1609.34, // Convert miles to meters
+        },
+      },
     }).limit(20); // Limit to 20 results for performance
 
     res.json(properties);
   } catch (error) {
-    console.error('Error searching properties by radius:', error);
-    res.status(500).json({ error: 'Server error during radius search' });
+    console.error("Error searching properties by radius:", error);
+    res.status(500).json({ error: "Server error during radius search" });
   }
 });
 
