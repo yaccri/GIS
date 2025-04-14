@@ -27,3 +27,22 @@ export const parseCurrency = (value) => {
   const numericValue = value.replace(/[^0-9.]/g, "");
   return numericValue === "" ? "" : parseFloat(numericValue);
 };
+
+export const formatPriceForPin = (value) => {
+  const num =
+    typeof value === "string"
+      ? parseFloat(value.replace(/[^0-9.-]+/g, ""))
+      : value;
+
+  if (num == null || isNaN(num)) {
+    return "N/A";
+  }
+
+  if (num >= 1000000) {
+    return `$${(num / 1000000).toFixed(1)}M`;
+  }
+  if (num >= 1000) {
+    return `$${Math.round(num / 1000)}k`;
+  }
+  return `$${num}`; // For values less than 1000
+};
