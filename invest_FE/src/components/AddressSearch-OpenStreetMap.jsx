@@ -64,6 +64,7 @@ const AddressSearchInput = ({
 
   const handleSuggestionClick = (suggestion) => {
     // Use display_name which should be influenced by accept-language
+    // Keep the selected text in the input after selection
     setInputValue(suggestion.display_name);
     setSuggestions([]); // Hide suggestions list
     if (onLocationSelect) {
@@ -88,6 +89,13 @@ const AddressSearchInput = ({
     }
   };
 
+  const handleInputClick = () => {
+    // Clear the input value when the input field itself is clicked
+    setInputValue("");
+    // Also clear suggestions to provide a clean slate
+    setSuggestions([]);
+  };
+
   return (
     <div className="address-search-input-container">
       <input
@@ -96,6 +104,7 @@ const AddressSearchInput = ({
         placeholder={placeholder}
         value={inputValue}
         onChange={handleInputChange}
+        onClick={handleInputClick} // <-- Add the onClick handler here
         aria-label="Address Search Input"
       />
       {isLoading && <div className="address-search-loading">Loading...</div>}

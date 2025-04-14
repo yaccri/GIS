@@ -1,35 +1,54 @@
 // src/components/TopBar.js
 import React, { useContext, useState } from "react";
 import { UserContext } from "../context/UserContext";
+import { useMapContext } from "../context/MapContext"; // Import the hook
 import { Link } from "react-router-dom";
+import AddressSearchInput from "./AddressSearch-OpenStreetMap";
 import "./TopBar.css";
 import menuIcon from "../assets/images/account.svg";
 
+// Remove onLocationSelect from props
 const TopBar = () => {
   const { user, updateUser, updateToken } = useContext(UserContext);
+  const { selectMapLocation } = useMapContext(); // Get the function from context
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
+  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
   const handleSignOut = () => {
-    updateUser({ isLoggedIn: false }); // Update isLoggedIn to false
-    updateToken(null); // Remove the token
+    updateUser({ isLoggedIn: false });
+    updateToken(null);
+    setIsMenuOpen(false);
   };
-  const adminText = user.isAdmin ? "(Admin)" : ""; // Determine the text based on user type
+
+  // This function now directly calls the context function
+  const handleLocationSelectInternal = (location) => {
+    selectMapLocation(location); // Use the context function
+  };
+
   return (
     <div className="top-bar">
-      <div className="welcome-message">
-        {user.isLoggedIn && `Welcome ${user.fullName} ${adminText}`}
+      <div className="top-bar-search">
+        <AddressSearchInput
+          onLocationSelect={handleLocationSelectInternal} // Pass the internal handler
+          placeholder="Search US Address on Map..."
+        />
       </div>
-      <div className="top-bar-title">Invest with Confidence</div>
+
+      {/* ... rest of TopBar remains the same ... */}
       <div className="menu-container">
+        {user.isLoggedIn && (
+          <span className="user-name-display">
+            {user.fullName}
+            {user.isAdmin ? " (Admin)" : ""}
+          </span>
+        )}
         <button className="menu-button" onClick={toggleMenu}>
           <img src={menuIcon} alt="Menu" className="menu-icon" />
         </button>
         {isMenuOpen && (
           <ul className="menu-list">
+            {/* ... menu items remain the same ... */}
             <li>
               <Link to="/" onClick={toggleMenu}>
                 Home
@@ -47,7 +66,7 @@ const TopBar = () => {
                     Sign-In
                   </Link>
                 </li>
-                <li className="menu-separator"></li> {/* Separating line */}
+                <li className="menu-separator"></li>
               </>
             )}
             {user.isLoggedIn && (
@@ -59,15 +78,13 @@ const TopBar = () => {
                 </li>
                 <li>
                   <button
-                    onClick={() => {
-                      handleSignOut();
-                      toggleMenu();
-                    }}
+                    className="menu-signout-button"
+                    onClick={handleSignOut}
                   >
                     Sign-Out
                   </button>
                 </li>
-                <li className="menu-separator"></li> {/* Separating line */}
+                <li className="menu-separator"></li>
               </>
             )}
             <li>
@@ -81,5 +98,8 @@ const TopBar = () => {
     </div>
   );
 };
+
+// No need for defaultProps for onLocationSelect anymore
+// TopBar.defaultProps = { ... };
 
 export default TopBar;
