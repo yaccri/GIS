@@ -3,7 +3,7 @@ import React from "react";
 import { states } from "../utils/states";
 import { formatCurrencyForDisplay } from "../utils/currencyFormatter";
 import { format } from "date-fns"; // to format createdOn date
-import AddressSearch from "./GoogleAddressSearch"; // *** IMPORT AddressSearch ***
+import AddressSearch from "./AddressSearch-Google";
 
 // Options for property type
 const PROPERTY_TYPES = [

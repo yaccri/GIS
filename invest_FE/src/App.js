@@ -15,7 +15,8 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import NoPage from "./pages/NoPage";
 import Preferences from "./pages/Preferences";
 import MapComponent from "./pages/Map";
-import TestAddressSearchPage from "./pages/TestGoogleAddressSearchPage";
+import TestGoogleAddressSearch from "./pages/TestGoogleAddressSearch";
+import TestOpenStreetMapAddressSearch from "./pages/TestOpenStreetMapAddressSearch";
 
 function App() {
   return (
@@ -38,7 +39,14 @@ function App() {
                       <Link to="/about">About</Link>
                     </li>
                     <li>
-                      <Link to="/testAddress">Test Google Address Search</Link>
+                      <Link to="/testGoogleAddress">
+                        Test Google Address Search
+                      </Link>
+                    </li>
+                    <li>
+                      <Link to="/testOpenStreetMapAddress">
+                        Test OpenStreetMap Address Search
+                      </Link>
                     </li>
                     {/* {user.isAdmin && (
                         <li>
@@ -64,7 +72,18 @@ function App() {
               <Route path="/about" element={<About />} />
               <Route path="/login" element={<Login />} />
               <Route path="/subscribe" element={<Subscription />} />
-              <Route path="/testAddress" element={<TestAddressSearchPage />} />
+              <Route
+                path="/testAddress"
+                element={<TestGoogleAddressSearch />}
+              />
+              <Route
+                path="/testGoogleAddress"
+                element={<TestGoogleAddressSearch />}
+              />
+              <Route
+                path="/testOpenStreetMapAddress"
+                element={<TestOpenStreetMapAddressSearch />}
+              />
               {/* Protected Routes */}
               <Route element={<ProtectedRoute />}>
                 <Route path="/properties" element={<Properties />} />

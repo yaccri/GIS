@@ -1,8 +1,8 @@
-// src/pages/TestGoogleAddressSearchPage.jsx
+// src/pages/TestGoogleAddressSearch.jsx
 import React, { useState } from "react";
-import AddressSearch from "../components/GoogleAddressSearch";
+import AddressSearch from "../components/AddressSearch-Google";
 
-const TestAddressSearchPage = () => {
+const TestGoogleAddressSearch = () => {
   const [selectedLocation, setSelectedLocation] = useState(null);
 
   return (
@@ -19,4 +19,4 @@ const TestAddressSearchPage = () => {
   );
 };
 
-export default TestAddressSearchPage;
+export default TestGoogleAddressSearch;

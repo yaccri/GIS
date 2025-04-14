@@ -1,4 +1,4 @@
-// src/components/GoogleAddressSearch.jsx
+// src/components/AddressSearch-Google.jsx
 import React, { useState, useEffect, useRef } from "react";
 import { GOOGLE_MAPS_API_KEY } from "../utils/config";
 

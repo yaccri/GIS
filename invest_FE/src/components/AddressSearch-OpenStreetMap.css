@@ -1,0 +1,71 @@
+/* src/components/AddressSearch-OpenStreetMap.css */
+.address-search-input-container {
+  position: relative; /* Needed for absolute positioning of suggestions */
+  width: 100%; /* Or adjust as needed */
+  margin-bottom: 15px; /* Spacing below the component */
+}
+
+.address-search-box {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+  box-sizing: border-box; /* Include padding and border in the element's total width and height */
+}
+
+.address-search-box:focus {
+  border-color: #007bff;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.address-search-loading {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: #f8f9fa;
+  border: 1px solid #ccc;
+  border-top: none;
+  padding: 8px 12px;
+  font-style: italic;
+  color: #6c757d;
+  z-index: 1000;
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
+
+.address-suggestions-list {
+  position: absolute;
+  top: 100%; /* Position below the input */
+  left: 0;
+  right: 0;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-top: none; /* Avoid double border with input */
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 200px; /* Limit height and allow scrolling */
+  overflow-y: auto;
+  z-index: 1000; /* Ensure it appears above other content */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
+
+.address-suggestion-item {
+  padding: 10px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid #eee; /* Separator line */
+  font-size: 0.95rem;
+}
+
+.address-suggestion-item:last-child {
+  border-bottom: none;
+}
+
+.address-suggestion-item:hover {
+  background-color: #f0f0f0;
+}
