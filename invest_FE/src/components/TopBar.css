@@ -5,16 +5,105 @@
   color: #ffffff; /* White text for contrast */
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: space-between; /* Keeps search left, menu right */
   padding: 0 20px;
+  box-sizing: border-box; /* Add this for consistent padding behavior */
 }
 
+/* --- ADDED/MODIFIED STYLES for Search Input Area --- */
+.top-bar-search {
+  flex-grow: 1; /* Allow search container to take available horizontal space */
+  max-width: 500px; /* Optional: Limit width on very large screens */
+  margin-right: 20px; /* Add some space between search and menu */
+  position: relative; /* Crucial for positioning the suggestions dropdown */
+}
+
+/* Target the input box *inside* the top bar search container */
+/* Use the class from AddressSearch-OpenStreetMap.css */
+.top-bar-search .address-search-box {
+  width: 100%; /* Make input fill its container (.top-bar-search) */
+  padding: 8px 12px; /* Adjust padding for top bar height if needed */
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.9rem; /* Adjust font size if needed */
+  box-sizing: border-box;
+  color: #333; /* Set text color for input field to be dark */
+}
+.top-bar-search .address-search-box:focus {
+  border-color: #80bdff; /* Example focus color */
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25); /* Example focus shadow */
+}
+
+/* Target the suggestions list *inside* the top bar search container */
+/* Use the class from AddressSearch-OpenStreetMap.css */
+.top-bar-search .address-suggestions-list {
+  position: absolute;
+  top: 100%; /* Position below the input */
+  left: 0;
+  right: 0;
+  background-color: white; /* Keep white background for readability */
+  border: 1px solid #ccc;
+  border-top: none;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 250px; /* Adjust max height if needed */
+  overflow-y: auto;
+  z-index: 1001; /* Ensure it's above the top bar content but potentially below menu */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
+
+/* Target suggestion items *inside* the top bar search container */
+/* Use the class from AddressSearch-OpenStreetMap.css */
+.top-bar-search .address-suggestion-item {
+  padding: 8px 12px; /* Adjust padding */
+  cursor: pointer;
+  border-bottom: 1px solid #eee;
+  font-size: 0.9rem; /* Adjust font size */
+  color: #333333; /* <<< FIX: Explicitly set dark text color for suggestions */
+  white-space: nowrap; /* Prevent wrapping */
+  overflow: hidden; /* Hide overflow */
+  text-overflow: ellipsis; /* Add ellipsis for long text */
+  text-align: left;
+}
+.top-bar-search .address-suggestion-item:last-child {
+  border-bottom: none;
+}
+.top-bar-search .address-suggestion-item:hover {
+  background-color: #f0f0f0; /* Keep hover effect */
+}
+
+/* Target loading indicator *inside* the top bar search container */
+/* Use the class from AddressSearch-OpenStreetMap.css */
+.top-bar-search .address-search-loading {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: #f8f9fa;
+  border: 1px solid #ccc;
+  border-top: none;
+  padding: 8px 12px;
+  font-style: italic;
+  color: #555555; /* <<< FIX: Set visible text color */
+  z-index: 1001; /* Same level as suggestions */
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
+/* --- END ADDED/MODIFIED STYLES --- */
+
+/* --- Your Existing Styles (Mostly Unchanged) --- */
 .welcome-message {
+  /* Not used in current JS, but kept for reference */
   font-size: 26px;
   color: #ffffff;
 }
 
 .top-bar-title {
+  /* Not used in current JS, but kept for reference */
   font-size: 26px;
   color: #d4af37;
   font-weight: bold;
@@ -23,36 +112,52 @@
 /* Menu styles */
 .menu-container {
   position: relative;
+  display: flex; /* ADDED: To align name and button horizontally */
+  align-items: center; /* ADDED: To vertically center name and button */
 }
+
+/* --- ADDED: Style for the user name display --- */
+.user-name-display {
+  font-size: 0.875rem; /* H6 equivalent, adjust as needed */
+  font-weight: 500; /* Medium weight */
+  color: #ffffff; /* Inherit white from top-bar */
+  margin-right: 12px; /* Space between name and menu button */
+  white-space: nowrap; /* Prevent name wrapping */
+}
+/* --- END ADDED --- */
 
 .menu-button {
   background-color: transparent;
   color: #ffffff;
   border: none;
   cursor: pointer;
-  font-size: 16px;
-  padding: 10px;
+  /* font-size: 16px; */ /* Font size likely not needed for icon button */
+  /* padding: 10px; */ /* Padding might make icon alignment tricky, remove or adjust */
+  padding: 0; /* Let icon size dictate button size */
+  display: flex; /* Ensure icon is centered if needed */
+  align-items: center; /* Ensure icon is centered */
+  justify-content: center; /* Ensure icon is centered */
 }
 
-/* src/components/TopBar.css */
 .menu-list {
   position: absolute;
   top: 100%;
-  right: 10px;
+  right: 0; /* Align dropdown to the right edge of menu-container */
   background-color: #6b7280;
   list-style: none;
   padding: 0;
-  margin: 0;
+  margin: 5px 0 0 0; /* Add a small gap below the top bar */
   border-radius: 4px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  z-index: 10;
+  z-index: 1002; /* Ensure menu is above search suggestions */
   min-width: 200px;
   border: 1px solid #e5e7eb;
 }
 
 .menu-list li {
-  padding: 10px 20px;
-  text-align: right;
+  /* padding: 10px 20px; */ /* Remove padding here */
+  /* text-align: right; */ /* Remove text-align here */
+  padding: 0; /* Reset padding */
 }
 
 .menu-list li a,
@@ -61,10 +166,12 @@
   text-decoration: none;
   display: block;
   width: 100%;
-  text-align: right;
+  text-align: left;
   background-color: transparent;
   border: none;
   cursor: pointer;
+  padding: 10px 20px; /* Apply padding here */
+  font-size: 0.9rem; /* Optional: Adjust font size */
 }
 
 .menu-list li:hover {
@@ -75,10 +182,48 @@
 .menu-separator {
   border-top: 1px solid #e5e7eb;
   margin: 5px 0;
+  height: 0; /* Override potential height */
+  line-height: 0; /* Override potential line-height */
 }
+
 .menu-icon {
-  width: 50px;
-  height: 50px;
+  width: 40px; /* Adjust size as needed */
+  height: 40px; /* Adjust size as needed */
   background-color: #ffffff;
   border-radius: 50%; /* make it circular */
+  display: block; /* Ensure it behaves like a block element */
 }
+
+/* --- ADDED: Responsive adjustments --- */
+@media (max-width: 768px) {
+  .top-bar-search {
+    max-width: 300px; /* Adjust max width for smaller screens */
+    margin-right: 10px;
+  }
+  .user-name-display {
+    display: none; /* Hide name on smaller screens */
+  }
+  .top-bar {
+    padding: 0 10px; /* Reduce padding */
+  }
+  .menu-icon {
+    width: 35px;
+    height: 35px;
+  }
+}
+
+@media (max-width: 480px) {
+  .top-bar-search {
+    flex-grow: 1;
+    max-width: none; /* Allow it to take most space */
+    margin-right: 5px;
+  }
+  .top-bar-search .address-search-box {
+    font-size: 0.85rem;
+  }
+  .menu-icon {
+    width: 30px;
+    height: 30px;
+  }
+}
+/* --- END ADDED --- */
