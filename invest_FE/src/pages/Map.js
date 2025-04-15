@@ -34,6 +34,7 @@ import MapSidebar from "../components/map/MapSidebar";
 // --- Import Custom Hooks ---
 import useRadiusSearch from "../hooks/useRadiusSearch";
 import useDrawnShapes from "../hooks/useDrawnShapes";
+import useActiveShapeDetails from "../hooks/useActiveShapeDetails"; // <-- Import the new hook
 
 // --- Import Custom Components ---
 import AdjustZoomOnRadiusChange from "../components/map/AdjustZoomOnRadiusChange";
@@ -92,12 +93,9 @@ const ChangeView = ({ center, zoom }) => {
       console.log(
         `Flying map to: [${center.lat}, ${center.lon}] with zoom ${targetZoom}`
       );
-
-      // *** MODIFICATION: Add duration option to flyTo ***
       map.flyTo([center.lat, center.lon], targetZoom, {
         duration: 0.75, // Duration in seconds
       });
-      // *** END MODIFICATION ***
     }
   }, [center, zoom, map]); // Keep dependencies
   return null;
@@ -221,8 +219,8 @@ const MapComponent = () => {
   const [selectedLocationDetails, setSelectedLocationDetails] = useState(null);
   const [initialCenter] = useState([40.7128, -74.006]);
   const [initialZoom] = useState(13);
-  // Removed selectedZoom state as fitBounds will manage zoom on radius change
-  const [activePolygon, setActivePolygon] = useState(null);
+  // Removed activePolygon state - now managed by useActiveShapeDetails hook
+  // const [activePolygon, setActivePolygon] = useState(null);
   const [searchRadius, setSearchRadius] = useState(0);
   const [clickedNeighborhood, setClickedNeighborhood] = useState(null);
   const mapRef = useRef();
@@ -253,6 +251,13 @@ const MapComponent = () => {
     addShape: handlePolygonCreated,
     deleteShape: handleDeletePolygon,
   } = useDrawnShapes();
+
+  // Instantiate the new hook for active shape details
+  const {
+    activeShape: activePolygon, // Rename back for consistency
+    showDetails: showPolygonCoordinates, // Rename back
+    hideDetails: hideActivePolygonDetails, // Function to clear the active polygon
+  } = useActiveShapeDetails();
 
   // --- Effects ---
   useEffect(() => {
@@ -342,9 +347,11 @@ const MapComponent = () => {
     [fetchLocationDetailsAndNeighborhood]
   );
 
-  const showPolygonCoordinates = (polygon) => {
-    setActivePolygon(polygon);
-  };
+  // Removed the old showPolygonCoordinates handler function
+  // const showPolygonCoordinates = (polygon) => {
+  //   setActivePolygon(polygon);
+  // };
+
   const formatArea = (area) => {
     if (!area) return "N/A";
     if (area < 10000) return `${Math.round(area)} m²`;
@@ -415,8 +422,7 @@ const MapComponent = () => {
             ref={mapRef}
           >
             {/* --- Base Layer & View Control --- */}
-            {/* ChangeView handles flying to center on selection, NO explicit zoom */}
-            <ChangeView center={selectedMapLocation} /* zoom prop removed */ />
+            <ChangeView center={selectedMapLocation} />
             <TileLayer
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -424,8 +430,8 @@ const MapComponent = () => {
 
             {/* --- Component to handle zoom adjustment on radius change --- */}
             <AdjustZoomOnRadiusChange
-              centerCoords={radiusCircleCenter} // Pass [lat, lng]
-              radius={searchRadius} // Pass radius in miles
+              centerCoords={radiusCircleCenter}
+              radius={searchRadius}
             />
 
             {/* --- Dynamic Map Layers --- */}
@@ -552,12 +558,12 @@ const MapComponent = () => {
           formatCurrencyForDisplay={formatCurrencyForDisplay}
           drawnItems={drawnItems}
           handleDeletePolygon={handleDeletePolygon}
-          showPolygonCoordinates={showPolygonCoordinates}
+          showPolygonCoordinates={showPolygonCoordinates} // Pass function from hook
           formatArea={formatArea}
           exportToGeoJSON={exportToGeoJSON}
           searchPropertiesInPolygon={searchPropertiesInPolygon}
-          activePolygon={activePolygon}
-          setActivePolygon={setActivePolygon}
+          activePolygon={activePolygon} // Pass state from hook
+          setActivePolygon={hideActivePolygonDetails} // Pass function from hook to clear active polygon
         />
       </div>
     </div>
