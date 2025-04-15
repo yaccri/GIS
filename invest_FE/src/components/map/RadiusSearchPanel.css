@@ -1,0 +1,125 @@
+/* src/components/map/RadiusSearchPanel.css */
+.radius-search-panel {
+  padding: 10px;
+  border-bottom: 1px solid #eee; /* Separator */
+  margin-bottom: 15px;
+}
+
+.radius-search-panel h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 1.1em;
+  color: #333;
+}
+
+.radius-control {
+  margin-bottom: 15px;
+}
+
+.radius-control strong {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.radio-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px; /* Spacing between radio buttons */
+}
+
+.radio-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 5px 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #f8f8f8;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+  font-size: 0.9em;
+}
+
+.radio-label:hover {
+  background-color: #eee;
+}
+
+.radio-label input[type="radio"] {
+  margin-right: 5px;
+  accent-color: #007bff; /* Style the radio button itself */
+}
+
+.radio-label input[type="radio"]:checked + span {
+  font-weight: bold;
+}
+
+.loading-indicator p {
+  font-style: italic;
+  color: #555;
+}
+
+.radius-results h3 {
+  margin-bottom: 5px; /* Less space above list */
+}
+
+.property-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 250px; /* Limit height and make scrollable */
+  overflow-y: auto;
+  border-top: 1px solid #eee; /* Separator above list */
+  padding-top: 10px;
+}
+
+.property-item {
+  padding: 8px 5px;
+  border-bottom: 1px solid #eee;
+  font-size: 0.9em;
+}
+
+.property-item:last-child {
+  border-bottom: none;
+}
+
+.property-title {
+  font-weight: bold;
+  color: #0056b3;
+}
+
+.property-price {
+  color: #28a745; /* Green for price */
+  font-weight: 500;
+}
+
+.property-location,
+.property-id {
+  font-size: 0.85em;
+  color: #666;
+}
+
+.no-results-message p {
+  color: #777;
+  margin-top: 10px;
+}
+
+.save-search-button {
+  margin-top: 15px;
+  padding: 8px 12px;
+  background-color: #28a745; /* Green */
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: background-color 0.2s ease;
+}
+
+.save-search-button:hover {
+  background-color: #218838;
+}
+
+.save-search-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
