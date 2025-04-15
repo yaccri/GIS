@@ -33,17 +33,12 @@ function AdjustZoomOnRadiusChange({ centerCoords, radius }) {
             // 1. Calculate the zoom level that would perfectly fit the bounds
             const zoomLevelThatFits = map.getBoundsZoom(bounds);
 
-            // --- ADJUSTMENT: Zoom out slightly ---
             // Subtract 1 zoom level from the calculated level.
-            // This provides a more consistent visual "zoom out" across different radius sizes
-            // compared to fixed pixel padding which has varying geographic meaning at different zooms.
-            // Ensure the target zoom doesn't go below the map's minimum zoom level.
-            const zoomAdjustment = 1; // <--- TRY ADJUSTING THIS VALUE (e.g., 1, 1.5, 2) if needed
+            const zoomAdjustment = 1;
             const targetZoom = Math.max(
               map.getMinZoom() || 1,
               zoomLevelThatFits - zoomAdjustment
             );
-            // --- END ADJUSTMENT ---
 
             console.log(
               `Adjusting zoom for radius ${radius}mi. Calculated fit zoom: ${zoomLevelThatFits}, Target zoom: ${targetZoom}`

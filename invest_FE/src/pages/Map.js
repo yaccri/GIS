@@ -10,12 +10,12 @@ import React, {
 import {
   MapContainer,
   TileLayer,
-  Marker, // Keep Marker import
-  Popup, // Keep Popup import
+  Marker, // Keep Marker import (used for property markers)
+  Popup, // Keep Popup import (used for property markers)
   useMap,
   Circle,
   Polygon,
-  GeoJSON,
+  GeoJSON, // Keep GeoJSON import (used by NeighborhoodLayer internally, but good practice to keep if other GeoJSON might be added)
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
@@ -39,12 +39,13 @@ import useActiveShapeDetails from "../hooks/useActiveShapeDetails";
 // --- Import Custom Components ---
 import AdjustZoomOnRadiusChange from "../components/map/AdjustZoomOnRadiusChange";
 import SelectedLocationMarker from "../components/map/layers/SelectedLocationMarker";
+import NeighborhoodLayer from "../components/map/layers/NeighborhoodLayer"; // Import the new component
 
 // --- Import Utilities ---
 import {
   createPriceIcon,
-  createNeighborhoodLabelIcon,
-} from "../components/map/utils/mapIconUtils"; // Import the icon creators
+  // createNeighborhoodLabelIcon is now used within NeighborhoodLayer
+} from "../components/map/utils/mapIconUtils";
 
 // --- Fix for default marker icon ---
 delete L.Icon.Default.prototype._getIconUrl;
@@ -53,8 +54,6 @@ L.Icon.Default.mergeOptions({
   iconUrl: require("leaflet/dist/images/marker-icon.png"),
   shadowUrl: require("leaflet/dist/images/marker-shadow.png"),
 });
-
-// --- Helper functions (Icon creators moved to mapIconUtils.js) ---
 
 // --- Placeholder function (remains here for now) ---
 function searchPropertiesInPolygon(polygon) {
@@ -209,7 +208,7 @@ const MapComponent = () => {
   const [initialCenter] = useState([40.7128, -74.006]); // Default: New York City [lat, lng]
   const [initialZoom] = useState(13);
   const [searchRadius, setSearchRadius] = useState(0); // In miles
-  const [clickedNeighborhood, setClickedNeighborhood] = useState(null);
+  const [clickedNeighborhood, setClickedNeighborhood] = useState(null); // State remains here
   const mapRef = useRef();
 
   // --- Context & Hooks ---
@@ -255,6 +254,7 @@ const MapComponent = () => {
   }, [radiusSearchError]);
 
   // --- Core Functions ---
+  // fetchLocationDetailsAndNeighborhood remains here as it sets the state
   const fetchLocationDetailsAndNeighborhood = useCallback(async (lat, lng) => {
     setClickedNeighborhood(null); // Reset neighborhood
     setSelectedLocationDetails(null); // Reset details immediately
@@ -421,20 +421,8 @@ const MapComponent = () => {
   };
 
   // --- Calculations for Rendering ---
-  // Calculate neighborhood center for label placement
-  let neighborhoodCenter = null;
-  if (clickedNeighborhood?.geometry) {
-    try {
-      // Use Leaflet's GeoJSON layer to calculate bounds and center
-      const geoJsonLayer = L.geoJSON(clickedNeighborhood.geometry);
-      const bounds = geoJsonLayer.getBounds();
-      if (bounds.isValid()) {
-        neighborhoodCenter = bounds.getCenter(); // Returns Leaflet LatLng object
-      }
-    } catch (e) {
-      console.error("Could not calculate neighborhood center:", e);
-    }
-  }
+  // Calculate neighborhood center for label placement - MOVED TO NeighborhoodLayer.js
+  // let neighborhoodCenter = null; ... removed ...
 
   // Center for the radius circle [lat, lng] as expected by Leaflet Circle component
   const radiusCircleCenter = useMemo(() => {
@@ -474,32 +462,9 @@ const MapComponent = () => {
             />
 
             {/* --- Dynamic Map Layers --- */}
-            {/* Clicked Neighborhood Polygon */}
-            {clickedNeighborhood?.geometry && (
-              <GeoJSON
-                key={clickedNeighborhood._id || "neighborhood-poly"} // Use unique ID if available
-                data={clickedNeighborhood.geometry} // GeoJSON geometry object
-                style={{
-                  color: "#ff7800", // Orange
-                  weight: 2,
-                  opacity: 0.8,
-                  fillOpacity: 0.15,
-                }}
-              />
-            )}
-            {/* Clicked Neighborhood Label */}
-            {clickedNeighborhood && neighborhoodCenter && (
-              <Marker
-                key={
-                  clickedNeighborhood._id
-                    ? `${clickedNeighborhood._id}-label`
-                    : "neighborhood-label"
-                }
-                position={neighborhoodCenter} // Expects Leaflet LatLng or [lat, lng]
-                icon={createNeighborhoodLabelIcon(clickedNeighborhood.name)}
-                interactive={false} // Label should not be clickable itself
-              />
-            )}
+
+            {/* Clicked Neighborhood Layer (using dedicated component) */}
+            <NeighborhoodLayer clickedNeighborhood={clickedNeighborhood} />
 
             {/* Selected Location Marker (using dedicated component) */}
             <SelectedLocationMarker locationDetails={selectedLocationDetails} />
