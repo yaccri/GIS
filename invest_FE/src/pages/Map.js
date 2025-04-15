@@ -32,6 +32,8 @@ import NeighborhoodLayer from "../components/map/layers/NeighborhoodLayer";
 import RadiusCircleLayer from "../components/map/layers/RadiusCircleLayer";
 import DrawnShapesLayer from "../components/map/layers/DrawnShapesLayer";
 import PropertyMarkersLayer from "../components/map/layers/PropertyMarkersLayer";
+import { BASE_URL } from "../utils/config";
+import { MAP_URL } from "../utils/config";
 
 // --- Import Utilities ---
 // ... (No changes needed here)
@@ -217,7 +219,7 @@ const MapComponent = () => {
       setIsFetchingNeighborhoodProps(true); // Set loading state
       console.log(`Fetching properties for neighborhood ID: ${neighborhoodId}`);
       try {
-        const url = `http://localhost:4000/api/properties/in-neighborhood?neighborhoodId=${neighborhoodId}`;
+        const url = `${BASE_URL}/api/properties/in-neighborhood?neighborhoodId=${neighborhoodId}`;
         const response = await fetch(url, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -265,7 +267,7 @@ const MapComponent = () => {
 
       // Fetch Reverse Geocoding (Nominatim)
       try {
-        const nominatimUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1&accept-language=en`;
+        const nominatimUrl = `${MAP_URL}/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1&accept-language=en`;
         const response = await fetch(nominatimUrl);
         if (!response.ok)
           throw new Error(`Nominatim fetch failed: ${response.statusText}`);
@@ -300,7 +302,7 @@ const MapComponent = () => {
 
       // Fetch Neighborhood Data from backend AND trigger property fetch if found
       try {
-        const neighborhoodUrl = `http://localhost:4000/api/neighborhoods/by-coords?lat=${lat}&lon=${lng}`;
+        const neighborhoodUrl = `${BASE_URL}/api/neighborhoods/by-coords?lat=${lat}&lon=${lng}`;
         const neighborhoodResponse = await fetch(neighborhoodUrl);
 
         if (neighborhoodResponse.ok) {

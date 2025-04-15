@@ -1,6 +1,7 @@
 // src/components/AddressSearch-OpenStreetMap.jsx
 import React, { useState, useRef, useEffect } from "react";
 import "./AddressSearch-OpenStreetMap.css";
+import { MAP_URL } from "../utils/config";
 
 const AddressSearchInput = ({
   onLocationSelect,
@@ -29,7 +30,7 @@ const AddressSearchInput = ({
     try {
       // Using Nominatim (OpenStreetMap) API
       // *** Add accept-language=en parameter ***
-      const apiUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+      const apiUrl = `${MAP_URL}/search?format=json&q=${encodeURIComponent(
         query + ", United States" // Bias towards US results
       )}&limit=5&countrycodes=us&addressdetails=1&accept-language=en`; // Request English results
 
