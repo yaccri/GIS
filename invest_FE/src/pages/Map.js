@@ -10,12 +10,12 @@ import React, {
 import {
   MapContainer,
   TileLayer,
-  Marker, // Keep Marker import (used for property markers)
-  Popup, // Keep Popup import (used for property markers)
+  // Marker, // No longer needed directly here
+  // Popup, // No longer needed directly here
   useMap,
-  Circle,
-  Polygon,
-  GeoJSON, // Keep GeoJSON import (used by NeighborhoodLayer internally, but good practice to keep if other GeoJSON might be added)
+  // Circle, // No longer needed directly here
+  // Polygon, // No longer needed directly here
+  GeoJSON,
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
@@ -39,15 +39,18 @@ import useActiveShapeDetails from "../hooks/useActiveShapeDetails";
 // --- Import Custom Components ---
 import AdjustZoomOnRadiusChange from "../components/map/AdjustZoomOnRadiusChange";
 import SelectedLocationMarker from "../components/map/layers/SelectedLocationMarker";
-import NeighborhoodLayer from "../components/map/layers/NeighborhoodLayer"; // Import the new component
+import NeighborhoodLayer from "../components/map/layers/NeighborhoodLayer";
+import RadiusCircleLayer from "../components/map/layers/RadiusCircleLayer";
+import DrawnShapesLayer from "../components/map/layers/DrawnShapesLayer";
+import PropertyMarkersLayer from "../components/map/layers/PropertyMarkersLayer"; // Import the new layer
 
 // --- Import Utilities ---
-import {
-  createPriceIcon,
-  // createNeighborhoodLabelIcon is now used within NeighborhoodLayer
-} from "../components/map/utils/mapIconUtils";
+// import { createPriceIcon } from '../components/map/utils/mapIconUtils'; // No longer needed here
+// createNeighborhoodLabelIcon is used within NeighborhoodLayer
 
 // --- Fix for default marker icon ---
+// This setup can potentially be moved to a central initialization file or App.js
+// if needed elsewhere, but keep it here for now as it affects Leaflet globally.
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: require("leaflet/dist/images/marker-icon-2x.png"),
@@ -148,23 +151,6 @@ function DrawControl({ onPolygonCreated }) {
   return null;
 }
 
-function RadiusCircle({ center, radius }) {
-  if (!center || !radius) return null;
-  const radiusInMeters = radius * 1609.34; // Convert miles to meters
-  return (
-    <Circle
-      center={center} // Expects [lat, lng]
-      radius={radiusInMeters}
-      pathOptions={{
-        color: "#FF4500", // OrangeRed
-        fillColor: "#FF4500",
-        fillOpacity: 0.1,
-        weight: 2,
-      }}
-    />
-  );
-}
-
 function MapClickHandler({ onMapClick }) {
   const map = useMap();
   useEffect(() => {
@@ -178,27 +164,6 @@ function MapClickHandler({ onMapClick }) {
     };
   }, [map, onMapClick]);
   return null;
-}
-
-function DisplayPolygons({ polygons }) {
-  return (
-    <>
-      {polygons.map((polygon) => {
-        // Assuming polygon.coordinates is [[lat, lng], ...]
-        const latLngs = polygon.coordinates.map((coord) => [
-          coord[0],
-          coord[1],
-        ]);
-        return (
-          <Polygon
-            key={polygon.id}
-            positions={latLngs} // Leaflet Polygon expects [[lat, lng], ...]
-            pathOptions={{ color: "#3388ff", weight: 3, fillOpacity: 0.2 }}
-          />
-        );
-      })}
-    </>
-  );
 }
 
 // --- Main Map Component ---
@@ -228,21 +193,21 @@ const MapComponent = () => {
   }, [selectedLocationDetails]);
 
   const {
-    results: radiusSearchResults,
+    results: radiusSearchResults, // This is the array of property results
     isLoading: isSearching,
     error: radiusSearchError,
   } = useRadiusSearch(centerCoordsForSearch, searchRadius, token);
 
   const {
-    shapes: drawnItems,
-    addShape: handlePolygonCreated, // Renamed for clarity from addDrawnItem
-    deleteShape: handleDeletePolygon, // Renamed for clarity from deleteDrawnItem
+    shapes: drawnItems, // This is the array of drawn shapes
+    addShape: handlePolygonCreated,
+    deleteShape: handleDeletePolygon,
   } = useDrawnShapes();
 
   const {
-    activeShape: activePolygon, // Renamed for clarity from activeDrawnItem
-    showDetails: showPolygonCoordinates, // Renamed for clarity
-    hideDetails: hideActivePolygonDetails, // Renamed for clarity
+    activeShape: activePolygon,
+    showDetails: showPolygonCoordinates,
+    hideDetails: hideActivePolygonDetails,
   } = useActiveShapeDetails();
 
   // --- Effects ---
@@ -421,9 +386,6 @@ const MapComponent = () => {
   };
 
   // --- Calculations for Rendering ---
-  // Calculate neighborhood center for label placement - MOVED TO NeighborhoodLayer.js
-  // let neighborhoodCenter = null; ... removed ...
-
   // Center for the radius circle [lat, lng] as expected by Leaflet Circle component
   const radiusCircleCenter = useMemo(() => {
     return selectedLocationDetails?.geometry?.coordinates
@@ -463,82 +425,29 @@ const MapComponent = () => {
 
             {/* --- Dynamic Map Layers --- */}
 
-            {/* Clicked Neighborhood Layer (using dedicated component) */}
+            {/* Clicked Neighborhood Layer */}
             <NeighborhoodLayer clickedNeighborhood={clickedNeighborhood} />
 
-            {/* Selected Location Marker (using dedicated component) */}
+            {/* Selected Location Marker */}
             <SelectedLocationMarker locationDetails={selectedLocationDetails} />
 
-            {/* Radius Search Circle */}
-            {radiusCircleCenter && searchRadius > 0 && (
-              <RadiusCircle center={radiusCircleCenter} radius={searchRadius} />
+            {/* Radius Search Circle Layer */}
+            <RadiusCircleLayer
+              centerCoords={radiusCircleCenter} // Pass [lat, lng]
+              radiusInMiles={searchRadius} // Pass radius in miles
+            />
+
+            {/* Drawn Shapes Layer */}
+            <DrawnShapesLayer drawnShapes={drawnItems} />
+
+            {/* Property Markers Layer (using dedicated component) */}
+            {/* Conditionally render based on loading state and results */}
+            {!isSearching && radiusSearchResults.length > 0 && (
+              <PropertyMarkersLayer
+                properties={radiusSearchResults}
+                formatCurrencyForDisplay={formatCurrencyForDisplay} // Pass the formatting function
+              />
             )}
-
-            {/* Drawn Polygons/Rectangles */}
-            <DisplayPolygons polygons={drawnItems} />
-
-            {/* Property Markers from Radius Search */}
-            {!isSearching &&
-              radiusSearchResults.length > 0 &&
-              radiusSearchResults.map((property) => {
-                // Validate location data
-                if (
-                  property.location?.type === "Point" &&
-                  Array.isArray(property.location.coordinates) &&
-                  property.location.coordinates.length === 2
-                ) {
-                  const lon = property.location.coordinates[0];
-                  const lat = property.location.coordinates[1];
-                  const propertyId =
-                    property.propertyID || property._id || `prop-${lat}-${lon}`; // Ensure a unique key
-
-                  // Ensure lat/lon are valid numbers before rendering
-                  if (
-                    typeof lat !== "number" ||
-                    typeof lon !== "number" ||
-                    isNaN(lat) ||
-                    isNaN(lon)
-                  ) {
-                    console.warn(
-                      "Skipping property with invalid coordinates:",
-                      property
-                    );
-                    return null;
-                  }
-
-                  return (
-                    <Marker
-                      key={propertyId}
-                      position={[lat, lon]} // Leaflet Marker expects [lat, lng]
-                      icon={createPriceIcon(property.price)} // Use imported icon creator
-                    >
-                      <Popup>
-                        <div className="popup-title">
-                          {property.address ||
-                            `Property ID: ${property.propertyID || "N/A"}`}
-                        </div>
-                        <div className="popup-details">
-                          <p>ID: {property.propertyID || "N/A"}</p>
-                          <p>
-                            Price: {formatCurrencyForDisplay(property.price)}
-                          </p>
-                          <p>Type: {property.type || "N/A"}</p>
-                          <p>
-                            Beds: {property.beds ?? "N/A"} | Baths:{" "}
-                            {property.baths ?? "N/A"}
-                          </p>
-                          <p>
-                            Size:{" "}
-                            {property.size ? `${property.size} sqft` : "N/A"}
-                          </p>
-                          <p>Year: {property.yearBuilt || "N/A"}</p>
-                        </div>
-                      </Popup>
-                    </Marker>
-                  );
-                }
-                return null; // Skip properties without valid Point location
-              })}
 
             {/* --- Map Interaction Controls --- */}
             <DrawControl onPolygonCreated={handlePolygonCreated} />
@@ -549,9 +458,9 @@ const MapComponent = () => {
         <div className="map-controls-overlay">
           {selectedLocationDetails && ( // Only show radius options if a location is selected
             <div className="radius-control">
-              <strong>Search Radius (Miles):</strong>
+              <strong>Search Radius:</strong>
               <div className="radio-group">
-                {[0, 0.5, 1, 3, 5, 10].map(
+                {[0, 0.5, 1, 3, 5, 10, 20, 50].map(
                   (
                     value // Adjusted radius options
                   ) => (
@@ -579,14 +488,14 @@ const MapComponent = () => {
           radiusSearchResults={radiusSearchResults}
           searchRadius={searchRadius}
           selectedLocationDetails={selectedLocationDetails}
-          formatCurrencyForDisplay={formatCurrencyForDisplay}
-          drawnItems={drawnItems}
-          handleDeletePolygon={handleDeletePolygon}
-          showPolygonCoordinates={showPolygonCoordinates}
+          formatCurrencyForDisplay={formatCurrencyForDisplay} // Pass formatter to sidebar too
+          drawnItems={drawnItems} // Pass drawnItems to sidebar
+          handleDeletePolygon={handleDeletePolygon} // Pass delete handler
+          showPolygonCoordinates={showPolygonCoordinates} // Pass show details handler
           formatArea={formatArea} // Pass formatting function
-          exportToGeoJSON={exportToGeoJSON}
+          exportToGeoJSON={exportToGeoJSON} // Pass export handler
           searchPropertiesInPolygon={searchPropertiesInPolygon} // Pass placeholder function
-          activePolygon={activePolygon}
+          activePolygon={activePolygon} // Pass active polygon state
           setActivePolygon={hideActivePolygonDetails} // Pass function to clear active polygon
         />
       </div>
