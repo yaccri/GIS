@@ -6,6 +6,7 @@ import PropertyForm from "./PropertyForm";
 import PropertySearch from "../components/PropertySearch";
 import { UserContext } from "../context/UserContext";
 import { formatCurrencyForDisplay } from "../utils/currencyFormatter";
+import { BASE_URL } from "../utils/config";
 
 const Properties = () => {
   const [properties, setProperties] = useState([]);
@@ -46,7 +47,7 @@ const Properties = () => {
           ? `${queryString}&${fullQueryString}`
           : fullQueryString;
         console.log("Fetching properties with query:", finalQueryString);
-        const url = `http://localhost:4000/api/properties?${finalQueryString}`;
+        const url = `${BASE_URL}/api/properties?${finalQueryString}`;
         const response = await fetch(url, {
           headers: {
             Authorization: `Bearer ${user.token}`,
@@ -115,7 +116,7 @@ const Properties = () => {
     if (criteria.state) queryParams.state = criteria.state;
     if (criteria.type) queryParams.type = criteria.type;
 
-    const url = `http://localhost:4000/api/properties`;
+    const url = `${BASE_URL}/api/properties`;
     console.log("Search Request URL:", url);
     fetchProperties(queryParams);
     setCurrentPage(1);
