@@ -7,28 +7,17 @@ import React, {
   useCallback,
   useMemo,
 } from "react";
-import {
-  MapContainer,
-  TileLayer,
-  // Marker, // No longer needed directly here
-  // Popup, // No longer needed directly here
-  useMap,
-  // Circle, // No longer needed directly here
-  // Polygon, // No longer needed directly here
-  GeoJSON,
-} from "react-leaflet";
+import { MapContainer, TileLayer, useMap, GeoJSON } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import "leaflet-draw";
 import "leaflet-draw/dist/leaflet.draw.css";
 import "leaflet-geometryutil";
-import "./Map.css";
+import "./Map.css"; // Ensure this contains the .map-controls-overlay styles
 import { UserContext } from "../context/UserContext";
 import { useMapContext } from "../context/MapContext";
-import {
-  formatCurrencyForDisplay,
-  // formatPriceForPin is now used within mapIconUtils
-} from "../utils/currencyFormatter";
+import { formatCurrencyForDisplay } from "../utils/currencyFormatter";
+// Correct import path for MapSidebar
 import MapSidebar from "../components/map/MapSidebar";
 
 // --- Import Custom Hooks ---
@@ -42,15 +31,12 @@ import SelectedLocationMarker from "../components/map/layers/SelectedLocationMar
 import NeighborhoodLayer from "../components/map/layers/NeighborhoodLayer";
 import RadiusCircleLayer from "../components/map/layers/RadiusCircleLayer";
 import DrawnShapesLayer from "../components/map/layers/DrawnShapesLayer";
-import PropertyMarkersLayer from "../components/map/layers/PropertyMarkersLayer"; // Import the new layer
+import PropertyMarkersLayer from "../components/map/layers/PropertyMarkersLayer";
 
 // --- Import Utilities ---
-// import { createPriceIcon } from '../components/map/utils/mapIconUtils'; // No longer needed here
-// createNeighborhoodLabelIcon is used within NeighborhoodLayer
+// ... (No changes needed here)
 
 // --- Fix for default marker icon ---
-// This setup can potentially be moved to a central initialization file or App.js
-// if needed elsewhere, but keep it here for now as it affects Leaflet globally.
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: require("leaflet/dist/images/marker-icon-2x.png"),
@@ -115,16 +101,14 @@ function DrawControl({ onPolygonCreated }) {
       const layer = e.layer;
       if (onPolygonCreated) {
         const latLngs = layer.getLatLngs()[0];
-        // Use Leaflet GeometryUtil for area calculation
         const area = L.GeometryUtil.geodesicArea(latLngs);
         const center = layer.getBounds().getCenter();
-        const coordinates = latLngs.map((point) => [point.lat, point.lng]); // Keep as [lat, lng] for internal use if preferred
+        const coordinates = latLngs.map((point) => [point.lat, point.lng]);
 
-        // Prepare GeoJSON geometry (correct format [lng, lat])
         const geoJsonCoords = [
-          coordinates.map((coord) => [coord[1], coord[0]]), // Convert to [lng, lat]
+          coordinates.map((coord) => [coord[1], coord[0]]),
         ];
-        geoJsonCoords[0].push(geoJsonCoords[0][0]); // Close the ring
+        geoJsonCoords[0].push(geoJsonCoords[0][0]);
 
         const geoJsonGeometry = { type: "Polygon", coordinates: geoJsonCoords };
         const featureId = L.Util.stamp(layer);
@@ -132,13 +116,13 @@ function DrawControl({ onPolygonCreated }) {
         onPolygonCreated({
           id: featureId,
           type: e.layerType,
-          coordinates: coordinates, // Store original [lat, lng] if needed elsewhere
+          coordinates: coordinates,
           center: center,
-          area: area, // Store calculated area
+          area: area,
           geoJSON: {
             type: "Feature",
             geometry: geoJsonGeometry,
-            properties: { id: featureId, area_sqm: area }, // Add properties as needed
+            properties: { id: featureId, area_sqm: area },
           },
         });
       }
@@ -156,7 +140,7 @@ function MapClickHandler({ onMapClick }) {
   useEffect(() => {
     if (!map) return;
     const handleClick = (e) => {
-      onMapClick(e.latlng); // e.latlng is a Leaflet LatLng object
+      onMapClick(e.latlng);
     };
     map.on("click", handleClick);
     return () => {
@@ -170,18 +154,22 @@ function MapClickHandler({ onMapClick }) {
 const MapComponent = () => {
   // --- State Variables ---
   const [selectedLocationDetails, setSelectedLocationDetails] = useState(null);
-  const [initialCenter] = useState([40.7128, -74.006]); // Default: New York City [lat, lng]
+  const [initialCenter] = useState([40.7128, -74.006]);
   const [initialZoom] = useState(13);
-  const [searchRadius, setSearchRadius] = useState(0); // In miles
-  const [clickedNeighborhood, setClickedNeighborhood] = useState(null); // State remains here
+  const [searchRadius, setSearchRadius] = useState(0); // Controls radius search AND circle display
+  const [clickedNeighborhood, setClickedNeighborhood] = useState(null);
+  const [neighborhoodProperties, setNeighborhoodProperties] = useState([]); // State for neighborhood properties
+  // Add loading state specific to neighborhood properties fetch? (Optional enhancement)
+  const [isFetchingNeighborhoodProps, setIsFetchingNeighborhoodProps] =
+    useState(false); // Added loading state
   const mapRef = useRef();
 
   // --- Context & Hooks ---
   const { user } = useContext(UserContext);
-  const token = user?.token;
-  const { selectedMapLocation } = useMapContext(); // Contains { lat, lon }
+  const token = user?.token; // Get token for authenticated requests
+  const { selectedMapLocation } = useMapContext();
 
-  // Center coordinates for radius search [lng, lat] as expected by the hook/API
+  // Center coordinates for radius search [lng, lat]
   const centerCoordsForSearch = useMemo(() => {
     if (selectedLocationDetails?.geometry?.coordinates) {
       return [
@@ -192,18 +180,21 @@ const MapComponent = () => {
     return null;
   }, [selectedLocationDetails]);
 
+  // Hook for radius-based property search
   const {
-    results: radiusSearchResults, // This is the array of property results
-    isLoading: isSearching,
+    results: radiusSearchResults,
+    isLoading: isSearchingRadius, // Renamed for clarity
     error: radiusSearchError,
   } = useRadiusSearch(centerCoordsForSearch, searchRadius, token);
 
+  // Hook for drawn shapes
   const {
-    shapes: drawnItems, // This is the array of drawn shapes
+    shapes: drawnItems,
     addShape: handlePolygonCreated,
     deleteShape: handleDeletePolygon,
   } = useDrawnShapes();
 
+  // Hook for active shape details (coordinates display)
   const {
     activeShape: activePolygon,
     showDetails: showPolygonCoordinates,
@@ -214,87 +205,136 @@ const MapComponent = () => {
   useEffect(() => {
     if (radiusSearchError) {
       console.error("Radius Search Error:", radiusSearchError);
-      // Consider user-friendly error display here
     }
   }, [radiusSearchError]);
 
   // --- Core Functions ---
-  // fetchLocationDetailsAndNeighborhood remains here as it sets the state
-  const fetchLocationDetailsAndNeighborhood = useCallback(async (lat, lng) => {
-    setClickedNeighborhood(null); // Reset neighborhood
-    setSelectedLocationDetails(null); // Reset details immediately
 
-    // Show temporary marker while loading
-    const tempPointGeoJSON = {
-      type: "Feature",
-      geometry: { type: "Point", coordinates: [lng, lat] }, // GeoJSON standard [lng, lat]
-      properties: { name: `Loading... (${lat.toFixed(6)}, ${lng.toFixed(6)})` },
-    };
-    setSelectedLocationDetails(tempPointGeoJSON);
-
-    let fetchedDetails = tempPointGeoJSON; // Start with temp data
-
-    try {
-      // Fetch Reverse Geocoding from Nominatim
-      const nominatimUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1&accept-language=en`;
-      const response = await fetch(nominatimUrl);
-      if (!response.ok)
-        throw new Error(`Nominatim fetch failed: ${response.statusText}`);
-      const data = await response.json();
-
-      // Construct GeoJSON Feature for the selected location
-      fetchedDetails = {
-        type: "Feature",
-        geometry: { type: "Point", coordinates: [lng, lat] }, // GeoJSON standard [lng, lat]
-        properties: {
-          name:
-            data.display_name ||
-            `Point at ${lat.toFixed(6)}, ${lng.toFixed(6)}`,
-          type: data.type || "unknown",
-          osm_id: data.osm_id || null,
-          address: data.address || {}, // Store address components
-          clickTime: new Date().toISOString(),
-        },
-      };
-    } catch (error) {
-      console.error("Error fetching location details from Nominatim:", error);
-      // Fallback to basic point info if Nominatim fails
-      fetchedDetails = {
-        ...tempPointGeoJSON,
-        properties: {
-          ...tempPointGeoJSON.properties,
-          name: `Point at ${lat.toFixed(6)}, ${lng.toFixed(
-            6
-          )} (details fetch failed)`,
-        },
-      };
-    } finally {
-      setSelectedLocationDetails(fetchedDetails); // Update state with fetched or fallback details
-    }
-
-    // Fetch Neighborhood Data from your backend
-    try {
-      const neighborhoodUrl = `http://localhost:4000/api/neighborhoods/by-coords?lat=${lat}&lon=${lng}`;
-      const neighborhoodResponse = await fetch(neighborhoodUrl);
-
-      if (neighborhoodResponse.ok) {
-        const neighborhoodData = await neighborhoodResponse.json();
-        setClickedNeighborhood(neighborhoodData); // Set the found neighborhood GeoJSON + properties
-      } else if (neighborhoodResponse.status === 404) {
-        setClickedNeighborhood(null); // No neighborhood found for these coordinates
-      } else {
-        // Handle other non-OK statuses (e.g., 500 server error)
-        throw new Error(
-          `Neighborhood fetch failed: ${neighborhoodResponse.statusText}`
-        );
+  // Function to fetch properties within a specific neighborhood
+  const fetchPropertiesInNeighborhood = useCallback(
+    async (neighborhoodId) => {
+      if (!neighborhoodId) return;
+      setIsFetchingNeighborhoodProps(true); // Set loading state
+      console.log(`Fetching properties for neighborhood ID: ${neighborhoodId}`);
+      try {
+        const url = `http://localhost:4000/api/properties/in-neighborhood?neighborhoodId=${neighborhoodId}`;
+        const response = await fetch(url, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (!response.ok) {
+          throw new Error(
+            `Failed to fetch properties for neighborhood: ${response.statusText}`
+          );
+        }
+        const data = await response.json();
+        console.log(`Found ${data.length} properties in neighborhood.`);
+        setNeighborhoodProperties(data || []); // Set the fetched properties
+      } catch (error) {
+        console.error("Error fetching properties in neighborhood:", error);
+        setNeighborhoodProperties([]); // Clear properties on error
+      } finally {
+        setIsFetchingNeighborhoodProps(false); // Clear loading state
       }
-    } catch (error) {
-      console.error("Error fetching neighborhood:", error);
-      setClickedNeighborhood(null); // Ensure neighborhood is reset on error
-    }
-  }, []); // No dependencies needed if it only uses external inputs (lat, lng)
+    },
+    [token]
+  ); // Dependency on token
 
-  // Effect to react to external map location changes (e.g., from search)
+  // Function to fetch location details and potentially neighborhood + its properties
+  const fetchLocationDetailsAndNeighborhood = useCallback(
+    async (lat, lng) => {
+      // --- Reset states on any map click ---
+      setSearchRadius(0); // Reset radius search immediately
+      setClickedNeighborhood(null);
+      setNeighborhoodProperties([]); // Clear neighborhood properties
+      setSelectedLocationDetails(null); // Reset details immediately
+      setIsFetchingNeighborhoodProps(false); // Reset loading state
+
+      // Show temporary marker while loading
+      const tempPointGeoJSON = {
+        type: "Feature",
+        geometry: { type: "Point", coordinates: [lng, lat] },
+        properties: {
+          name: `Loading... (${lat.toFixed(6)}, ${lng.toFixed(6)})`,
+        },
+      };
+      setSelectedLocationDetails(tempPointGeoJSON);
+
+      let fetchedDetails = tempPointGeoJSON;
+
+      // Fetch Reverse Geocoding (Nominatim)
+      try {
+        const nominatimUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1&accept-language=en`;
+        const response = await fetch(nominatimUrl);
+        if (!response.ok)
+          throw new Error(`Nominatim fetch failed: ${response.statusText}`);
+        const data = await response.json();
+        fetchedDetails = {
+          type: "Feature",
+          geometry: { type: "Point", coordinates: [lng, lat] },
+          properties: {
+            name:
+              data.display_name ||
+              `Point at ${lat.toFixed(6)}, ${lng.toFixed(6)}`,
+            type: data.type || "unknown",
+            osm_id: data.osm_id || null,
+            address: data.address || {},
+            clickTime: new Date().toISOString(),
+          },
+        };
+      } catch (error) {
+        console.error("Error fetching location details from Nominatim:", error);
+        fetchedDetails = {
+          ...tempPointGeoJSON,
+          properties: {
+            ...tempPointGeoJSON.properties,
+            name: `Point at ${lat.toFixed(6)}, ${lng.toFixed(
+              6
+            )} (details fetch failed)`,
+          },
+        };
+      } finally {
+        setSelectedLocationDetails(fetchedDetails);
+      }
+
+      // Fetch Neighborhood Data from backend AND trigger property fetch if found
+      try {
+        const neighborhoodUrl = `http://localhost:4000/api/neighborhoods/by-coords?lat=${lat}&lon=${lng}`;
+        const neighborhoodResponse = await fetch(neighborhoodUrl);
+
+        if (neighborhoodResponse.ok) {
+          const neighborhoodData = await neighborhoodResponse.json();
+          setClickedNeighborhood(neighborhoodData); // Set the found neighborhood GeoJSON + properties
+
+          // --- Trigger property fetch for this neighborhood ---
+          if (neighborhoodData?._id) {
+            fetchPropertiesInNeighborhood(neighborhoodData._id); // No await needed here, let it run async
+          } else {
+            console.warn("Neighborhood data received but missing _id.");
+            setNeighborhoodProperties([]); // Ensure clear if ID is missing
+          }
+          // --- End trigger ---
+        } else if (neighborhoodResponse.status === 404) {
+          // No neighborhood found, states already cleared at the beginning
+          console.log("No neighborhood found for these coordinates.");
+        } else {
+          throw new Error(
+            `Neighborhood fetch failed: ${neighborhoodResponse.statusText}`
+          );
+        }
+      } catch (error) {
+        console.error("Error fetching neighborhood:", error);
+        // Ensure states are clear on error
+        setClickedNeighborhood(null);
+        setNeighborhoodProperties([]);
+        setIsFetchingNeighborhoodProps(false); // Ensure loading is off on error
+      }
+    },
+    [fetchPropertiesInNeighborhood]
+  ); // Added fetchPropertiesInNeighborhood dependency
+
+  // Effect to react to external map location changes (e.g., from search bar)
   useEffect(() => {
     if (selectedMapLocation?.lat && selectedMapLocation?.lon) {
       fetchLocationDetailsAndNeighborhood(
@@ -302,59 +342,55 @@ const MapComponent = () => {
         selectedMapLocation.lon
       );
     }
-    // Intentionally not including fetchLocationDetailsAndNeighborhood in deps
-    // to avoid re-fetching if the function reference changes unnecessarily.
-    // We only want this effect to run when selectedMapLocation changes.
-  }, [selectedMapLocation]);
+  }, [selectedMapLocation, fetchLocationDetailsAndNeighborhood]); // Added fetchLocationDetailsAndNeighborhood dependency
 
   // Handler for clicks directly on the map
   const handleMapClick = useCallback(
     (latlng) => {
-      // latlng is a Leaflet LatLng object { lat: number, lng: number }
       const lat = parseFloat(latlng.lat.toFixed(6));
       const lng = parseFloat(latlng.lng.toFixed(6));
       fetchLocationDetailsAndNeighborhood(lat, lng);
     },
-    [fetchLocationDetailsAndNeighborhood] // Dependency needed as it calls this function
+    [fetchLocationDetailsAndNeighborhood]
   );
 
-  // Formatting function (kept here as it's simple display logic)
+  // Formatting function for area display
   const formatArea = (area) => {
     if (area === null || area === undefined) return "N/A";
     const areaSqM = parseFloat(area);
     if (isNaN(areaSqM)) return "N/A";
+    if (areaSqM < 10000) return `${Math.round(areaSqM)} m²`;
+    return `${(areaSqM / 1000000).toFixed(2)} km²`;
+  };
 
-    if (areaSqM < 10000) {
-      // Less than 1 hectare
-      return `${Math.round(areaSqM)} m²`;
-    } else {
-      // Convert to square kilometers
-      return `${(areaSqM / 1000000).toFixed(2)} km²`;
+  // Handler for radius change from the overlay controls
+  const handleRadiusChange = (e) => {
+    const newRadius = parseFloat(e.target.value);
+    setSearchRadius(newRadius);
+    // If a radius is selected, clear neighborhood context
+    if (newRadius > 0) {
+      setClickedNeighborhood(null);
+      setNeighborhoodProperties([]);
+      setIsFetchingNeighborhoodProps(false); // Ensure neighborhood loading is off
     }
   };
 
-  const handleRadiusChange = (e) => {
-    setSearchRadius(parseFloat(e.target.value));
-  };
-
+  // Function to export drawn shapes
   const exportToGeoJSON = () => {
     if (drawnItems.length === 0) {
       alert("No shapes drawn to export.");
       return;
     }
-
-    // Ensure all items have valid GeoJSON structure
     const features = drawnItems
       .map((item) => {
         if (item.geoJSON && item.geoJSON.type === "Feature") {
-          return item.geoJSON; // Use the stored GeoJSON feature
+          return item.geoJSON;
         } else if (item.type === "polygon" && item.coordinates) {
-          // Fallback: Construct GeoJSON if missing (should ideally be created on draw)
           console.warn(`Constructing fallback GeoJSON for item ID: ${item.id}`);
           const geoJsonCoords = [
-            item.coordinates.map((coord) => [coord[1], coord[0]]), // Convert [lat, lng] -> [lng, lat]
+            item.coordinates.map((coord) => [coord[1], coord[0]]),
           ];
-          geoJsonCoords[0].push(geoJsonCoords[0][0]); // Close ring
+          geoJsonCoords[0].push(geoJsonCoords[0][0]);
           return {
             type: "Feature",
             geometry: { type: "Polygon", coordinates: geoJsonCoords },
@@ -362,9 +398,9 @@ const MapComponent = () => {
           };
         }
         console.warn(`Skipping invalid item for export: ID ${item.id}`);
-        return null; // Skip invalid items
+        return null;
       })
-      .filter((feature) => feature !== null); // Remove nulls
+      .filter((feature) => feature !== null);
 
     if (features.length === 0) {
       alert("No valid shapes could be prepared for export.");
@@ -372,29 +408,44 @@ const MapComponent = () => {
     }
 
     const geoJSONCollection = { type: "FeatureCollection", features: features };
-    const dataStr = JSON.stringify(geoJSONCollection, null, 2); // Pretty print JSON
+    const dataStr = JSON.stringify(geoJSONCollection, null, 2);
     const dataUri =
       "data:application/json;charset=utf-8," + encodeURIComponent(dataStr);
     const exportFileDefaultName = "drawn_shapes.geojson";
-
     const linkElement = document.createElement("a");
     linkElement.setAttribute("href", dataUri);
     linkElement.setAttribute("download", exportFileDefaultName);
-    document.body.appendChild(linkElement); // Required for Firefox
+    document.body.appendChild(linkElement);
     linkElement.click();
-    document.body.removeChild(linkElement); // Clean up
+    document.body.removeChild(linkElement);
   };
 
   // --- Calculations for Rendering ---
-  // Center for the radius circle [lat, lng] as expected by Leaflet Circle component
+  // Center for the radius circle [lat, lng]
   const radiusCircleCenter = useMemo(() => {
     return selectedLocationDetails?.geometry?.coordinates
       ? [
           selectedLocationDetails.geometry.coordinates[1], // lat
           selectedLocationDetails.geometry.coordinates[0], // lon
-        ] // Leaflet needs [lat, lon]
+        ]
       : null;
   }, [selectedLocationDetails]);
+
+  // Determine which set of properties to display on the map AND sidebar
+  const propertiesToDisplay = useMemo(() => {
+    // Prioritize radius search results if a radius is selected
+    if (searchRadius > 0) {
+      return radiusSearchResults;
+    }
+    // Otherwise, show neighborhood properties if available
+    return neighborhoodProperties;
+  }, [searchRadius, radiusSearchResults, neighborhoodProperties]);
+
+  // Determine overall loading state for the sidebar property list
+  const isLoadingProperties = isSearchingRadius || isFetchingNeighborhoodProps;
+
+  // Define radius options for the overlay
+  const radiusOptions = [0, 0.5, 1, 3, 5, 10, 20, 50];
 
   // --- Render ---
   return (
@@ -402,10 +453,10 @@ const MapComponent = () => {
       <div className="map-container">
         <div className="map-wrapper">
           <MapContainer
-            center={initialCenter} // Expects [lat, lng]
+            center={initialCenter}
             zoom={initialZoom}
             style={{ height: "100%", width: "100%" }}
-            ref={mapRef} // Assign ref for potential direct map manipulation
+            ref={mapRef}
           >
             {/* --- Base Layer & View Control --- */}
             <ChangeView
@@ -419,33 +470,28 @@ const MapComponent = () => {
 
             {/* --- Component to handle zoom adjustment on radius change --- */}
             <AdjustZoomOnRadiusChange
-              centerCoords={radiusCircleCenter} // Pass [lat, lng]
-              radius={searchRadius} // Pass radius in miles
+              centerCoords={radiusCircleCenter}
+              radius={searchRadius}
             />
 
             {/* --- Dynamic Map Layers --- */}
-
-            {/* Clicked Neighborhood Layer */}
             <NeighborhoodLayer clickedNeighborhood={clickedNeighborhood} />
-
-            {/* Selected Location Marker */}
             <SelectedLocationMarker locationDetails={selectedLocationDetails} />
-
-            {/* Radius Search Circle Layer */}
-            <RadiusCircleLayer
-              centerCoords={radiusCircleCenter} // Pass [lat, lng]
-              radiusInMiles={searchRadius} // Pass radius in miles
-            />
-
-            {/* Drawn Shapes Layer */}
+            {/* Render radius circle only if radius > 0 */}
+            {searchRadius > 0 && (
+              <RadiusCircleLayer
+                centerCoords={radiusCircleCenter}
+                radiusInMiles={searchRadius}
+              />
+            )}
             <DrawnShapesLayer drawnShapes={drawnItems} />
 
-            {/* Property Markers Layer (using dedicated component) */}
-            {/* Conditionally render based on loading state and results */}
-            {!isSearching && radiusSearchResults.length > 0 && (
+            {/* Property Markers Layer - Displays either radius or neighborhood results */}
+            {/* Render if not loading EITHER search, AND there are props to display */}
+            {!isLoadingProperties && propertiesToDisplay.length > 0 && (
               <PropertyMarkersLayer
-                properties={radiusSearchResults}
-                formatCurrencyForDisplay={formatCurrencyForDisplay} // Pass the formatting function
+                properties={propertiesToDisplay}
+                formatCurrencyForDisplay={formatCurrencyForDisplay}
               />
             )}
 
@@ -454,28 +500,25 @@ const MapComponent = () => {
             <MapClickHandler onMapClick={handleMapClick} />
           </MapContainer>
         </div>
+
         {/* --- Radius Search Controls Overlay --- */}
         <div className="map-controls-overlay">
-          {selectedLocationDetails && ( // Only show radius options if a location is selected
+          {selectedLocationDetails && (
             <div className="radius-control">
               <strong>Search Radius:</strong>
               <div className="radio-group">
-                {[0, 0.5, 1, 3, 5, 10, 20, 50].map(
-                  (
-                    value // Adjusted radius options
-                  ) => (
-                    <label key={value} className="radio-label">
-                      <input
-                        type="radio"
-                        name="radius"
-                        value={value}
-                        checked={searchRadius === value}
-                        onChange={handleRadiusChange}
-                      />
-                      <span>{value === 0 ? "None" : `${value} mi`}</span>
-                    </label>
-                  )
-                )}
+                {radiusOptions.map((value) => (
+                  <label key={value} className="radio-label">
+                    <input
+                      type="radio"
+                      name="radius"
+                      value={value}
+                      checked={searchRadius === value}
+                      onChange={handleRadiusChange}
+                    />
+                    <span>{value === 0 ? "None" : `${value} mi`}</span>
+                  </label>
+                ))}
               </div>
             </div>
           )}
@@ -484,19 +527,28 @@ const MapComponent = () => {
       {/* --- Sidebar --- */}
       <div className="search-container">
         <MapSidebar
-          isSearching={isSearching}
-          radiusSearchResults={radiusSearchResults}
+          // Pass combined loading state and the properties to display
+          isSearching={isLoadingProperties} // Combined loading state
+          propertiesToDisplay={propertiesToDisplay} // Properties for the list
+          // Pass context for messages/headings
           searchRadius={searchRadius}
-          selectedLocationDetails={selectedLocationDetails}
-          formatCurrencyForDisplay={formatCurrencyForDisplay} // Pass formatter to sidebar too
-          drawnItems={drawnItems} // Pass drawnItems to sidebar
-          handleDeletePolygon={handleDeletePolygon} // Pass delete handler
-          showPolygonCoordinates={showPolygonCoordinates} // Pass show details handler
-          formatArea={formatArea} // Pass formatting function
-          exportToGeoJSON={exportToGeoJSON} // Pass export handler
-          searchPropertiesInPolygon={searchPropertiesInPolygon} // Pass placeholder function
-          activePolygon={activePolygon} // Pass active polygon state
-          setActivePolygon={hideActivePolygonDetails} // Pass function to clear active polygon
+          clickedNeighborhood={clickedNeighborhood} // Pass neighborhood info
+          selectedLocationDetails={selectedLocationDetails} // Still needed for context
+          // Utilities
+          formatCurrencyForDisplay={formatCurrencyForDisplay}
+          formatArea={formatArea}
+          // Drawn Shapes Props
+          drawnItems={drawnItems}
+          handleDeletePolygon={handleDeletePolygon}
+          showPolygonCoordinates={showPolygonCoordinates}
+          exportToGeoJSON={exportToGeoJSON}
+          searchPropertiesInPolygon={searchPropertiesInPolygon}
+          // Active Polygon Props
+          activePolygon={activePolygon}
+          setActivePolygon={hideActivePolygonDetails}
+
+          // REMOVED props specific only to radius search results display
+          // radiusSearchResults={radiusSearchResults}
         />
       </div>
     </div>
