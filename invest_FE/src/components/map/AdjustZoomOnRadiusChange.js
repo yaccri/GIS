@@ -1,12 +1,12 @@
 // src/components/map/AdjustZoomOnRadiusChange.js
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { useMap } from "react-leaflet";
 import L from "leaflet";
 
 /**
  * A React component that automatically adjusts the map's zoom and center
- * to fit a circle defined by a center coordinate and radius.
- * It uses the useMap hook and should be placed inside a MapContainer.
+ * when the search radius changes. It calculates the zoom level needed to
+ * fit the circle and then zooms out slightly for better context.
  *
  * @param {object} props
  * @param {Array<number>|null} props.centerCoords - The center coordinates as [latitude, longitude].
@@ -20,35 +20,53 @@ function AdjustZoomOnRadiusChange({ centerCoords, radius }) {
     if (map && centerCoords && radius > 0) {
       try {
         const radiusInMeters = radius * 1609.34; // Convert miles to meters
-        const centerLatLng = L.latLng(centerCoords[0], centerCoords[1]); // Create Leaflet LatLng object [lat, lng]
 
-        // Use latLng.toBounds() to calculate the bounding box directly
-        const bounds = centerLatLng.toBounds(radiusInMeters);
+        // Ensure centerCoords is in [lat, lng] format for L.latLng
+        if (Array.isArray(centerCoords) && centerCoords.length === 2) {
+          const centerLatLng = L.latLng(centerCoords[0], centerCoords[1]); // Create Leaflet LatLng object [lat, lng]
 
-        // Ensure the bounds are valid before trying to fit
-        if (bounds.isValid()) {
-          console.log("Attempting flyToBounds for radius:", bounds); // Debug log
+          // Calculate the bounding box for the circle
+          const bounds = centerLatLng.toBounds(radiusInMeters);
 
-          // 1. Stop any existing map movement/animation
-          map.stop();
+          // Ensure the bounds are valid
+          if (bounds.isValid()) {
+            // 1. Calculate the zoom level that would perfectly fit the bounds
+            const zoomLevelThatFits = map.getBoundsZoom(bounds);
 
-          // 2. Use flyToBounds for a smoother transition
-          map.flyToBounds(bounds, {
-            padding: [50, 50],
-            duration: 0.75, // Duration in seconds
-            easeLinearity: 0.25, // Controls the easing
-            // 'animate: true' is implicit in flyToBounds
-          });
+            // Subtract 1 zoom level from the calculated level.
+            const zoomAdjustment = 1;
+            const targetZoom = Math.max(
+              map.getMinZoom() || 1,
+              zoomLevelThatFits - zoomAdjustment
+            );
+
+            console.log(
+              `Adjusting zoom for radius ${radius}mi. Calculated fit zoom: ${zoomLevelThatFits}, Target zoom: ${targetZoom}`
+            );
+
+            // 2. Stop any existing map movement
+            map.stop();
+
+            // 3. Use flyTo to center on the location and apply the adjusted zoom level
+            map.flyTo(centerLatLng, targetZoom, {
+              duration: 0.75, // Animation duration
+            });
+          } else {
+            console.warn(
+              "Calculated bounds (using toBounds) for radius circle are invalid."
+            );
+          }
         } else {
           console.warn(
-            "Calculated bounds (using toBounds) for radius circle are invalid."
+            "Invalid centerCoords provided to AdjustZoomOnRadiusChange:",
+            centerCoords
           );
         }
       } catch (error) {
         console.error("Error adjusting zoom for radius:", error);
       }
     }
-    // If radius is 0 or no center, we don't adjust zoom here.
+    // No action needed if radius is 0 or no center is provided
   }, [map, centerCoords, radius]); // Re-run effect if map, center, or radius changes
 
   return null; // This component does not render anything itself
