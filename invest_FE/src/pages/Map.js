@@ -1,11 +1,18 @@
 // src/pages/Map.js
-import React, { useState, useRef, useEffect, useContext } from "react";
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useContext,
+  useCallback,
+  useMemo,
+} from "react";
 import {
   MapContainer,
   TileLayer,
   Marker,
   Popup,
-  useMap,
+  useMap, // Keep useMap for internal components
   Circle,
   Polygon,
   GeoJSON,
@@ -15,15 +22,21 @@ import L from "leaflet";
 import "leaflet-draw";
 import "leaflet-draw/dist/leaflet.draw.css";
 import "leaflet-geometryutil";
-import "./Map.css"; // Contains styles for map, overlay, and sidebar elements
-import { searchPropertiesInRadius } from "../components/SearchRadius";
+import "./Map.css";
 import { UserContext } from "../context/UserContext";
 import { useMapContext } from "../context/MapContext";
 import {
-  formatCurrencyForDisplay, // Import for passing down and potentially using in popups
+  formatCurrencyForDisplay,
   formatPriceForPin,
 } from "../utils/currencyFormatter";
-import MapSidebar from "../components/map/MapSidebar"; // *** CORRECTED IMPORT PATH ***
+import MapSidebar from "../components/map/MapSidebar";
+
+// --- Import Custom Hooks ---
+import useRadiusSearch from "../hooks/useRadiusSearch";
+import useDrawnShapes from "../hooks/useDrawnShapes";
+
+// --- Import Custom Components ---
+import AdjustZoomOnRadiusChange from "../components/map/AdjustZoomOnRadiusChange";
 
 // --- Fix for default marker icon ---
 delete L.Icon.Default.prototype._getIconUrl;
@@ -33,7 +46,7 @@ L.Icon.Default.mergeOptions({
   shadowUrl: require("leaflet/dist/images/marker-shadow.png"),
 });
 
-// --- Helper function to create the custom price icon ---
+// --- Helper functions ---
 const createPriceIcon = (price) => {
   const formattedPrice = formatPriceForPin(price);
   return L.divIcon({
@@ -45,7 +58,6 @@ const createPriceIcon = (price) => {
   });
 };
 
-// --- Helper function to create the neighborhood label icon ---
 const createNeighborhoodLabelIcon = (name) => {
   return L.divIcon({
     html: `<div class="label-content">${name}</div>`,
@@ -55,35 +67,6 @@ const createNeighborhoodLabelIcon = (name) => {
   });
 };
 
-// --- Dummy/Helper implementations ---
-function createCircleGeometry(center, radius, segments) {
-  const factor = 0.0000089; // Rough conversion factor for meters to degrees at mid-latitudes
-  const points = [];
-  const radiusInDegrees =
-    (radius * factor) / Math.cos((center[1] * Math.PI) / 180); // Adjust for latitude
-
-  for (let i = 0; i <= segments; i++) {
-    const angle = (i / segments) * Math.PI * 2;
-    const dx = radiusInDegrees * Math.cos(angle);
-    const dy = radiusInDegrees * Math.sin(angle);
-    // Ensure coordinates are within valid ranges if needed, though Leaflet handles wrapping
-    points.push([center[1] + dy, center[0] + dx]); // GeoJSON format [lng, lat]
-  }
-  return { type: "Polygon", coordinates: [points] }; // Return GeoJSON Polygon geometry
-}
-
-function generateRandomPointInCircle(center, radius) {
-  const factor = 0.0000089;
-  const angle = Math.random() * Math.PI * 2;
-  const r = radius * Math.sqrt(Math.random()); // Use sqrt for uniform distribution
-  const radiusInDegrees = (r * factor) / Math.cos((center[1] * Math.PI) / 180); // Adjust for latitude
-
-  const dx = radiusInDegrees * Math.cos(angle);
-  const dy = radiusInDegrees * Math.sin(angle);
-  return [center[0] + dx, center[1] + dy]; // [lng, lat]
-}
-
-// Keep this function here as it's passed to the sidebar
 function searchPropertiesInPolygon(polygon) {
   console.warn("Search properties in polygon triggered:", polygon);
   alert(
@@ -93,7 +76,9 @@ function searchPropertiesInPolygon(polygon) {
 
 // --- React Components (Internal to Map or could be moved later) ---
 
+// ChangeView remains internal as it's tightly coupled to selectedMapLocation context
 const ChangeView = ({ center, zoom }) => {
+  // Keep zoom prop definition even if not always passed
   const map = useMap();
   useEffect(() => {
     if (
@@ -101,21 +86,29 @@ const ChangeView = ({ center, zoom }) => {
       typeof center.lat === "number" &&
       typeof center.lon === "number"
     ) {
+      // Always use flyTo for smoother transitions, even if zoom isn't specified.
+      // Use the provided zoom, or default to the map's current zoom level.
+      const targetZoom = zoom || map.getZoom();
       console.log(
-        `Flying map to: [${center.lat}, ${center.lon}] with zoom ${zoom}`
+        `Flying map to: [${center.lat}, ${center.lon}] with zoom ${targetZoom}`
       );
-      map.flyTo([center.lat, center.lon], zoom || map.getZoom());
+
+      // *** MODIFICATION: Add duration option to flyTo ***
+      map.flyTo([center.lat, center.lon], targetZoom, {
+        duration: 0.75, // Duration in seconds
+      });
+      // *** END MODIFICATION ***
     }
-  }, [center, zoom, map]);
+  }, [center, zoom, map]); // Keep dependencies
   return null;
 };
 
+// DrawControl remains internal as it uses onPolygonCreated callback directly
 function DrawControl({ onPolygonCreated }) {
   const map = useMap();
   useEffect(() => {
     if (!map) return;
-    const drawnItems = new L.FeatureGroup();
-    // map.addLayer(drawnItems); // Don't add drawn items to map here, parent manages display
+    const drawnItemsFeatureGroup = new L.FeatureGroup();
     const drawControl = new L.Control.Draw({
       position: "topleft",
       draw: {
@@ -132,29 +125,26 @@ function DrawControl({ onPolygonCreated }) {
           shapeOptions: { color: "#3388ff", weight: 3, fillOpacity: 0.2 },
         },
       },
-      edit: { featureGroup: drawnItems, remove: true }, // Basic edit/remove
+      edit: { featureGroup: drawnItemsFeatureGroup, remove: true },
     });
     map.addControl(drawControl);
     map.on(L.Draw.Event.CREATED, function (e) {
       const layer = e.layer;
       if (onPolygonCreated) {
-        const latLngs = layer.getLatLngs()[0]; // For polygon/rectangle
-        const coordinates = latLngs.map((point) => [point.lat, point.lng]); // [lat, lng] format
+        const latLngs = layer.getLatLngs()[0];
+        const coordinates = latLngs.map((point) => [point.lat, point.lng]);
         const geoJsonCoords = [
           coordinates.map((coord) => [coord[1], coord[0]]),
-        ]; // Convert to GeoJSON [lng, lat] format
-        const geoJsonGeometry = {
-          type: e.layerType === "rectangle" ? "Polygon" : "Polygon", // Represent both as Polygon
-          coordinates: geoJsonCoords,
-        };
+        ];
+        geoJsonCoords[0].push(geoJsonCoords[0][0]);
+        const geoJsonGeometry = { type: "Polygon", coordinates: geoJsonCoords };
         onPolygonCreated({
-          id: L.Util.stamp(layer), // Use Leaflet's internal ID
+          id: L.Util.stamp(layer),
           type: e.layerType,
-          coordinates: coordinates, // Keep [lat, lng] for internal use if needed
+          coordinates: coordinates,
           center: layer.getBounds().getCenter(),
           area: L.GeometryUtil.geodesicArea(latLngs),
           geoJSON: {
-            // Store standard GeoJSON representation
             type: "Feature",
             geometry: geoJsonGeometry,
             properties: { id: L.Util.stamp(layer) },
@@ -162,31 +152,21 @@ function DrawControl({ onPolygonCreated }) {
         });
       }
     });
-    // Add handlers for edit/delete events if needed to update parent state
-    // map.on(L.Draw.Event.EDITED, function (e) { ... });
-    // map.on(L.Draw.Event.DELETED, function (e) { ... });
-
     return () => {
-      // Clean up controls and listeners
-      if (map && drawControl) {
-        map.removeControl(drawControl);
-      }
-      if (map) {
-        map.off(L.Draw.Event.CREATED);
-        // map.off(L.Draw.Event.EDITED);
-        // map.off(L.Draw.Event.DELETED);
-      }
+      if (map && drawControl) map.removeControl(drawControl);
+      if (map) map.off(L.Draw.Event.CREATED);
     };
   }, [map, onPolygonCreated]);
   return null;
 }
 
+// RadiusCircle remains internal - simple display component
 function RadiusCircle({ center, radius }) {
   if (!center || !radius) return null;
-  const radiusInMeters = radius * 1609.34; // Convert miles to meters
+  const radiusInMeters = radius * 1609.34;
   return (
     <Circle
-      center={center} // Expects [lat, lon]
+      center={center}
       radius={radiusInMeters}
       pathOptions={{
         color: "#FF4500",
@@ -198,12 +178,13 @@ function RadiusCircle({ center, radius }) {
   );
 }
 
+// MapClickHandler remains internal - uses onMapClick callback directly
 function MapClickHandler({ onMapClick }) {
   const map = useMap();
   useEffect(() => {
     if (!map) return;
     const handleClick = (e) => {
-      onMapClick(e.latlng); // Pass Leaflet LatLng object
+      onMapClick(e.latlng);
     };
     map.on("click", handleClick);
     return () => {
@@ -213,12 +194,11 @@ function MapClickHandler({ onMapClick }) {
   return null;
 }
 
-// Component to display polygons from state
+// DisplayPolygons remains internal - simple display component
 function DisplayPolygons({ polygons }) {
   return (
     <>
       {polygons.map((polygon) => {
-        // Use the stored [lat, lng] coordinates
         const latLngs = polygon.coordinates.map((coord) => [
           coord[0],
           coord[1],
@@ -241,39 +221,60 @@ const MapComponent = () => {
   const [selectedLocationDetails, setSelectedLocationDetails] = useState(null);
   const [initialCenter] = useState([40.7128, -74.006]);
   const [initialZoom] = useState(13);
-  const [selectedZoom] = useState(15);
-  const [drawnItems, setDrawnItems] = useState([]); // Holds polygon/rectangle data objects
-  const [activePolygon, setActivePolygon] = useState(null); // For showing coords in sidebar
+  // Removed selectedZoom state as fitBounds will manage zoom on radius change
+  const [activePolygon, setActivePolygon] = useState(null);
   const [searchRadius, setSearchRadius] = useState(0);
-  const [radiusSearchResults, setRadiusSearchResults] = useState([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const [savedSearches, setSavedSearches] = useState([]); // State for saved radius searches
-  const [activeSearch, setActiveSearch] = useState(null); // State for viewing saved search details
   const [clickedNeighborhood, setClickedNeighborhood] = useState(null);
   const mapRef = useRef();
 
+  // --- Context & Hooks ---
   const { user } = useContext(UserContext);
   const token = user?.token;
   const { selectedMapLocation } = useMapContext();
 
-  // --- Core Functions ---
+  const centerCoordsForSearch = useMemo(() => {
+    if (selectedLocationDetails?.geometry?.coordinates) {
+      return [
+        selectedLocationDetails.geometry.coordinates[0], // lng
+        selectedLocationDetails.geometry.coordinates[1], // lat
+      ];
+    }
+    return null;
+  }, [selectedLocationDetails]);
 
-  const fetchLocationDetailsAndNeighborhood = async (lat, lng) => {
+  const {
+    results: radiusSearchResults,
+    isLoading: isSearching,
+    error: radiusSearchError,
+  } = useRadiusSearch(centerCoordsForSearch, searchRadius, token);
+
+  const {
+    shapes: drawnItems,
+    addShape: handlePolygonCreated,
+    deleteShape: handleDeletePolygon,
+  } = useDrawnShapes();
+
+  // --- Effects ---
+  useEffect(() => {
+    if (radiusSearchError) {
+      console.error("Radius Search Error:", radiusSearchError);
+      // alert(`Radius Search Error: ${radiusSearchError}`); // Optional user feedback
+    }
+  }, [radiusSearchError]);
+
+  // --- Core Functions ---
+  const fetchLocationDetailsAndNeighborhood = useCallback(async (lat, lng) => {
     setClickedNeighborhood(null);
     setSelectedLocationDetails(null);
-    setRadiusSearchResults([]); // Clear radius results on new click
-
     const tempPointGeoJSON = {
       type: "Feature",
       geometry: { type: "Point", coordinates: [lng, lat] },
       properties: { name: `Loading... (${lat.toFixed(6)}, ${lng.toFixed(6)})` },
     };
     setSelectedLocationDetails(tempPointGeoJSON);
-
     let fetchedDetails = tempPointGeoJSON;
-
-    // Fetch Reverse Geocoding (Nominatim)
     try {
+      // Fetch Reverse Geocoding
       const response = await fetch(
         `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1&accept-language=en`
       );
@@ -304,218 +305,73 @@ const MapComponent = () => {
     } finally {
       setSelectedLocationDetails(fetchedDetails);
     }
-
-    // Fetch Neighborhood Data
     try {
+      // Fetch Neighborhood Data
       const neighborhoodResponse = await fetch(
         `http://localhost:4000/api/neighborhoods/by-coords?lat=${lat}&lon=${lng}`
       );
-      if (neighborhoodResponse.ok) {
-        const neighborhoodData = await neighborhoodResponse.json();
-        setClickedNeighborhood(neighborhoodData);
-      } else if (neighborhoodResponse.status === 404) {
+      if (neighborhoodResponse.ok)
+        setClickedNeighborhood(await neighborhoodResponse.json());
+      else if (neighborhoodResponse.status === 404)
         setClickedNeighborhood(null);
-      } else {
+      else
         throw new Error(
           `Neighborhood fetch failed: ${neighborhoodResponse.statusText}`
         );
-      }
     } catch (error) {
       console.error("Error fetching neighborhood:", error);
       setClickedNeighborhood(null);
     }
+  }, []);
 
-    // Trigger radius search if radius is set
-    if (searchRadius > 0) {
-      await triggerRadiusSearch(lng, lat, searchRadius);
-    }
-  };
-
-  // Separate function to trigger radius search
-  const triggerRadiusSearch = async (lng, lat, radius) => {
-    if (radius <= 0 || !lat || !lng) {
-      setRadiusSearchResults([]);
-      return;
-    }
-    setIsSearching(true);
-    try {
-      const results = await searchPropertiesInRadius([lng, lat], radius, token);
-      setRadiusSearchResults(results || []);
-    } catch (radiusError) {
-      console.error("Error fetching properties in radius:", radiusError);
-      setRadiusSearchResults([]);
-    } finally {
-      setIsSearching(false);
-    }
-  };
-
-  // Effect for context changes
   useEffect(() => {
     if (selectedMapLocation?.lat && selectedMapLocation?.lon) {
       fetchLocationDetailsAndNeighborhood(
         selectedMapLocation.lat,
         selectedMapLocation.lon
       );
-      // ChangeView component handles map movement
     }
-  }, [selectedMapLocation]);
+  }, [selectedMapLocation, fetchLocationDetailsAndNeighborhood]);
 
-  // Handler for manual map clicks
-  const handleMapClick = (latlng) => {
-    const lat = parseFloat(latlng.lat.toFixed(6));
-    const lng = parseFloat(latlng.lng.toFixed(6));
-    fetchLocationDetailsAndNeighborhood(lat, lng);
-  };
+  const handleMapClick = useCallback(
+    (latlng) => {
+      const lat = parseFloat(latlng.lat.toFixed(6));
+      const lng = parseFloat(latlng.lng.toFixed(6));
+      fetchLocationDetailsAndNeighborhood(lat, lng);
+    },
+    [fetchLocationDetailsAndNeighborhood]
+  );
 
-  // Handler for when a polygon/rectangle is created by DrawControl
-  const handlePolygonCreated = (polygonData) => {
-    setDrawnItems((prev) => [...prev, polygonData]);
-  };
-
-  // Handler to delete a drawn polygon
-  const handleDeletePolygon = (id) => {
-    setDrawnItems((prev) => prev.filter((polygon) => polygon.id !== id));
-    if (activePolygon && activePolygon.id === id) setActivePolygon(null); // Close details if active
-  };
-
-  // Handler to show polygon coordinates in the sidebar
   const showPolygonCoordinates = (polygon) => {
     setActivePolygon(polygon);
   };
-
-  // Utility function for formatting area (passed to sidebar)
   const formatArea = (area) => {
     if (!area) return "N/A";
     if (area < 10000) return `${Math.round(area)} m²`;
     return `${(area / 1000000).toFixed(2)} km²`;
   };
-
-  // Handler for radius change from the overlay controls
-  const handleRadiusChange = async (e) => {
-    const radius = parseFloat(e.target.value);
-    setSearchRadius(radius);
-
-    // Trigger search immediately based on the currently selected location
-    if (selectedLocationDetails?.geometry?.coordinates) {
-      const [lng, lat] = selectedLocationDetails.geometry.coordinates;
-      await triggerRadiusSearch(lng, lat, radius);
-    } else {
-      setRadiusSearchResults([]); // Clear results if no location selected
-    }
+  const handleRadiusChange = (e) => {
+    setSearchRadius(parseFloat(e.target.value));
   };
 
-  // Handler to save the current radius search results
-  const saveRadiusSearchAsGeoJSON = () => {
-    const currentResults = Array.isArray(radiusSearchResults)
-      ? radiusSearchResults
-      : [];
-    if (!selectedLocationDetails?.geometry?.coordinates || searchRadius === 0) {
-      alert("Please select a location and set a radius before saving.");
-      return;
-    }
-    const [lng, lat] = selectedLocationDetails.geometry.coordinates;
-    const centerCoords = [lng, lat]; // GeoJSON format
-
-    const geoJSON = {
-      type: "FeatureCollection",
-      properties: {
-        searchTime: new Date().toISOString(),
-        searchRadiusMiles: searchRadius,
-        centerName:
-          selectedLocationDetails.properties.name ||
-          `Center at ${lat.toFixed(5)}, ${lng.toFixed(5)}`,
-        totalResults: currentResults.length,
-      },
-      features: [
-        // Feature for the search center point
-        {
-          type: "Feature",
-          geometry: { type: "Point", coordinates: centerCoords },
-          properties: {
-            name: selectedLocationDetails.properties.name,
-            type: "searchCenter",
-          },
-        },
-        // Feature for the search radius circle (as a Polygon)
-        {
-          type: "Feature",
-          geometry: createCircleGeometry(
-            centerCoords,
-            searchRadius * 1609.34,
-            64
-          ), // Pass center [lng, lat], radius in meters
-          properties: {
-            type: "searchRadius",
-            radius: searchRadius,
-            unit: "miles",
-          },
-        },
-        // Features for each property result
-        ...currentResults.map((property) => {
-          const propCoords = property.location?.coordinates
-            ? [
-                property.location.coordinates[0],
-                property.location.coordinates[1],
-              ] // Ensure [lng, lat]
-            : generateRandomPointInCircle(centerCoords, searchRadius * 1609.34); // Fallback if no coords
-
-          return {
-            type: "Feature",
-            geometry: { type: "Point", coordinates: propCoords },
-            properties: {
-              // Include desired property details
-              id: property.propertyID || property._id || property.id,
-              title: property.title || property.address,
-              price: property.price,
-              beds: property.beds,
-              baths: property.baths,
-              yearBuilt: property.yearBuilt,
-              type: "propertyResult",
-              // Add original location data if needed: location: property.location
-            },
-          };
-        }),
-      ],
-    };
-
-    const newSearch = {
-      id: Date.now().toString(),
-      timestamp: new Date().toISOString(),
-      centerName:
-        selectedLocationDetails.properties.name ||
-        `Center ${lat.toFixed(5)}, ${lng.toFixed(5)}`,
-      radius: searchRadius,
-      resultCount: currentResults.length,
-      geoJSON: geoJSON, // Store the full GeoJSON
-    };
-    setSavedSearches((prev) => [...prev, newSearch]);
-    alert(
-      `Search saved: ${newSearch.centerName} (${newSearch.radius} mi, ${newSearch.resultCount} results)`
-    );
-  };
-
-  // Handler to export drawn shapes to GeoJSON (passed to sidebar)
   const exportToGeoJSON = () => {
     if (drawnItems.length === 0) {
       alert("No shapes drawn to export.");
       return;
     }
-    // Use the stored GeoJSON feature representation directly
     const features = drawnItems.map(
       (item) =>
         item.geoJSON || {
-          // Fallback if geoJSON wasn't stored correctly
           type: "Feature",
           geometry: {
             type: "Polygon",
             coordinates: [
               item.coordinates.map((coord) => [coord[1], coord[0]]),
-            ], // Convert [lat,lng] to [lng,lat]
+            ],
           },
           properties: { id: item.id, area_sqm: item.area },
         }
     );
-
     const geoJSONCollection = { type: "FeatureCollection", features: features };
     const dataStr = JSON.stringify(geoJSONCollection, null, 2);
     const dataUri =
@@ -538,21 +394,19 @@ const MapComponent = () => {
     }
   }
 
-  const radiusCircleCenter = selectedLocationDetails?.geometry?.coordinates
-    ? [
-        selectedLocationDetails.geometry.coordinates[1],
-        selectedLocationDetails.geometry.coordinates[0],
-      ] // Convert [lng, lat] to [lat, lon] for Leaflet Circle
-    : null;
+  const radiusCircleCenter = useMemo(() => {
+    return selectedLocationDetails?.geometry?.coordinates
+      ? [
+          selectedLocationDetails.geometry.coordinates[1], // lat
+          selectedLocationDetails.geometry.coordinates[0], // lon
+        ] // Leaflet needs [lat, lon]
+      : null;
+  }, [selectedLocationDetails]);
 
   // --- Render ---
   return (
-    // The main flex container
     <div className="map-page-container">
-      {/* First flex item: The map area */}
       <div className="map-container">
-        {" "}
-        {/* Needs position: relative in CSS */}
         <div className="map-wrapper">
           <MapContainer
             center={initialCenter}
@@ -561,14 +415,20 @@ const MapComponent = () => {
             ref={mapRef}
           >
             {/* --- Base Layer & View Control --- */}
-            <ChangeView center={selectedMapLocation} zoom={selectedZoom} />
+            {/* ChangeView handles flying to center on selection, NO explicit zoom */}
+            <ChangeView center={selectedMapLocation} /* zoom prop removed */ />
             <TileLayer
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             />
 
+            {/* --- Component to handle zoom adjustment on radius change --- */}
+            <AdjustZoomOnRadiusChange
+              centerCoords={radiusCircleCenter} // Pass [lat, lng]
+              radius={searchRadius} // Pass radius in miles
+            />
+
             {/* --- Dynamic Map Layers --- */}
-            {/* Clicked Neighborhood Polygon */}
             {clickedNeighborhood?.geometry && (
               <GeoJSON
                 key={clickedNeighborhood._id || "neighborhood-poly"}
@@ -581,7 +441,6 @@ const MapComponent = () => {
                 }}
               />
             )}
-            {/* Clicked Neighborhood Label */}
             {clickedNeighborhood && neighborhoodCenter && (
               <Marker
                 key={
@@ -594,7 +453,6 @@ const MapComponent = () => {
                 interactive={false}
               />
             )}
-            {/* Selected Location Marker */}
             {selectedLocationDetails?.geometry?.coordinates && (
               <Marker
                 position={[
@@ -602,18 +460,16 @@ const MapComponent = () => {
                   selectedLocationDetails.geometry.coordinates[0],
                 ]}
               >
+                {" "}
                 <Popup>
                   {selectedLocationDetails.properties.name || "Selected Point"}
-                </Popup>
+                </Popup>{" "}
               </Marker>
             )}
-            {/* Radius Search Circle */}
             {radiusCircleCenter && searchRadius > 0 && (
               <RadiusCircle center={radiusCircleCenter} radius={searchRadius} />
             )}
-            {/* Drawn Polygons/Rectangles */}
             <DisplayPolygons polygons={drawnItems} />
-            {/* Property Markers from Radius Search */}
             {!isSearching &&
               radiusSearchResults.length > 0 &&
               radiusSearchResults.map((property) => {
@@ -662,13 +518,10 @@ const MapComponent = () => {
             <DrawControl onPolygonCreated={handlePolygonCreated} />
             <MapClickHandler onMapClick={handleMapClick} />
           </MapContainer>
-        </div>{" "}
-        {/* End of map-wrapper */}
-        {/* --- CORRECTED PLACEMENT for Radius Search Controls Overlay --- */}
-        {/* This div is positioned absolutely relative to map-container */}
-        {/* It does NOT participate in the main map-page-container flex layout */}
+        </div>
+        {/* --- Radius Search Controls Overlay --- */}
         <div className="map-controls-overlay">
-          {selectedLocationDetails && ( // Only show when a location is selected
+          {selectedLocationDetails && (
             <div className="radius-control">
               <strong>Search Radius (Miles):</strong>
               <div className="radio-group">
@@ -684,26 +537,12 @@ const MapComponent = () => {
                     <span>{value === 0 ? "None" : value}</span>
                   </label>
                 ))}
-                <div className="radius-actions">
-                  <button
-                    className="save-search-button"
-                    onClick={saveRadiusSearchAsGeoJSON}
-                    disabled={
-                      searchRadius === 0 ||
-                      !selectedLocationDetails?.geometry?.coordinates
-                    } // Disable if no radius/location
-                  >
-                    Save Search
-                  </button>
-                </div>
               </div>
             </div>
           )}
         </div>
-        {/* --- End of CORRECTED PLACEMENT --- */}
-      </div>{" "}
-      {/* End of map-container */}
-      {/* Second flex item: The sidebar */}
+      </div>
+      {/* --- Sidebar --- */}
       <div className="search-container">
         <MapSidebar
           isSearching={isSearching}
@@ -719,14 +558,9 @@ const MapComponent = () => {
           searchPropertiesInPolygon={searchPropertiesInPolygon}
           activePolygon={activePolygon}
           setActivePolygon={setActivePolygon}
-          // savedSearches={savedSearches}
-          // viewSavedSearch={viewSavedSearch}
-          // exportSavedSearches={exportSavedSearches}
-          // activeSearch={activeSearch}
         />
-      </div>{" "}
-      {/* End of search-container */}
-    </div> // End of map-page-container
+      </div>
+    </div>
   );
 };
 
