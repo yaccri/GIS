@@ -1,68 +1,292 @@
-/* Hovering Property Form */
+/* General Overlay */
 .hovering-property-form-overlay {
   position: fixed;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.3);
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
   z-index: 1000;
 }
 
+/* Form Container */
 .hovering-property-form {
-  background: white;
+  background: #fff;
   border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  width: 700px;
   padding: 20px;
-  width: 600px;
-  position: absolute;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  position: relative;
 }
 
+/* Header */
 .hovering-property-form-header {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  justify-content: flex-end;
   margin-bottom: 20px;
 }
 
 .close-btn {
-  background: transparent;
+  background: none;
   border: none;
   font-size: 20px;
   cursor: pointer;
 }
 
-.form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 16px;
+/* Main Details */
+.property-main-details {
+  text-align: center;
+  margin-bottom: 20px;
 }
 
-.form-column {
+.property-price {
+  font-size: 36px;
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+.property-address {
+  font-size: 16px;
+  color: #7f8c8d;
+  margin-bottom: 20px;
+}
+
+.property-icons {
   display: flex;
-  flex-direction: column;
-  gap: 12px;
+  justify-content: center;
+  gap: 20px;
 }
 
-textarea {
-  resize: none;
+.icon-item {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  color: #34495e;
+}
+
+.icon-item i {
+  margin-right: 5px;
+  font-size: 16px;
+}
+
+/* Grid Details */
+.property-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.grid-item {
+  font-size: 14px;
+  color: #34495e;
+  display: flex;
+  align-items: center;
+}
+
+.grid-item i {
+  margin-right: 5px;
+}
+
+/* Description */
+.property-description {
+  margin-bottom: 20px;
+}
+
+.property-description h3 {
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+.property-description textarea {
   width: 100%;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 10px;
+  font-size: 14px;
+  resize: none;
 }
 
+/* Zillow Main Details */
+.zillow-main {
+  text-align: left;
+  margin-bottom: 18px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #eee;
+}
+
+.zillow-price {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #222;
+  margin-bottom: 6px;
+}
+
+.zillow-address {
+  font-size: 1.1rem;
+  color: #555;
+  margin-bottom: 12px;
+}
+
+.zillow-icons-row {
+  display: flex;
+  gap: 28px;
+  font-size: 1.1rem;
+  color: #222;
+  margin-bottom: 8px;
+}
+
+.zillow-icons-row span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+}
+
+.zillow-icons-row i {
+  color: #0074e4;
+  font-size: 1.2em;
+}
+
+/* Zillow Grid Details */
+.zillow-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px 30px;
+  margin-bottom: 18px;
+  font-size: 1rem;
+  color: #444;
+}
+
+.zillow-grid i {
+  color: #bbb;
+  margin-right: 7px;
+}
+
+.zillow-grid.zillow-grid-2rows {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px 30px;
+  margin-bottom: 18px;
+}
+
+/* Zillow Details Row */
+.zillow-details-row {
+  display: flex;
+  gap: 32px;
+  margin: 18px 0 18px 0;
+  font-size: 1.08rem;
+  color: #444;
+  justify-content: flex-start;
+}
+
+.zillow-details-row span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 400; /* Not bold */
+}
+
+.zillow-details-row i {
+  color: #0074e4;
+  font-size: 1.15em;
+}
+
+.zillow-detail-label {
+  color: #888;
+  font-weight: 400;
+  margin-left: 2px;
+}
+
+.zillow-detail-value {
+  color: #444;
+  font-weight: 400;
+  margin-left: 2px;
+}
+
+/* Zillow Address Row */
+.zillow-address-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+  gap: 20px;
+}
+
+.zillow-address {
+  font-size: 1.1rem;
+  color: #555;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.zillow-address-details {
+  display: flex;
+  gap: 22px;
+  font-size: 1.08rem;
+  color: #222;
+}
+
+.zillow-address-details span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.zillow-address-details i {
+  color: #0074e4;
+  font-size: 1.15em;
+}
+
+/* Zillow Description */
+.zillow-description h3 {
+  font-size: 1rem;
+  font-weight: 400;
+  margin-bottom: 6px;
+  color: #888;
+}
+
+.zillow-description textarea {
+  width: 100%;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 10px;
+  font-size: 1rem;
+  resize: none;
+  background: #f8f8f8;
+  color: #888;
+}
+
+/* Buttons */
 .form-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 16px;
-  margin-top: 20px;
+  gap: 10px;
 }
 
-button {
-  padding: 8px 16px;
+.form-actions button {
+  padding: 10px 20px;
+  font-size: 14px;
   border: none;
   border-radius: 4px;
   cursor: pointer;
 }
 
-button:hover {
-  opacity: 0.9;
+.form-actions button:nth-child(1) {
+  background: #27ae60;
+  color: #fff;
+}
+
+.form-actions button:nth-child(2) {
+  background: #e74c3c;
+  color: #fff;
+}
+
+.form-actions button:nth-child(3) {
+  background: #bdc3c7;
+  color: #2c3e50;
 }

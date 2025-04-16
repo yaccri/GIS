@@ -1,42 +1,52 @@
-import React, { useState, useEffect, useRef, useContext } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import ReactDOM from "react-dom";
 import "./HoveringPropertyForm.css";
-import { UserContext } from "../context/UserContext";
+import "@fortawesome/fontawesome-free/css/all.min.css";
 
+// Utility for formatting numbers with commas
+const formatNumber = (num) =>
+  num !== undefined && num !== null && num !== "" && !isNaN(num)
+    ? Number(num).toLocaleString()
+    : "N/A";
 
+const formatCurrency = (num) =>
+  num !== undefined && num !== null && num !== "" && !isNaN(num)
+    ? `$${Number(num).toLocaleString()}`
+    : "N/A";
 
-const initialFormState = {
-  propertyID: "",
-  address: "",
-  city: "",
-  state: "",
-  zip: "",
-  type: "",
-  description: "",
-  price: "",
-  hoa: "",
-  propertyTax: "",
-  insurance: "",
-  beds: "",
-  baths: "",
-  size: "",
-  lotSize: "",
-  yearBuilt: "",
-  tenantsInPlace: "",
-  createdOn: "",
-};
+const formatCurrencyNoDollar = (num) =>
+  num !== undefined && num !== null && num !== "" && !isNaN(num)
+    ? Number(num).toLocaleString()
+    : "N/A";
 
 const HoveringPropertyForm = ({ isOpen, onClose, property, isAdmin, onEdit, onDelete }) => {
   const modalRef = useRef(null);
-  const [formData, setFormData] = useState(initialFormState);
 
-  const { user } = useContext(UserContext);
+  const [formData, setFormData] = useState({
+    propertyID: "",
+    address: "",
+    city: "",
+    state: "",
+    zip: "",
+    type: "",
+    description: "",
+    price: "",
+    hoa: "",
+    propertyTax: "",
+    insurance: "",
+    beds: "",
+    baths: "",
+    size: "",
+    lotSize: "",
+    yearBuilt: "",
+    tenantsInPlace: "",
+    createdOn: "",
+  });
 
-console.log("isAdmin in HoveringPropertyForm:", user.isAdmin); // Debugging log
-
-  // Drag logic
+  // Dragging logic
   let offsetX = 0;
   let offsetY = 0;
+
   const handleDragStart = (e) => {
     if (!modalRef.current) return;
     offsetX = e.clientX - modalRef.current.getBoundingClientRect().left;
@@ -44,11 +54,13 @@ console.log("isAdmin in HoveringPropertyForm:", user.isAdmin); // Debugging log
     document.addEventListener("mousemove", handleDragging);
     document.addEventListener("mouseup", handleDragEnd);
   };
+
   const handleDragging = (e) => {
     if (!modalRef.current) return;
     modalRef.current.style.left = `${e.clientX - offsetX}px`;
     modalRef.current.style.top = `${e.clientY - offsetY}px`;
   };
+
   const handleDragEnd = () => {
     document.removeEventListener("mousemove", handleDragging);
     document.removeEventListener("mouseup", handleDragEnd);
@@ -56,7 +68,7 @@ console.log("isAdmin in HoveringPropertyForm:", user.isAdmin); // Debugging log
 
   useEffect(() => {
     if (property) {
-      setFormData({ ...initialFormState, ...property });
+      setFormData({ ...formData, ...property });
     }
   }, [property]);
 
@@ -86,99 +98,90 @@ console.log("isAdmin in HoveringPropertyForm:", user.isAdmin); // Debugging log
       <div
         className="hovering-property-form"
         ref={modalRef}
-        style={{ position: "absolute", top: "100px", left: "100px" }}
         onMouseDown={handleDragStart}
+        style={{ position: "absolute", top: "100px", left: "100px" }}
       >
-        <div className="hovering-property-form-header">
-          <h2>{isAdmin ? "Edit Property" : "View Property"}</h2>
-          <button className="close-btn" onClick={onClose}>×</button>
-        </div>
-        <form>
-          <div className="form-grid">
-            {/* Left Column: Dry Facts */}
-            <div className="form-column">
-              <div><label>Property ID</label>
-                <input name="propertyID" value={formData.propertyID || ""} onChange={handleChange} disabled={!isAdmin} />
-              </div>
-              <div><label>Address</label>
-                <input name="address" value={formData.address || ""} onChange={handleChange} disabled={!isAdmin} />
-              </div>
-              <div><label>City</label>
-                <input name="city" value={formData.city || ""} onChange={handleChange} disabled={!isAdmin} />
-              </div>
-              <div><label>State</label>
-                <input name="state" value={formData.state || ""} onChange={handleChange} disabled={!isAdmin} />
-              </div>
-              <div><label>Zip Code</label>
-                <input name="zip" value={formData.zip || ""} onChange={handleChange} disabled={!isAdmin} />
-              </div>
-              <div><label>Type</label>
-                <select name="type" value={formData.type || ""} onChange={handleChange} disabled={!isAdmin}>
-                  <option value="">Select Type</option>
-                  <option value="Apartment">Apartment</option>
-                  <option value="House">House</option>
-                  <option value="Condominium">Condominium</option>
-                </select>
-              </div>
-              <div><label>Beds</label>
-                <input name="beds" type="number" value={formData.beds || ""} onChange={handleChange} disabled={!isAdmin} />
-              </div>
-              <div><label>Baths</label>
-                <input name="baths" type="number" value={formData.baths || ""} onChange={handleChange} disabled={!isAdmin} />
-              </div>
-            </div>
-            {/* Center Column: Financials */}
-            <div className="form-column">
-              <div><label>Price</label>
-                <input name="price" type="number" value={formData.price || ""} onChange={handleChange} disabled={!isAdmin} />
-              </div>
-              <div><label>HOA</label>
-                <input name="hoa" value={formData.hoa || ""} onChange={handleChange} disabled={!isAdmin} />
-              </div>
-              <div><label>Property Tax</label>
-                <input name="propertyTax" value={formData.propertyTax || ""} onChange={handleChange} disabled={!isAdmin} />
-              </div>
-              <div><label>Insurance</label>
-                <input name="insurance" value={formData.insurance || ""} onChange={handleChange} disabled={!isAdmin} />
-              </div>
-              <div><label>Size (sq ft)</label>
-                <input name="size" type="number" value={formData.size || ""} onChange={handleChange} disabled={!isAdmin} />
-              </div>
-              <div><label>Lot Size (sq ft)</label>
-                <input name="lotSize" type="number" value={formData.lotSize || ""} onChange={handleChange} disabled={!isAdmin} />
-              </div>
-              <div><label>Year Built</label>
-                <input name="yearBuilt" type="number" value={formData.yearBuilt || ""} onChange={handleChange} disabled={!isAdmin} />
-              </div>
-              <div><label>Tenants in Place</label>
-                <input name="tenantsInPlace" value={formData.tenantsInPlace || ""} onChange={handleChange} disabled={!isAdmin} />
-              </div>
-              <div><label>Created On</label>
-                <input name="createdOn" value={formData.createdOn || ""} onChange={handleChange} disabled />
-              </div>
-            </div>
-            {/* Right Column: Description */}
-            <div className="form-column">
-              <div>
-                <label>Description</label>
-                <textarea name="description" value={formData.description || ""} onChange={handleChange} disabled={!isAdmin} rows={10} />
-              </div>
-            </div>
+        <button className="close-btn" onClick={onClose}>×</button>
+        <div className="zillow-main">
+          <div className="zillow-price">{formatCurrency(formData.price)}</div>
+          <div className="zillow-address-row">
+            <span className="zillow-address">
+              {formData.address}, {formData.city}, {formData.state} {formData.zip}
+            </span>
+            <span className="zillow-address-details">
+              <span>
+                <i className="fas fa-bed"></i> {formatNumber(formData.beds) || "N/A"} Beds
+              </span>
+              <span>
+                <i className="fas fa-bath"></i> {formatNumber(formData.baths) || "N/A"} Baths
+              </span>
+              <span>
+                <i className="fas fa-ruler-combined"></i> {formatNumber(formData.size) || "N/A"} sqft
+              </span>
+            </span>
           </div>
-          {user.isAdmin && (
-            <div className="form-actions">
-              <button type="button" onClick={handleSave}>Save</button>
-              <button type="button" onClick={handleDelete}>Delete</button>
-              <button type="button" onClick={onClose}>Cancel</button>
-            </div>
-          )}
-        </form>
+        </div>
+        <div className="zillow-grid zillow-grid-2rows">
+          {/* Row 1 */}
+          <div className="grid-item">
+            <i className="fas fa-home"></i>
+            <span className="zillow-detail-label">Type</span>
+            <span className="zillow-detail-value">{formData.type || "N/A"}</span>
+          </div>
+          <div className="grid-item">
+            <i className="fas fa-calendar-alt"></i>
+            <span className="zillow-detail-label">Built</span>
+            <span className="zillow-detail-value">{formData.yearBuilt || "N/A"}</span>
+          </div>
+          <div className="grid-item">
+            <i className="fas fa-expand"></i>
+            <span className="zillow-detail-label">Sqft Lot</span>
+            <span className="zillow-detail-value">{formatNumber(formData.lotSize)}</span>
+          </div>
+          {/* Row 2 */}
+          <div className="grid-item">
+            <i className="fas fa-shield-alt"></i>
+            <span className="zillow-detail-label">Insurance</span>
+            <span className="zillow-detail-value">{formatCurrency(formData.insurance)}</span>
+          </div>
+          <div className="grid-item">
+            <i className="fas fa-dollar-sign"></i>
+            <span className="zillow-detail-label">$/sqft</span>
+            <span className="zillow-detail-value">
+              {formData.price && formData.size
+                ? `$${(Number(formData.price) / Number(formData.size)).toLocaleString()}`
+                : "N/A"}
+            </span>
+          </div>
+          <div className="grid-item">
+            <i className="fas fa-coins"></i>
+            <span className="zillow-detail-label">HOA</span>
+            <span className="zillow-detail-value">
+              {formData.hoa ? `$${formatCurrencyNoDollar(formData.hoa)}/mo` : "N/A"}
+            </span>
+          </div>
+        </div>
+        <div className="zillow-description">
+          <h3>Description</h3>
+          <textarea
+            name="description"
+            value={formData.description || ""}
+            onChange={handleChange}
+            disabled={!isAdmin}
+            rows={5}
+          />
+        </div>
+        {isAdmin && (
+          <div className="form-actions">
+            <button type="button" onClick={handleSave}>Save</button>
+            <button type="button" onClick={handleDelete}>Delete</button>
+            <button type="button" onClick={onClose}>Cancel</button>
+          </div>
+        )}
       </div>
     </div>,
     document.body
   );
 };
-
-
 
 export default HoveringPropertyForm;
