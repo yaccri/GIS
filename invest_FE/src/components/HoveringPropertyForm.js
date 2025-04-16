@@ -121,44 +121,18 @@ const HoveringPropertyForm = ({ isOpen, onClose, property, isAdmin, onEdit, onDe
             </span>
           </div>
         </div>
-        <div className="zillow-grid zillow-grid-2rows">
-          {/* Row 1 */}
-          <div className="grid-item">
-            <i className="fas fa-home"></i>
-            <span className="zillow-detail-label">Type</span>
-            <span className="zillow-detail-value">{formData.type || "N/A"}</span>
-          </div>
-          <div className="grid-item">
-            <i className="fas fa-calendar-alt"></i>
-            <span className="zillow-detail-label">Built</span>
-            <span className="zillow-detail-value">{formData.yearBuilt || "N/A"}</span>
-          </div>
-          <div className="grid-item">
-            <i className="fas fa-expand"></i>
-            <span className="zillow-detail-label">Sqft Lot</span>
-            <span className="zillow-detail-value">{formatNumber(formData.lotSize)}</span>
-          </div>
-          {/* Row 2 */}
-          <div className="grid-item">
-            <i className="fas fa-shield-alt"></i>
-            <span className="zillow-detail-label">Insurance</span>
-            <span className="zillow-detail-value">{formatCurrency(formData.insurance)}</span>
-          </div>
-          <div className="grid-item">
-            <i className="fas fa-dollar-sign"></i>
-            <span className="zillow-detail-label">$/sqft</span>
-            <span className="zillow-detail-value">
-              {formData.price && formData.size
-                ? `$${(Number(formData.price) / Number(formData.size)).toLocaleString()}`
-                : "N/A"}
-            </span>
-          </div>
-          <div className="grid-item">
-            <i className="fas fa-coins"></i>
-            <span className="zillow-detail-label">HOA</span>
-            <span className="zillow-detail-value">
-              {formData.hoa ? `$${formatCurrencyNoDollar(formData.hoa)}/mo` : "N/A"}
-            </span>
+        <div className="zillow-fields-bg">
+          <div className="zillow-grid zillow-grid-2rows">
+            <div className="grid-item"><i className="fas fa-home"></i> <span className="zillow-detail-label">Type</span> <span className="zillow-detail-value">{formData.type || "N/A"}</span></div>
+            <div className="grid-item"><i className="fas fa-calendar-alt"></i> <span className="zillow-detail-label">Built</span> <span className="zillow-detail-value">{formData.yearBuilt || "N/A"}</span></div>
+            <div className="grid-item"><i className="fas fa-expand"></i> <span className="zillow-detail-label">Sqft Lot</span> <span className="zillow-detail-value">{formatNumber(formData.lotSize)}</span></div>
+            <div className="grid-item"><i className="fas fa-shield-alt"></i> <span className="zillow-detail-label">Insurance</span> <span className="zillow-detail-value">{formatCurrency(formData.insurance)}</span></div>
+            <div className="grid-item"><i className="fas fa-dollar-sign"></i> <span className="zillow-detail-label">$/sqft</span> <span className="zillow-detail-value">{formData.price && formData.size ? `$${(Number(formData.price) / Number(formData.size)).toLocaleString()}` : "N/A"}</span></div>
+            <div className="grid-item"><i className="fas fa-coins"></i> <span className="zillow-detail-label">HOA</span> <span className="zillow-detail-value">{formData.hoa ? `$${formatCurrencyNoDollar(formData.hoa)}/mo` : "N/A"}</span></div>
+            <div className="grid-item"><i className="fas fa-file-invoice-dollar"></i> <span className="zillow-detail-label">Property Tax</span> <span className="zillow-detail-value">{formatCurrency(formData.propertyTax)}</span></div>
+            <div className="grid-item"><i className="fas fa-user-friends"></i> <span className="zillow-detail-label">Tenants</span> <span className="zillow-detail-value">{formData.tenantsInPlace || "N/A"}</span></div>
+            <div className="grid-item"><i className="fas fa-id-badge"></i> <span className="zillow-detail-label">Property ID</span> <span className="zillow-detail-value">{formData.propertyID || "N/A"}</span></div>
+            <div className="grid-item"><i className="fas fa-calendar-plus"></i> <span className="zillow-detail-label">Created On</span> <span className="zillow-detail-value">{formData.createdOn || "N/A"}</span></div>
           </div>
         </div>
         <div className="zillow-description">

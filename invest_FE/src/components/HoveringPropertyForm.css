@@ -81,10 +81,17 @@
 }
 
 .grid-item {
-  font-size: 14px;
-  color: #34495e;
+  background: #f7f7f7;
+  padding: 10px 12px;
+  border-radius: 0;           /* No rounded corners */
   display: flex;
   align-items: center;
+  font-size: 14px;
+  color: #34495e;
+  margin-bottom: 0;
+  box-sizing: border-box;
+  min-height: 38px;
+  gap: 4px;
 }
 
 .grid-item i {
@@ -169,8 +176,8 @@
 .zillow-grid.zillow-grid-2rows {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 10px 30px;
-  margin-bottom: 18px;
+  gap: 6px 6px;              /* Equal, narrow horizontal and vertical gaps */
+  margin-bottom: 0;
 }
 
 /* Zillow Details Row */
@@ -243,15 +250,25 @@
 }
 
 /* Zillow Description */
+.zillow-description {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
 .zillow-description h3 {
   font-size: 1rem;
   font-weight: 400;
   margin-bottom: 6px;
   color: #888;
+  align-self: flex-start;
 }
 
 .zillow-description textarea {
   width: 100%;
+  max-width: 600px;
+  min-width: 300px;
   border: 1px solid #ccc;
   border-radius: 4px;
   padding: 10px;
@@ -259,7 +276,9 @@
   resize: none;
   background: #f8f8f8;
   color: #888;
+  box-sizing: border-box;
 }
+
 
 /* Buttons */
 .form-actions {
