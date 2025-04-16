@@ -10,7 +10,7 @@
   box-sizing: border-box; /* Add this for consistent padding behavior */
 }
 
-/* --- ADDED/MODIFIED STYLES for Search Input Area --- */
+/* --- Search Input Area Styles --- */
 .top-bar-search {
   flex-grow: 1; /* Allow search container to take available horizontal space */
   max-width: 500px; /* Optional: Limit width on very large screens */
@@ -18,8 +18,6 @@
   position: relative; /* Crucial for positioning the suggestions dropdown */
 }
 
-/* Target the input box *inside* the top bar search container */
-/* Use the class from AddressSearch-OpenStreetMap.css */
 .top-bar-search .address-search-box {
   width: 100%; /* Make input fill its container (.top-bar-search) */
   padding: 8px 12px; /* Adjust padding for top bar height if needed */
@@ -35,8 +33,6 @@
   box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25); /* Example focus shadow */
 }
 
-/* Target the suggestions list *inside* the top bar search container */
-/* Use the class from AddressSearch-OpenStreetMap.css */
 .top-bar-search .address-suggestions-list {
   position: absolute;
   top: 100%; /* Position below the input */
@@ -56,14 +52,12 @@
   border-bottom-right-radius: 4px;
 }
 
-/* Target suggestion items *inside* the top bar search container */
-/* Use the class from AddressSearch-OpenStreetMap.css */
 .top-bar-search .address-suggestion-item {
   padding: 8px 12px; /* Adjust padding */
   cursor: pointer;
   border-bottom: 1px solid #eee;
   font-size: 0.9rem; /* Adjust font size */
-  color: #333333; /* <<< FIX: Explicitly set dark text color for suggestions */
+  color: #333333; /* Explicitly set dark text color for suggestions */
   white-space: nowrap; /* Prevent wrapping */
   overflow: hidden; /* Hide overflow */
   text-overflow: ellipsis; /* Add ellipsis for long text */
@@ -76,8 +70,6 @@
   background-color: #f0f0f0; /* Keep hover effect */
 }
 
-/* Target loading indicator *inside* the top bar search container */
-/* Use the class from AddressSearch-OpenStreetMap.css */
 .top-bar-search .address-search-loading {
   position: absolute;
   top: 100%;
@@ -88,134 +80,222 @@
   border-top: none;
   padding: 8px 12px;
   font-style: italic;
-  color: #555555; /* <<< FIX: Set visible text color */
+  color: #555555; /* Set visible text color */
   z-index: 1001; /* Same level as suggestions */
   border-bottom-left-radius: 4px;
   border-bottom-right-radius: 4px;
 }
-/* --- END ADDED/MODIFIED STYLES --- */
+/* --- END Search Input Area Styles --- */
 
-/* --- Your Existing Styles (Mostly Unchanged) --- */
-.welcome-message {
-  /* Not used in current JS, but kept for reference */
-  font-size: 26px;
-  color: #ffffff;
-}
-
-.top-bar-title {
-  /* Not used in current JS, but kept for reference */
-  font-size: 26px;
-  color: #d4af37;
-  font-weight: bold;
-}
-
-/* Menu styles */
+/* --- Menu Area Styles --- */
 .menu-container {
   position: relative;
-  display: flex; /* ADDED: To align name and button horizontally */
-  align-items: center; /* ADDED: To vertically center name and button */
+  display: flex;
+  align-items: center;
 }
 
-/* --- ADDED: Style for the user name display --- */
 .user-name-display {
-  font-size: 0.875rem; /* H6 equivalent, adjust as needed */
-  font-weight: 500; /* Medium weight */
-  color: #ffffff; /* Inherit white from top-bar */
-  margin-right: 12px; /* Space between name and menu button */
-  white-space: nowrap; /* Prevent name wrapping */
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #ffffff;
+  margin-right: 12px;
+  white-space: nowrap;
 }
-/* --- END ADDED --- */
 
 .menu-button {
   background-color: transparent;
   color: #ffffff;
   border: none;
   cursor: pointer;
-  /* font-size: 16px; */ /* Font size likely not needed for icon button */
-  /* padding: 10px; */ /* Padding might make icon alignment tricky, remove or adjust */
-  padding: 0; /* Let icon size dictate button size */
-  display: flex; /* Ensure icon is centered if needed */
-  align-items: center; /* Ensure icon is centered */
-  justify-content: center; /* Ensure icon is centered */
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
+.menu-icon {
+  width: 40px;
+  height: 40px;
+  background-color: #ffffff;
+  border-radius: 50%;
+  display: block;
+}
+
+/* Main Dropdown Menu List */
 .menu-list {
   position: absolute;
   top: 100%;
-  right: 0; /* Align dropdown to the right edge of menu-container */
-  background-color: #6b7280;
+  right: 0;
+  background-color: #6b7280; /* Gray background */
   list-style: none;
-  padding: 0;
-  margin: 5px 0 0 0; /* Add a small gap below the top bar */
+  padding: 5px 0; /* Add vertical padding */
+  margin: 5px 0 0 0;
   border-radius: 4px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  z-index: 1002; /* Ensure menu is above search suggestions */
+  z-index: 1002; /* Above search suggestions */
   min-width: 200px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid #e5e7eb; /* Light border */
 }
 
+/* Individual items in the main menu */
 .menu-list li {
-  /* padding: 10px 20px; */ /* Remove padding here */
-  /* text-align: right; */ /* Remove text-align here */
-  padding: 0; /* Reset padding */
+  padding: 0; /* Reset padding, apply on links/buttons */
+  position: relative; /* Needed for absolute positioning of submenu AND arrow */
 }
 
+/* Base styles for ALL interactive items (Links, Buttons, Trigger) */
 .menu-list li a,
-.menu-list li button {
-  color: #ffffff;
+.menu-list li button,
+.admin-tools-trigger /* <<< Apply same padding to trigger */ {
+  color: #ffffff; /* White text */
   text-decoration: none;
-  display: block;
+  display: flex; /* Use flex for alignment */
+  align-items: center; /* Vertically center */
   width: 100%;
   text-align: left;
   background-color: transparent;
   border: none;
   cursor: pointer;
-  padding: 10px 20px; /* Apply padding here */
-  font-size: 0.9rem; /* Optional: Adjust font size */
+  /* <<< CONSISTENT Padding for all items */
+  padding: 10px 20px 10px 20px;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  box-sizing: border-box;
 }
 
-.menu-list li:hover {
-  background-color: #1a5f7a;
+/* Remove the specific padding override for the trigger */
+/*
+.admin-tools-trigger {
+  padding: 10px 20px 10px 35px;
+  position: relative;
+  justify-content: flex-start;
+}
+*/
+
+/* Hover effect for main menu items */
+.menu-list li:hover > a,
+.menu-list li:hover > button,
+.menu-list li.admin-tools-item:hover > .admin-tools-trigger {
+  background-color: #1a5f7a; /* Darker blue hover */
+}
+
+/* Specific button for signout */
+.menu-signout-button {
+  color: #ffdddd !important; /* Lighter red for visibility on dark bg */
+}
+.menu-list li:hover > .menu-signout-button {
+  background-color: #dc3545 !important; /* Red background on hover */
+  color: #ffffff !important; /* White text on hover */
 }
 
 /* Separator line */
 .menu-separator {
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid #9ca3af; /* Slightly darker separator for contrast */
   margin: 5px 0;
-  height: 0; /* Override potential height */
-  line-height: 0; /* Override potential line-height */
+  height: 0;
+  line-height: 0;
+  padding: 0; /* Override padding */
+  position: static; /* Ensure separator doesn't interfere */
+}
+.menu-list li.menu-separator:hover {
+  background-color: transparent; /* Prevent hover effect on separator */
 }
 
-.menu-icon {
-  width: 40px; /* Adjust size as needed */
-  height: 40px; /* Adjust size as needed */
-  background-color: #ffffff;
-  border-radius: 50%; /* make it circular */
-  display: block; /* Ensure it behaves like a block element */
+/* --- Styles for Admin Submenu (Flyout) --- */
+
+/* The list item containing the admin trigger and submenu */
+.admin-tools-item {
+  /* Inherits position: relative from .menu-list li */
 }
 
-/* --- ADDED: Responsive adjustments --- */
+/* The arrow indicator - Positioned left, within the standard padding */
+.submenu-arrow {
+  position: absolute;
+  left: 5px; /* <<< ADJUSTED: Position closer to the left edge */
+  top: 50%;
+  transform: translateY(-50%) scaleX(-1); /* Center vertically & flip */
+  font-size: 1em;
+  font-weight: bold;
+  color: #ffffff;
+  pointer-events: none; /* Prevent interference */
+}
+
+/* The submenu list itself */
+.admin-submenu {
+  /* Positioning */
+  position: absolute;
+  top: -6px; /* Align top edge slightly above parent li (adjust for padding/border) */
+  right: 100%; /* Position to the LEFT of the parent */
+  margin-right: 1px; /* Small gap between main and sub menu */
+
+  /* Appearance (match .menu-list) */
+  list-style: none;
+  padding: 5px 0; /* Vertical padding */
+  margin: 0;
+  background-color: #6b7280; /* Match main menu background */
+  border: 1px solid #e5e7eb; /* Match main menu border */
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Match main menu shadow */
+  min-width: 200px; /* Match main menu width */
+  z-index: 1003; /* Ensure submenu is above main menu */
+}
+
+/* List items within the submenu */
+.admin-submenu li {
+  position: relative;
+  padding: 0;
+}
+
+/* Links within the submenu */
+.admin-submenu li a {
+  display: block; /* Can be block as no arrow needed here */
+  /* <<< CHANGED: Use the SAME padding as other items */
+  padding: 10px 20px 10px 20px;
+  color: #ffffff;
+  text-decoration: none;
+  white-space: nowrap;
+  font-size: 0.9rem;
+}
+
+/* Hover effect for submenu items */
+.admin-submenu li:hover > a {
+  background-color: #1a5f7a; /* Match main menu hover */
+}
+
+/* --- End Admin Submenu Styles --- */
+
+/* --- Responsive adjustments --- */
 @media (max-width: 768px) {
   .top-bar-search {
-    max-width: 300px; /* Adjust max width for smaller screens */
+    max-width: 300px;
     margin-right: 10px;
   }
   .user-name-display {
-    display: none; /* Hide name on smaller screens */
+    display: none;
   }
   .top-bar {
-    padding: 0 10px; /* Reduce padding */
+    padding: 0 10px;
   }
   .menu-icon {
     width: 35px;
     height: 35px;
+  }
+  /* Adjust padding consistently */
+  .menu-list li a,
+  .menu-list li button,
+  .admin-tools-trigger,
+  .admin-submenu li a {
+    padding: 8px 15px 8px 15px; /* Consistent reduced padding */
+  }
+  .submenu-arrow {
+    left: 3px; /* Adjust arrow position */
   }
 }
 
 @media (max-width: 480px) {
   .top-bar-search {
     flex-grow: 1;
-    max-width: none; /* Allow it to take most space */
+    max-width: none;
     margin-right: 5px;
   }
   .top-bar-search .address-search-box {
@@ -225,5 +305,16 @@
     width: 30px;
     height: 30px;
   }
+  /* Further reduce padding consistently */
+  .menu-list li a,
+  .menu-list li button,
+  .admin-tools-trigger,
+  .admin-submenu li a {
+    padding: 8px 10px 8px 10px; /* Consistent further reduced padding */
+  }
+  .submenu-arrow {
+    left: 2px; /* Adjust arrow position */
+    font-size: 0.9em;
+  }
 }
-/* --- END ADDED --- */
+/* --- END Responsive adjustments --- */
