@@ -2,66 +2,88 @@
 import React, { useContext, useState, useRef, useEffect } from "react";
 import { UserContext } from "../context/UserContext";
 import { useMapContext } from "../context/MapContext";
-import { Link, useNavigate } from "react-router-dom";
+// Import useLocation along with other router hooks
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import AddressSearchInput from "./AddressSearch-OpenStreetMap";
 import "./TopBar.css";
 import menuIcon from "../assets/images/account.svg";
+
+// Define the path where your MapComponent is rendered
+const MAP_PAGE_PATH = "/map";
 
 const TopBar = () => {
   const { user, updateUser, updateToken } = useContext(UserContext);
   const { selectMapLocation } = useMapContext();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  // --- New state for admin submenu ---
   const [isAdminSubMenuOpen, setIsAdminSubMenuOpen] = useState(false);
-  // --- Ref for delayed closing ---
   const adminMenuTimerRef = useRef(null);
-
-  const navigate = useNavigate();
   const menuRef = useRef(null);
+
+  // Get navigation and location hooks
+  const navigate = useNavigate();
+  const location = useLocation(); // Get current location object
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
-  // --- Modified closeMenu to close both ---
   const closeMenu = () => {
     setIsMenuOpen(false);
-    setIsAdminSubMenuOpen(false); // Close admin submenu as well
-    clearTimeout(adminMenuTimerRef.current); // Clear any pending close timer
+    setIsAdminSubMenuOpen(false);
+    clearTimeout(adminMenuTimerRef.current);
   };
 
   const handleSignOut = () => {
     updateUser({ isLoggedIn: false, isAdmin: false, fullName: "" });
     updateToken(null);
-    closeMenu(); // Closes both menus
+    closeMenu();
     navigate("/login");
   };
 
-  const handleLocationSelectInternal = (location) => {
-    selectMapLocation(location);
-    closeMenu(); // Closes both menus
+  // --- MODIFIED: Handle location selection and navigation ---
+  const handleLocationSelectInternal = (selectedAddress) => {
+    console.log("TopBar: Address selected", selectedAddress);
+
+    // 1. Update the context immediately.
+    //    MapPage will pick this up when it mounts or updates.
+    selectMapLocation(selectedAddress);
+
+    // 2. Check if navigation is needed.
+    const currentPath = location.pathname; // Get the current path
+
+    if (currentPath !== MAP_PAGE_PATH) {
+      console.log(
+        `TopBar: Navigating from ${currentPath} to ${MAP_PAGE_PATH} after address selection.`
+      );
+      // Navigate to the map page if not already there
+      navigate(MAP_PAGE_PATH);
+    } else {
+      console.log("TopBar: Already on map page. Context updated.");
+      // No navigation needed, MapPage's useEffect watching selectedLocation will handle centering/zoom.
+    }
+
+    // Note: Removed closeMenu() here as the search is not inside the menu itself.
   };
+  // --- END MODIFICATION ---
 
   // --- Handlers for Admin Submenu ---
   const handleAdminMouseEnter = () => {
-    clearTimeout(adminMenuTimerRef.current); // Clear timer if mouse re-enters
+    clearTimeout(adminMenuTimerRef.current);
     if (isMenuOpen) {
-      // Only open submenu if main menu is open
       setIsAdminSubMenuOpen(true);
     }
   };
 
   const handleAdminMouseLeave = () => {
-    // Delay closing to allow moving mouse onto the submenu
     adminMenuTimerRef.current = setTimeout(() => {
       setIsAdminSubMenuOpen(false);
-    }, 200); // 200ms delay, adjust as needed
+    }, 200);
   };
   // --- End Handlers for Admin Submenu ---
 
-  // Close menu if clicking outside (existing logic should work)
+  // Close menu if clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
-        closeMenu(); // Closes both menus
+        closeMenu();
       }
     };
     if (isMenuOpen) {
@@ -71,13 +93,14 @@ const TopBar = () => {
     }
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
-      clearTimeout(adminMenuTimerRef.current); // Clear timer on unmount/close
+      clearTimeout(adminMenuTimerRef.current);
     };
   }, [isMenuOpen]);
 
   return (
     <div className="top-bar">
       <div className="top-bar-search">
+        {/* Pass the modified handler */}
         <AddressSearchInput
           onLocationSelect={handleLocationSelectInternal}
           placeholder="Search US Address on Map..."
@@ -131,24 +154,20 @@ const TopBar = () => {
                   </Link>
                 </li>
 
-                {/* --- Admin Tools Item (Modified) --- */}
+                {/* --- Admin Tools Item --- */}
                 {user.isAdmin && (
                   <li
-                    className="admin-tools-item" // Add class for styling/positioning
+                    className="admin-tools-item"
                     onMouseEnter={handleAdminMouseEnter}
-                    onMouseLeave={handleAdminMouseLeave} // Attach hover handlers here
+                    onMouseLeave={handleAdminMouseLeave}
                   >
-                    {/* Make this a span or button, not a link */}
                     <span className="admin-tools-trigger">
-                      Admin Tools <span className="submenu-arrow">▸</span>{" "}
-                      {/* Arrow indicates submenu */}
+                      <span className="submenu-arrow">▸</span> Admin Tools{" "}
+                      {/* Ensure arrow is styled correctly */}
                     </span>
-
-                    {/* --- Admin Submenu (Conditional Rendering) --- */}
                     {isAdminSubMenuOpen && (
                       <ul
                         className="admin-submenu"
-                        // Keep submenu open if mouse enters it
                         onMouseEnter={handleAdminMouseEnter}
                         onMouseLeave={handleAdminMouseLeave}
                       >
@@ -172,7 +191,6 @@ const TopBar = () => {
                         </li>
                       </ul>
                     )}
-                    {/* --- End Admin Submenu --- */}
                   </li>
                 )}
                 {/* --- End Admin Tools Item --- */}

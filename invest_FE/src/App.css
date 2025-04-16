@@ -5,23 +5,26 @@
   min-height: 100vh;
 }
 
+/* .top-bar rule might be redundant if TopBar.css handles it, but kept for now */
 .top-bar {
   background-color: #1a3c5a;
   padding: 10px;
   text-align: center;
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 100; /* Note: TopBar.css uses a higher z-index (1100) which likely takes precedence */
   height: 12vh;
 }
 
 .main-layout {
   display: flex;
-  flex-direction: row;
+  /* flex-direction: row; /* Optional: Can be removed if only one child remains */
   flex-grow: 1;
-  position: relative;
+  position: relative; /* Keep if children might be positioned relative to it */
 }
 
+/* --- REMOVED: .left-bar styles --- */
+/*
 .left-bar {
   background-color: #6b7280;
   padding: 10px;
@@ -30,7 +33,7 @@
   top: 12vh;
   height: calc(
     100vh - 12vh - 50px
-  ); /* Adjust height to fit between TopBar and bottom-bar */
+  );
   overflow-y: auto;
   overflow-x: hidden;
   z-index: 99;
@@ -44,20 +47,23 @@
 .left-bar a:hover {
   color: #d4af37;
 }
+*/
+/* --- END REMOVED --- */
 
 .working-area {
-  flex: 1;
+  flex: 1; /* Takes up all available space in .main-layout */
   display: flex;
   flex-direction: column;
   min-height: 0; /* Important for flex child to take remaining height */
-  overflow: auto;
+  overflow: auto; /* Allow scrolling within the working area if content overflows */
   padding: 20px;
   background-color: #f9fafb;
-  margin-left: 220px; /* Account for the left bar */
-  width: calc(
-    100% - 220px
-  ); /* Ensure the width accounts for the left bar offset */
-  box-sizing: border-box;
+  /* --- REMOVED: margin-left and width calculation --- */
+  /* margin-left: 220px; */
+  /* width: calc(100% - 220px); */
+  /* --- ADDED: Ensure full width and box-sizing --- */
+  width: 100%; /* Explicitly set width to 100% of the parent */
+  box-sizing: border-box; /* Ensure padding is included within the width */
 }
 
 .bottom-bar {
@@ -71,10 +77,10 @@
   color: #ffffff;
 }
 
-/* Remove any fixed positioning that might interfere with the map layout */
+/* Styles for the map container itself */
 .map-page-container {
   width: 100%;
-  height: 100%;
+  height: 100%; /* Ensure it fills the .working-area */
   display: flex;
-  flex: 1;
+  flex: 1; /* Ensure it takes available space within flex column */
 }
