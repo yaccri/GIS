@@ -19,6 +19,25 @@ const formatCurrencyNoDollar = (num) =>
     ? Number(num).toLocaleString()
     : "N/A";
 
+// Utility for formatting date
+const formatDate = (dateStr) => {
+  if (!dateStr) return "N/A";
+  const date = new Date(dateStr);
+  if (isNaN(date)) return "N/A";
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const m = months[date.getMonth()];
+  const d = String(date.getDate()).padStart(2, "0");
+  const y = date.getFullYear();
+  return `${m}-${d}-${y}`;
+};
+
+// ROI calculation utility
+const calcROI = (income, expenses, price) => {
+  if (!price || isNaN(price)) return "N/A";
+  const roi = ((income - expenses) / price) * 100;
+  return isFinite(roi) ? `${roi.toFixed(1)}%` : "N/A";
+};
+
 const HoveringPropertyForm = ({ isOpen, onClose, property, isAdmin, onEdit, onDelete }) => {
   const modalRef = useRef(null);
 
@@ -41,6 +60,8 @@ const HoveringPropertyForm = ({ isOpen, onClose, property, isAdmin, onEdit, onDe
     yearBuilt: "",
     tenantsInPlace: "",
     createdOn: "",
+    annualIncome: "",
+    annualExpenses: "",
   });
 
   // Dragging logic
@@ -93,6 +114,10 @@ const HoveringPropertyForm = ({ isOpen, onClose, property, isAdmin, onEdit, onDe
 
   if (!isOpen) return null;
 
+  const annualIncome = Number(formData.annualIncome) || 0;
+  const annualExpenses = Number(formData.annualExpenses) || 0;
+  const price = Number(formData.price) || 0;
+
   return ReactDOM.createPortal(
     <div className="hovering-property-form-overlay">
       <div
@@ -103,7 +128,16 @@ const HoveringPropertyForm = ({ isOpen, onClose, property, isAdmin, onEdit, onDe
       >
         <button className="close-btn" onClick={onClose}>×</button>
         <div className="zillow-main">
-          <div className="zillow-price">{formatCurrency(formData.price)}</div>
+          <div className="zillow-main-row">
+            <div className="zillow-price-roi-group">
+              <span className="zillow-price">{formatCurrency(formData.price)}</span>
+              <span className="zillow-roi-inline">
+                <i className="fas fa-percentage"></i>
+                <span className="zillow-roi-label">ROI</span>
+                <span className="zillow-roi-value">{calcROI(annualIncome, annualExpenses, price)}</span>
+              </span>
+            </div>
+          </div>
           <div className="zillow-address-row">
             <span className="zillow-address">
               {formData.address}, {formData.city}, {formData.state} {formData.zip}
@@ -127,12 +161,12 @@ const HoveringPropertyForm = ({ isOpen, onClose, property, isAdmin, onEdit, onDe
             <div className="grid-item"><i className="fas fa-calendar-alt"></i> <span className="zillow-detail-label">Built</span> <span className="zillow-detail-value">{formData.yearBuilt || "N/A"}</span></div>
             <div className="grid-item"><i className="fas fa-expand"></i> <span className="zillow-detail-label">Sqft Lot</span> <span className="zillow-detail-value">{formatNumber(formData.lotSize)}</span></div>
             <div className="grid-item"><i className="fas fa-shield-alt"></i> <span className="zillow-detail-label">Insurance</span> <span className="zillow-detail-value">{formatCurrency(formData.insurance)}</span></div>
-            <div className="grid-item"><i className="fas fa-dollar-sign"></i> <span className="zillow-detail-label">$/sqft</span> <span className="zillow-detail-value">{formData.price && formData.size ? `$${(Number(formData.price) / Number(formData.size)).toLocaleString()}` : "N/A"}</span></div>
+            <div className="grid-item"><i className="fas fa-dollar-sign"></i> <span className="zillow-detail-label">$/sqft</span> <span className="zillow-detail-value">{formData.price && formData.size ? `$${Math.round(Number(formData.price) / Number(formData.size)).toLocaleString()}` : "N/A"}</span></div>
             <div className="grid-item"><i className="fas fa-coins"></i> <span className="zillow-detail-label">HOA</span> <span className="zillow-detail-value">{formData.hoa ? `$${formatCurrencyNoDollar(formData.hoa)}/mo` : "N/A"}</span></div>
             <div className="grid-item"><i className="fas fa-file-invoice-dollar"></i> <span className="zillow-detail-label">Property Tax</span> <span className="zillow-detail-value">{formatCurrency(formData.propertyTax)}</span></div>
-            <div className="grid-item"><i className="fas fa-user-friends"></i> <span className="zillow-detail-label">Tenants</span> <span className="zillow-detail-value">{formData.tenantsInPlace || "N/A"}</span></div>
+            <div className="grid-item"><i className="fas fa-user-friends"></i> <span className="zillow-detail-label">Tenant</span> <span className="zillow-detail-value">{formData.tenantsInPlace ? "Yes" : "No"}</span></div>
             <div className="grid-item"><i className="fas fa-id-badge"></i> <span className="zillow-detail-label">Property ID</span> <span className="zillow-detail-value">{formData.propertyID || "N/A"}</span></div>
-            <div className="grid-item"><i className="fas fa-calendar-plus"></i> <span className="zillow-detail-label">Created On</span> <span className="zillow-detail-value">{formData.createdOn || "N/A"}</span></div>
+            <div className="grid-item"><i className="fas fa-calendar-plus"></i> <span className="zillow-detail-label">Created On</span> <span className="zillow-detail-value">{formatDate(formData.createdOn)}</span></div>
           </div>
         </div>
         <div className="zillow-description">

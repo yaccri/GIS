@@ -279,6 +279,73 @@
   box-sizing: border-box;
 }
 
+/* Zillow Main Row */
+.zillow-main-row {
+  display: flex;
+  align-items: flex-end;
+  margin-bottom: 8px;
+  gap: 0;
+}
+
+.zillow-price-roi-group {
+  display: flex;
+  align-items: center;
+  gap: 14px; /* controls space between price and ROI */
+}
+
+.zillow-roi {
+  display: flex;
+  align-items: center;
+  background: #f7f7f7;
+  padding: 8px 14px;
+  border-radius: 0;
+  font-size: 1.1rem;
+  color: #34495e;
+  gap: 6px;
+  min-width: 90px;
+  height: 38px;
+}
+
+.zillow-roi i {
+  color: #0074e4;
+  font-size: 1.1em;
+}
+
+.zillow-roi-label {
+  color: #888;
+  font-weight: 400;
+}
+
+.zillow-roi-value {
+  color: #222;
+  font-weight: 500;
+  margin-left: 2px;
+}
+
+.zillow-roi-inline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 1.1rem;
+  color: #888;
+  margin-left: 18px; /* bring ROI closer to price */
+}
+
+.zillow-roi-inline i {
+  color: #888;
+  font-size: 1.1em;
+}
+
+.zillow-roi-label {
+  color: #888;
+  font-weight: 400;
+}
+
+.zillow-roi-value {
+  color: #888;
+  font-weight: 400;
+  margin-left: 2px;
+}
 
 /* Buttons */
 .form-actions {
