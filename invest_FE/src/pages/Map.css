@@ -2,47 +2,43 @@
 
 /* --- Overall Page Layout --- */
 .map-page-container {
-  display: flex; /* KEY: Arrange children (map, sidebar) horizontally */
-  height: calc(
-    100vh - 60px
-  ); /* KEY: Define the total height (adjust 60px for your header) */
-  overflow: hidden; /* Prevent scrolling at the page level */
-  align-items: stretch; /* KEY: Make children fill the container's height (default, but good to be explicit if needed) */
+  display: flex;
+  height: calc(88vh - 50px); /* 100vh - 12vh (top bar) - 50px (bottom bar) */
+  overflow: hidden;
+  position: relative;
 }
 
-/* --- Map Area --- */
+/* Rest of the file remains the same */
 .map-container {
-  flex: 1; /* KEY: Allow map to take up remaining horizontal space */
-  position: relative; /* Context for overlay controls */
-  /* height: 100%; */ /* Not strictly needed due to align-items: stretch */
-  display: flex; /* Use flex for inner wrapper */
-  flex-direction: column; /* Stack map-wrapper vertically */
+  flex: 1;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
 }
 
 .map-wrapper {
-  flex-grow: 1; /* Ensure map fills the map-container vertically */
-  height: 100%; /* Explicit height often needed for map libraries */
-  width: 100%;
-}
-
-/* --- Sidebar Container Positioning --- */
-.search-container {
-  flex: 0 0 350px; /* KEY: Fixed width (adjust 350px), don't grow/shrink */
   height: 100%;
-  border-left: 1px solid #dee2e6; /* Optional separator line */
-  display: flex; /* Ensure flex layout for internal content */
-  flex-direction: column; /* Internal styles (padding, overflow, background) are in MapSidebar.css */
-  /* Crucially, MapSidebar.css should have overflow-y: auto; for internal scrolling */
+  width: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
 }
 
-/* --- Map Controls Overlay (Radius Controls) --- */
-/* Styles for the overlay positioned absolutely on the map */
+.search-container {
+  flex: 0 0 350px;
+  height: 100%;
+  border-left: 1px solid #dee2e6;
+  overflow-y: auto;
+}
+
 .map-controls-overlay {
   position: absolute;
   top: 10px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 1000; /* Above map layers */
+  z-index: 1000;
   background-color: rgba(255, 255, 255, 0.85);
   padding: 8px 15px;
   border-radius: 5px;
@@ -55,7 +51,6 @@
 }
 
 .radius-control {
-  /* Styles specific to the content within the overlay */
   display: flex;
   align-items: center;
   gap: 15px;
@@ -102,22 +97,23 @@
   padding: 4px 8px;
   font-size: 0.85em;
   white-space: nowrap;
-  background-color: #28a745; /* Green */
+  background-color: #28a745;
   color: white;
   border: none;
   border-radius: 3px;
   cursor: pointer;
 }
+
 .radius-control .save-search-button:hover {
   background-color: #218838;
 }
+
 .radius-control .save-search-button:disabled {
   background-color: #cccccc;
   cursor: not-allowed;
 }
 
 /* --- Leaflet Draw Control Styling (Optional Overrides) --- */
-/* Example: Make draw icons slightly larger */
 /*
 .leaflet-draw-toolbar a {
   background-size: 24px 24px;
@@ -126,18 +122,17 @@
 }
 */
 
-/* --- Custom Marker Styles --- */
 .price-marker-icon {
   background: none;
   border: none;
 }
 
 .price-marker-content {
-  background-color: rgba(0, 86, 179, 0.8); /* Blue background */
+  background-color: rgba(0, 86, 179, 0.8);
   color: white;
   padding: 3px 6px;
   border-radius: 4px;
-  font-size: 10px; /* Smaller font */
+  font-size: 10px;
   font-weight: bold;
   white-space: nowrap;
   box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
@@ -150,7 +145,7 @@
 }
 
 .label-content {
-  background-color: rgba(255, 255, 255, 0.7); /* Semi-transparent white */
+  background-color: rgba(255, 255, 255, 0.7);
   color: #333;
   padding: 2px 5px;
   border-radius: 3px;
@@ -161,7 +156,6 @@
   box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
 }
 
-/* --- Popup Styles --- */
 .popup-title {
   font-weight: bold;
   font-size: 1.1em;
@@ -175,10 +169,11 @@
   font-size: 0.9em;
 }
 
-/* --- Leaflet Map Container --- */
-/* Ensure Leaflet map container itself is styled correctly */
 .leaflet-container {
-  height: 100%;
-  width: 100%;
-  background: #ddd; /* Optional background while tiles load */
+  height: 100% !important;
+  width: 100% !important;
+  background: #ddd;
+  position: absolute;
+  top: 0;
+  left: 0;
 }

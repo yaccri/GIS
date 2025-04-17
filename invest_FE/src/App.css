@@ -2,68 +2,38 @@
 .app-container {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100vh; /* Fix the height to the viewport */
+  overflow: hidden; /* Prevent scrolling at the page level */
 }
 
-/* .top-bar rule might be redundant if TopBar.css handles it, but kept for now */
 .top-bar {
   background-color: #1a3c5a;
   padding: 10px;
   text-align: center;
   position: sticky;
   top: 0;
-  z-index: 100; /* Note: TopBar.css uses a higher z-index (1100) which likely takes precedence */
+  z-index: 100;
   height: 12vh;
+  flex-shrink: 0;
 }
 
 .main-layout {
   display: flex;
-  /* flex-direction: row; /* Optional: Can be removed if only one child remains */
   flex-grow: 1;
-  position: relative; /* Keep if children might be positioned relative to it */
+  position: relative;
+  overflow: hidden; /* Keep this to prevent outer scrolling */
 }
-
-/* --- REMOVED: .left-bar styles --- */
-/*
-.left-bar {
-  background-color: #6b7280;
-  padding: 10px;
-  width: 200px;
-  position: fixed;
-  top: 12vh;
-  height: calc(
-    100vh - 12vh - 50px
-  );
-  overflow-y: auto;
-  overflow-x: hidden;
-  z-index: 99;
-}
-
-.left-bar a {
-  color: #ffffff;
-  text-decoration: none;
-}
-
-.left-bar a:hover {
-  color: #d4af37;
-}
-*/
-/* --- END REMOVED --- */
 
 .working-area {
-  flex: 1; /* Takes up all available space in .main-layout */
+  flex: 1;
   display: flex;
   flex-direction: column;
-  min-height: 0; /* Important for flex child to take remaining height */
-  overflow: auto; /* Allow scrolling within the working area if content overflows */
-  padding: 20px;
+  min-height: 0;
+  overflow: auto; /* Allow scrolling for other pages */
+  padding: 20px; /* Restore padding for other pages */
   background-color: #f9fafb;
-  /* --- REMOVED: margin-left and width calculation --- */
-  /* margin-left: 220px; */
-  /* width: calc(100% - 220px); */
-  /* --- ADDED: Ensure full width and box-sizing --- */
-  width: 100%; /* Explicitly set width to 100% of the parent */
-  box-sizing: border-box; /* Ensure padding is included within the width */
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .bottom-bar {
@@ -72,15 +42,16 @@
   text-align: center;
   position: sticky;
   bottom: 0;
-  z-index: 100; /* Ensure it stays on top */
+  z-index: 100;
   height: 50px;
   color: #ffffff;
+  flex-shrink: 0;
 }
 
-/* Styles for the map container itself */
 .map-page-container {
   width: 100%;
-  height: 100%; /* Ensure it fills the .working-area */
+  height: 100%;
   display: flex;
-  flex: 1; /* Ensure it takes available space within flex column */
+  flex: 1;
+  overflow: hidden; /* Keep this for the map page */
 }
