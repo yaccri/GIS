@@ -29,45 +29,6 @@ function App() {
           <TopBar />
 
           <div className="main-layout">
-            {/* Left Sidebar */}
-            <nav className="left-bar">
-              <UserContext.Consumer>
-                {({ user }) =>
-                  user.isLoggedIn && (
-                    <ul>
-                      <li>
-                        <Link to="/">Home</Link>
-                      </li>
-                      <li>
-                        <Link to="/about">About</Link>
-                      </li>
-                      <li>
-                        <Link to="/testGoogleAddress">
-                          Test Google Address Search
-                        </Link>
-                      </li>
-                      <li>
-                        <Link to="/testOpenStreetMapAddress">
-                          Test OpenStreetMap Address Search
-                        </Link>
-                      </li>
-                      {/* {user.isAdmin && (
-                        <li>
-                          <Link to="/property">Property</Link>
-                        </li>
-                      )} */}
-                      <li>
-                        <Link to="/properties">US Real Estate</Link>
-                      </li>
-                      <li>
-                        <Link to="/map">Map View</Link>
-                      </li>
-                    </ul>
-                  )
-                }
-              </UserContext.Consumer>
-            </nav>
-
             {/* Main Content Area */}
             <main className="working-area">
               <Routes>
