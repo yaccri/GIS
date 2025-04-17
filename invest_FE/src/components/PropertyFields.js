@@ -3,7 +3,9 @@ import React from "react";
 import { states } from "../utils/states";
 import { formatCurrencyForDisplay } from "../utils/currencyFormatter";
 import { format } from "date-fns"; // to format createdOn date
-import AddressSearch from "./AddressSearch-Google";
+// Assuming you might switch between Google and OSM, keep the import flexible or choose one
+// import AddressSearch from "./AddressSearch-Google";
+import AddressSearch from "./AddressSearch-OpenStreetMap"; // Using OSM based on other files
 
 // Options for property type
 const PROPERTY_TYPES = [
@@ -23,11 +25,13 @@ const PropertyFields = ({
   currentYear,
   mode,
   displayAddress,
+  roiValue, // <-- Destructure the new roiValue prop
 }) => {
   // Format the createdOn date if it exists, otherwise display "N/A"
   const formattedCreatedOn = formData.createdOn
     ? format(new Date(formData.createdOn), "MMM-dd-yyyy HH:mm")
     : "N/A";
+
   return (
     <>
       {/* propertyID */}
@@ -42,26 +46,21 @@ const PropertyFields = ({
           required
           min="1"
           step="1"
-          disabled={isReadOnly || mode === "edit"} // Simplified logic using mode prop
+          disabled={isReadOnly || mode === "edit"}
         />
       </div>
 
-      {/* address - *** Use AddressSearch, passing displayAddress *** */}
+      {/* address */}
       <div className="form-group">
         <label htmlFor="address">Address Search:</label>
         <AddressSearch
-          id="address" // Keep id for label association
-          // Use displayAddress for the input value, formData.address holds the component part
+          id="address"
           initialValue={displayAddress}
-          onAddressSelect={handleAddressSelect} // Use the passed handler
-          disabled={isReadOnly} // Pass read-only state
-          required // Keep required if needed
+          onLocationSelect={handleAddressSelect}
+          disabled={isReadOnly}
+          required
           placeholder="Start typing address..."
-          // Add any other necessary props for AddressSearch
         />
-        {/* Hidden input or just rely on formData state for the actual street address */}
-        {/* You could show the extracted street address for confirmation if needed: */}
-        {/* {!isReadOnly && formData.address && <p style={{fontSize: '0.8em', marginTop: '2px'}}>Street Address: {formData.address}</p>} */}
       </div>
 
       {/* city */}
@@ -72,10 +71,9 @@ const PropertyFields = ({
           id="city"
           name="city"
           value={formData.city}
-          onChange={handleChange} // Still use standard handleChange here
+          onChange={handleChange}
           required
-          //          readOnly={isReadOnly} // City might be auto-filled by AddressSearch, but allow manual override/view
-          disabled={true}
+          disabled={true} // Assuming auto-filled and non-editable
         />
       </div>
 
@@ -86,15 +84,14 @@ const PropertyFields = ({
           id="state"
           name="state"
           value={formData.state}
-          onChange={handleChange} // Still use standard handleChange here
+          onChange={handleChange}
           required
-          //          disabled={isReadOnly} // State might be auto-filled, but allow manual override/view
-          disabled={true}
+          disabled={true} // Assuming auto-filled and non-editable
         >
           <option value="">Select State</option>
           {states.map((state) => (
             <option key={state.value} value={state.value}>
-              {state.label} {/* Display full name */}
+              {state.label}
             </option>
           ))}
         </select>
@@ -104,15 +101,14 @@ const PropertyFields = ({
       <div className="form-group">
         <label htmlFor="zipCode">Zip Code:</label>
         <input
-          type="text" // Use text for zip codes (e.g., 12345-6789)
+          type="text"
           id="zipCode"
           name="zipCode"
           value={formData.zipCode}
-          onChange={handleChange} // Use standard handler
+          onChange={handleChange}
           required
-          //          readOnly={isReadOnly} // Zip might be auto-filled
-          disabled={true}
-          maxLength="10" // Optional: Limit length
+          disabled={true} // Assuming auto-filled and non-editable
+          maxLength="10"
         />
       </div>
 
@@ -164,7 +160,7 @@ const PropertyFields = ({
 
       {/* HOA */}
       <div className="form-group">
-        <label htmlFor="hoa">HOA:</label>
+        <label htmlFor="hoa">HOA/mo:</label> {/* Added /mo for clarity */}
         <input
           type="text"
           id="hoa"
@@ -177,7 +173,8 @@ const PropertyFields = ({
 
       {/* Property Tax */}
       <div className="form-group">
-        <label htmlFor="propertyTax">Property Tax:</label>
+        <label htmlFor="propertyTax/yr">Property Tax/yr:</label>{" "}
+        {/* Added /yr */}
         <input
           type="text"
           id="propertyTax"
@@ -190,7 +187,7 @@ const PropertyFields = ({
 
       {/* Insurance */}
       <div className="form-group">
-        <label htmlFor="insurance">Insurance:</label>
+        <label htmlFor="insurance">Insurance/mo:</label> {/* Added /mo */}
         <input
           type="text"
           id="insurance"
@@ -200,6 +197,35 @@ const PropertyFields = ({
           readOnly={isReadOnly}
         />
       </div>
+
+      {/* --- NEW: Rent Field --- */}
+      <div className="form-group">
+        <label htmlFor="Rent">Rent Estimate/mo:</label>
+        <input
+          type="text" // Use text to allow currency formatting during input
+          id="Rent"
+          name="Rent"
+          value={formatCurrencyForDisplay(formData.Rent)} // Format for display
+          onChange={handleChange} // Use the same handler (it parses currency)
+          readOnly={isReadOnly}
+          placeholder="$0" // Optional placeholder
+        />
+      </div>
+
+      {/* --- NEW: ROI Field (Read-Only) --- */}
+      <div className="form-group">
+        <label htmlFor="roi">ROI %:</label>
+        <input
+          type="text"
+          id="roi"
+          name="roi" // Name is optional for read-only
+          value={roiValue ?? "N/A"} // Display calculated value or N/A if null
+          readOnly // Make it non-editable by the user
+          disabled // Visually indicate it's non-interactive
+          className="calculated-field" // Optional: Add class for styling
+        />
+      </div>
+      {/* --- END NEW FIELDS --- */}
 
       {/* beds */}
       <div className="form-group">
@@ -268,7 +294,7 @@ const PropertyFields = ({
           type="checkbox"
           id="tenantInPlace"
           name="tenantInPlace"
-          checked={!!formData.tenantInPlace} // Ensure boolean value
+          checked={!!formData.tenantInPlace}
           onChange={handleChange}
           disabled={isReadOnly}
         />
@@ -289,6 +315,8 @@ const PropertyFields = ({
           readOnly={isReadOnly}
         />
       </div>
+
+      {/* createdOn */}
       <div className="form-group">
         <label htmlFor="createdOn">Created On:</label>
         <input
@@ -297,6 +325,7 @@ const PropertyFields = ({
           name="createdOn"
           value={formattedCreatedOn}
           readOnly
+          disabled // Also disable visually
         />
       </div>
     </>

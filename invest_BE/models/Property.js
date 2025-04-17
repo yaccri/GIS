@@ -13,6 +13,7 @@ const propertySchema = new mongoose.Schema({
   hoa: { type: Number },
   propertyTax: { type: Number },
   insurance: { type: Number },
+  Rent: { type: Number },
   beds: { type: Number },
   baths: { type: Number },
   size: { type: Number },

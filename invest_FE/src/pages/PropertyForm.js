@@ -1,11 +1,16 @@
 // src/pages/PropertyForm.js
-import React, { useState, useEffect, useContext, useCallback } from "react";
+import React, {
+  useState,
+  useEffect,
+  useContext,
+  useCallback,
+  useMemo, // Import useMemo
+} from "react";
 import "./PropertyForm.css";
 import { UserContext } from "../context/UserContext";
-import PropertyFields from "../components/PropertyFields"; // Keep this
+import PropertyFields from "../components/PropertyFields";
 import usePropertyApi from "../hooks/usePropertyApi";
 import { parseCurrency } from "../utils/currencyFormatter";
-// NOTE: No need to import AddressSearch here, it's used in PropertyFields
 
 const PropertyForm = ({
   mode,
@@ -19,7 +24,6 @@ const PropertyForm = ({
   const { user } = useContext(UserContext);
   const [formData, setFormData] = useState(null);
   const currentYear = new Date().getFullYear();
-  // Store the full address selected from Google separately if needed for display
   const [displayAddress, setDisplayAddress] = useState("");
 
   const {
@@ -31,6 +35,7 @@ const PropertyForm = ({
     handleDelete,
   } = usePropertyApi(mode, propertyID, onCancel, onDelete, onSuccess);
 
+  // --- Updated resetFormData to include Rent ---
   const resetFormData = useCallback(() => {
     setFormData({
       propertyID: "",
@@ -44,6 +49,7 @@ const PropertyForm = ({
       hoa: "",
       propertyTax: "",
       insurance: "",
+      Rent: "", // Added Rent field
       beds: "",
       baths: "",
       size: "",
@@ -56,9 +62,9 @@ const PropertyForm = ({
         coordinates: [], // [longitude, latitude]
       },
     });
-    setDisplayAddress(""); // Reset display address
-    setError(null); // Clear any existing errors
-  }, [setError]); // Dependency for setError
+    setDisplayAddress("");
+    setError(null);
+  }, [setError]);
 
   // Initialize formData based on mode
   useEffect(() => {
@@ -66,9 +72,12 @@ const PropertyForm = ({
       const loadProperty = async () => {
         const data = await fetchProperty();
         if (data) {
-          setFormData(data);
-          // Set display address for edit/view using the street address
+          // Ensure Rent field exists in fetched data or initialize it
+          setFormData({ Rent: "", ...data }); // Default Rent to "" if not present
           setDisplayAddress(data.address || "");
+        } else {
+          // Handle case where property fetch fails but we are in edit/view
+          resetFormData(); // Reset to default structure if fetch fails
         }
       };
       loadProperty();
@@ -80,16 +89,17 @@ const PropertyForm = ({
   // Update formData when property changes in view mode
   useEffect(() => {
     if (mode === "view" && property) {
-      setFormData(property);
-      // Make sure we show the street address in view mode
-      setDisplayAddress(property.address || ""); // Use the street address component
+      // Ensure Rent field exists in property data or initialize it
+      setFormData({ Rent: "", ...property }); // Default Rent to "" if not present
+      setDisplayAddress(property.address || "");
     }
   }, [mode, property]);
 
-  // General change handler for standard inputs
+  // --- Updated handleChange to handle Rent ---
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    if (["price", "hoa", "propertyTax", "insurance"].includes(name)) {
+    // Add 'Rent' to the list of fields parsed as currency
+    if (["price", "hoa", "propertyTax", "insurance", "Rent"].includes(name)) {
       const rawValue = parseCurrency(value);
       setFormData((prev) => ({
         ...prev,
@@ -104,48 +114,72 @@ const PropertyForm = ({
   };
   console.log("Form Data:", formData);
 
+  // --- Calculate ROI using useMemo ---
+  const roiValue = useMemo(() => {
+    if (!formData) return null; // Guard clause if formData is null
+
+    // Extract and parse values, defaulting potentially missing ones to 0
+    // Crucially, check Rent and Price specifically for validity
+    const rent = parseFloat(formData.Rent) || 0;
+    const price = parseFloat(formData.price) || 0;
+    const hoa = parseFloat(formData.hoa) || 0;
+    const insurance = parseFloat(formData.insurance) || 0;
+    const propertyTax = parseFloat(formData.propertyTax) || 0;
+
+    // If Rent or Price are zero or invalid, ROI is null
+    if (rent <= 0 || price <= 0) {
+      return null;
+    }
+
+    // Calculate ROI based on the provided formula:
+    // (((Rent*0.8 - HOA - insurance)) * 12) - PropertyTax) / Price)
+    // Assuming: Rent=Monthly, HOA=Monthly, Insurance=Monthly, PropertyTax=Annual, Price=Total
+    const numerator = (rent * 0.8 - hoa - insurance) * 12 - propertyTax;
+    const roi = (numerator / price) * 100; // Calculate as percentage
+
+    // Format the result
+    return roi.toFixed(2) + "%";
+  }, [
+    formData?.Rent,
+    formData?.price,
+    formData?.hoa,
+    formData?.insurance,
+    formData?.propertyTax,
+  ]); // Dependencies for recalculation
+
   // Updated handler for AddressSearch component selection
   const handleAddressSelect = (selectedAddressData) => {
+    // ... (existing handleAddressSelect logic - no changes needed here for ROI) ...
     console.log("Selected Address Data:", selectedAddressData);
 
     if (!selectedAddressData) return;
 
-    // Handle the GeoJSON format coming from GoogleAddressSearch
     if (selectedAddressData.type === "Feature") {
       const { geometry, properties } = selectedAddressData;
-
-      // Extract coordinates from the GeoJSON geometry
       const coordinates = geometry?.coordinates || [];
-      //      const [lng, lat] = coordinates;
-
-      // Extract address components from properties
       const { components, address } = properties || {};
 
-      // Update the form state with extracted data
       setFormData((prev) => ({
         ...prev,
-        // Use the street_address from components if available
         address: components?.street_address || address || prev.address,
         city: components?.city || prev.city,
         state: components?.state || prev.state,
         zipCode: components?.ZIP || prev.zipCode,
-        // Set location only if coordinates are available
         location:
           coordinates.length === 2
-            ? { type: "Point", coordinates: coordinates } // Already in [lng, lat] order
-            : prev.location, // Keep previous location if no new coords
+            ? { type: "Point", coordinates: coordinates }
+            : prev.location,
       }));
-
-      // Update the display address shown in the AddressSearch input
       setDisplayAddress(address || "");
     }
   };
 
   const handleCancelClick = () => {
-    resetFormData(); // Reset form data on cancel
-    onCancel(); // Call parent cancel handler
+    resetFormData();
+    onCancel();
   };
 
+  // --- Loading/Error/Initial State Handling ---
   if (isLoading) {
     return <p>Loading property...</p>;
   }
@@ -159,13 +193,14 @@ const PropertyForm = ({
     );
   }
 
+  // Ensure formData is initialized before rendering the form fields
   if (!formData) {
-    // Added a check for null formData before rendering
-    return <p>Initializing form or property not found...</p>;
+    return <p>Initializing form...</p>;
   }
 
   const isReadOnly = mode === "view";
 
+  // --- Render ---
   return (
     <div className="property-page-container">
       <div className="property-container">
@@ -189,8 +224,8 @@ const PropertyForm = ({
             </button>
           </div>
         )}
-        {/* Pass formData (including location) to handleSubmit */}
         <form onSubmit={(e) => handleSubmit(e, formData)}>
+          {/* Pass formData, handlers, and calculated ROI to PropertyFields */}
           <PropertyFields
             formData={formData}
             handleChange={handleChange}
@@ -198,8 +233,8 @@ const PropertyForm = ({
             isReadOnly={isReadOnly}
             currentYear={currentYear}
             mode={mode}
-            // Pass the displayAddress to AddressSearch component
             displayAddress={displayAddress}
+            roiValue={roiValue} // Pass calculated ROI value
           />
           {!isReadOnly && (
             <div className="button-group">
@@ -216,7 +251,7 @@ const PropertyForm = ({
             </div>
           )}
         </form>
-        {/* Optional: Display coordinates for debugging/verification */}
+        {/* Debugging display */}
         {!isReadOnly && formData.location?.coordinates?.length === 2 && (
           <div style={{ marginTop: "10px", fontSize: "0.8em", color: "#555" }}>
             Coords: [{formData.location.coordinates[1].toFixed(6)},{" "}
