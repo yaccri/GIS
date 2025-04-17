@@ -14,16 +14,16 @@ const MapSidebar = ({
   formatCurrencyForDisplay, // Utility
 
   // Props for Saved Polygons / Areas
-  drawnItems,
-  handleDeletePolygon,
-  showPolygonCoordinates,
-  formatArea,
-  exportToGeoJSON,
-  searchPropertiesInPolygon,
+  // drawnItems,
+  // handleDeletePolygon,
+  // showPolygonCoordinates,
+  // formatArea,
+  // exportToGeoJSON,
+  // searchPropertiesInPolygon,
 
-  // Props for Active Polygon Display
-  activePolygon,
-  setActivePolygon,
+  // // Props for Active Polygon Display
+  // activePolygon,
+  // setActivePolygon,
 }) => {
   // Determine the heading for the results section
   let resultsHeading = "Search Results"; // Default
@@ -102,7 +102,6 @@ const MapSidebar = ({
               );
             })}
           </ul>
-          {/* Removed Save Search Button */}
         </div>
       )}
 
@@ -110,87 +109,7 @@ const MapSidebar = ({
       {shouldShowNoResults && (
         <div className="no-results-message sidebar-section">
           {" "}
-          {/* Added sidebar-section class */}
           <p>No properties found for the current selection.</p>
-        </div>
-      )}
-
-      {/* --- Saved Polygons / Areas Section --- */}
-      {drawnItems && drawnItems.length > 0 && (
-        <div className="saved-polygons sidebar-section">
-          {" "}
-          {/* Added sidebar-section class */}
-          <h3>Saved Areas:</h3>
-          <ul className="polygons-list">
-            {drawnItems.map((polygon) => (
-              <li key={polygon.id} className="polygon-item">
-                <div className="polygon-header">
-                  <strong>
-                    {polygon.type === "polygon" ? "Polygon" : "Rectangle"}
-                  </strong>
-                  <span className="area-info">{formatArea(polygon.area)}</span>
-                  <button
-                    className="delete-button"
-                    onClick={() => handleDeletePolygon(polygon.id)}
-                  >
-                    &times;
-                  </button>
-                </div>
-                <div className="polygon-details">
-                  <p>
-                    Center: [{polygon.center.lat.toFixed(4)},{" "}
-                    {polygon.center.lng.toFixed(4)}]
-                  </p>
-                  <p>Points: {polygon.coordinates.length}</p>
-                  <div className="polygon-actions-row">
-                    <button
-                      className="show-coords-button"
-                      onClick={() => showPolygonCoordinates(polygon)}
-                    >
-                      Show Coords
-                    </button>
-                    <button
-                      className="find-properties-button"
-                      onClick={() => searchPropertiesInPolygon(polygon)}
-                    >
-                      Find Properties
-                    </button>
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ul>
-          <div className="polygon-actions">
-            <button className="export-button" onClick={exportToGeoJSON}>
-              Export All Shapes
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* --- Active Polygon Coordinates Section --- */}
-      {activePolygon && (
-        <div className="coordinates-display sidebar-section">
-          {" "}
-          {/* Added sidebar-section class */}
-          <h3>Coordinates for {activePolygon.type}</h3>
-          <div className="coordinates-scroll">
-            <pre>{JSON.stringify(activePolygon.coordinates, null, 2)}</pre>
-          </div>
-          <div className="coordinates-actions">
-            <button
-              className="close-button"
-              onClick={() => setActivePolygon(null)}
-            >
-              Close
-            </button>
-            <button
-              className="find-properties-button"
-              onClick={() => searchPropertiesInPolygon(activePolygon)}
-            >
-              Find Properties
-            </button>
-          </div>
         </div>
       )}
     </div>
