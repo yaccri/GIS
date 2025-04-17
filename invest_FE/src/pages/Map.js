@@ -1,4 +1,3 @@
-// src/pages/Map.js
 import React, {
   useState,
   useRef,
@@ -18,6 +17,7 @@ import { UserContext } from "../context/UserContext";
 import { useMapContext } from "../context/MapContext";
 import { formatCurrencyForDisplay } from "../utils/currencyFormatter";
 import MapSidebar from "../components/map/MapSidebar";
+import MapControlsOverlay from "../components/map/MapControlsOverlay";
 
 // --- Import Custom Hooks ---
 import useRadiusSearch from "../hooks/useRadiusSearch";
@@ -564,41 +564,15 @@ const MapComponent = () => {
           </MapContainer>
         </div>
 
-        <div className="map-controls-overlay">
-          <button
-            onClick={handleSearchNeighborhoodClick}
-            disabled={!clickedNeighborhood || isFetchingNeighborhoodProps}
-            className="map-overlay-button"
-            title={
-              !clickedNeighborhood
-                ? "Click on the map to select a location first"
-                : "Search properties in the selected neighborhood"
-            }
-          >
-            {isFetchingNeighborhoodProps
-              ? "Searching..."
-              : "Search Neighborhood"}
-          </button>
-          {selectedLocationDetails && (
-            <div className="radius-control">
-              <strong>Search Radius:</strong>
-              <div className="radio-group">
-                {radiusOptions.map((value) => (
-                  <label key={value} className="radio-label">
-                    <input
-                      type="radio"
-                      name="radius"
-                      value={value}
-                      checked={searchRadius === value}
-                      onChange={handleRadiusChange}
-                    />
-                    <span>{value === 0 ? "None" : `${value} mi`}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
+        <MapControlsOverlay
+          onSearchNeighborhoodClick={handleSearchNeighborhoodClick}
+          neighborhoodInfo={clickedNeighborhood}
+          isFetchingNeighborhoodProps={isFetchingNeighborhoodProps}
+          locationDetails={selectedLocationDetails}
+          radiusOptions={radiusOptions}
+          searchRadius={searchRadius}
+          onRadiusChange={handleRadiusChange}
+        />
       </div>
       <div className="search-container">
         <MapSidebar
