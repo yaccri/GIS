@@ -1,13 +1,13 @@
 // src/App.js
 import React from "react";
-import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import "./App.css";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import Subscription from "./pages/Subscription";
 import Login from "./pages/Login";
 import TopBar from "./components/TopBar";
-import { UserContext } from "./context/UserContext";
+//import { UserContext } from "./context/UserContext";
 import { MapProvider } from "./context/MapContext";
 import Properties from "./pages/Properties";
 import ProtectedRoute from "./components/ProtectedRoute";
