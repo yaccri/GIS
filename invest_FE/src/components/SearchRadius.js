@@ -10,6 +10,7 @@
  * @param {string | null} token - The authentication token (JWT).
  * @returns {Promise<Array<object> | null>} A promise that resolves to an array of property objects or null if the search cannot be performed or fails.
  */
+import { BASE_URL } from "../utils/config";
 export const searchPropertiesInRadius = async (coordinates, radius, token) => {
   console.log("starting searchPropertiesInRadius");
   // Only search if we have a location, radius, and a token
@@ -32,7 +33,7 @@ export const searchPropertiesInRadius = async (coordinates, radius, token) => {
 
     // API call with Authorization header
     const response = await fetch(
-      `http://localhost:4000/api/properties/radius?lat=${lat}&lon=${lon}&radius=${radius}`,
+      `${BASE_URL}/api/properties/radius?lat=${lat}&lon=${lon}&radius=${radius}`,
       {
         method: "GET", // Explicitly state method (good practice)
         headers: {

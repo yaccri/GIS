@@ -1,13 +1,13 @@
 // src/App.js
 import React from "react";
-import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import "./App.css";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import Subscription from "./pages/Subscription";
 import Login from "./pages/Login";
 import TopBar from "./components/TopBar";
-import { UserContext } from "./context/UserContext";
+//import { UserContext } from "./context/UserContext";
 import { MapProvider } from "./context/MapContext";
 import Properties from "./pages/Properties";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -29,45 +29,6 @@ function App() {
           <TopBar />
 
           <div className="main-layout">
-            {/* Left Sidebar */}
-            <nav className="left-bar">
-              <UserContext.Consumer>
-                {({ user }) =>
-                  user.isLoggedIn && (
-                    <ul>
-                      <li>
-                        <Link to="/">Home</Link>
-                      </li>
-                      <li>
-                        <Link to="/about">About</Link>
-                      </li>
-                      <li>
-                        <Link to="/testGoogleAddress">
-                          Test Google Address Search
-                        </Link>
-                      </li>
-                      <li>
-                        <Link to="/testOpenStreetMapAddress">
-                          Test OpenStreetMap Address Search
-                        </Link>
-                      </li>
-                      {/* {user.isAdmin && (
-                        <li>
-                          <Link to="/property">Property</Link>
-                        </li>
-                      )} */}
-                      <li>
-                        <Link to="/properties">US Real Estate</Link>
-                      </li>
-                      <li>
-                        <Link to="/map">Map View</Link>
-                      </li>
-                    </ul>
-                  )
-                }
-              </UserContext.Consumer>
-            </nav>
-
             {/* Main Content Area */}
             <main className="working-area">
               <Routes>

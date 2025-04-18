@@ -239,4 +239,101 @@ router.get("/in-neighborhood", verifyToken, async (req, res) => {
   }
 });
 
+// Get properties within a specific polygon geometry
+// POST /api/properties/in-polygon
+// *** Reasons for using POST instead of GET ***
+//   1. Data Size: Polygon coordinates can be quite large, potentially exceeding URL length limits if passed as query parameters in a GET request.
+//   2. HTTP Semantics: While GET is for retrieving data, sending complex query criteria like a polygon definition fits better with the semantics of POST,
+//      where the body carries the specifics of the resource manipulation (in this case, defining the complex query boundary).
+// Expects a GeoJSON Polygon coordinate structure in the request body:
+// {
+//   "polygonCoordinates": [
+//     [ [lon1, lat1], [lon2, lat2], [lon3, lat3], ..., [lon1, lat1] ] // Outer ring
+//     // Optional: [ [lon4, lat4], [lon5, lat5], ... ] // Inner ring (hole)
+//   ]
+// }
+router.post("/in-polygon", verifyToken, async (req, res) => {
+  try {
+    const { polygonCoordinates } = req.body;
+
+    // 1. Validate Input
+    if (
+      !polygonCoordinates ||
+      !Array.isArray(polygonCoordinates) ||
+      polygonCoordinates.length === 0 ||
+      !Array.isArray(polygonCoordinates[0]) ||
+      polygonCoordinates[0].length < 4 // A polygon needs at least 3 distinct points + closing point
+    ) {
+      return res.status(400).json({
+        error:
+          "Invalid 'polygonCoordinates' in request body. Expected a GeoJSON Polygon coordinates array (e.g., [[[lon, lat], ...]]).",
+      });
+    }
+
+    // Ensure the first and last points of the outer ring are the same (required by GeoJSON spec)
+    const outerRing = polygonCoordinates[0];
+    if (
+      outerRing[0][0] !== outerRing[outerRing.length - 1][0] ||
+      outerRing[0][1] !== outerRing[outerRing.length - 1][1]
+    ) {
+      // Optionally, you could auto-close it, but better to enforce valid input
+      return res.status(400).json({
+        error:
+          "Invalid polygon: The first and last coordinates of a ring must be identical.",
+      });
+    }
+
+    // 2. Construct GeoJSON Polygon Geometry for Query
+    const polygonGeometry = {
+      type: "Polygon",
+      coordinates: polygonCoordinates,
+    };
+
+    // 3. Perform Geospatial Query using $geoWithin
+    // Find properties whose 'location' (Point) is within the provided 'polygonGeometry'
+    const properties = await Property.find({
+      location: {
+        $geoWithin: {
+          $geometry: polygonGeometry,
+        },
+      },
+    }); // Add .limit() if needed for performance
+
+    // 4. Handle Results
+    res.status(200).json(properties);
+  } catch (error) {
+    console.error("Error fetching properties within polygon:", error);
+    // Catch potential MongoDB geospatial errors
+    if (error.name === "MongoError" && error.code === 2) {
+      // Example: Error code 2 can indicate geospatial index issues or invalid shapes
+      return res.status(400).json({
+        error: "Invalid polygon geometry provided.",
+        details: error.message,
+      });
+    }
+    if (
+      error.name === "MongoError" &&
+      error.message.includes("Loop is not closed")
+    ) {
+      return res.status(400).json({
+        error:
+          "Invalid polygon coordinates: The first and last points of each ring must be the same.",
+      });
+    }
+    if (
+      error.name === "MongoError" &&
+      error.message.includes("Point list must contain at least 3 points")
+    ) {
+      return res.status(400).json({
+        error:
+          "Invalid polygon coordinates: Each ring must have at least 3 distinct points.",
+      });
+    }
+    // General error
+    res
+      .status(500)
+      .json({ error: "Internal server error while fetching properties." });
+  }
+});
+
 module.exports = router;

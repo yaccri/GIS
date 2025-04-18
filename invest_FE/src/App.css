@@ -2,7 +2,8 @@
 .app-container {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100vh; /* Fix the height to the viewport */
+  overflow: hidden; /* Prevent scrolling at the page level */
 }
 
 .top-bar {
@@ -13,50 +14,25 @@
   top: 0;
   z-index: 100;
   height: 12vh;
+  flex-shrink: 0;
 }
 
 .main-layout {
   display: flex;
-  flex-direction: row;
   flex-grow: 1;
   position: relative;
-}
-
-.left-bar {
-  background-color: #6b7280;
-  padding: 10px;
-  width: 200px;
-  position: fixed;
-  top: 12vh;
-  height: calc(
-    100vh - 12vh - 50px
-  ); /* Adjust height to fit between TopBar and bottom-bar */
-  overflow-y: auto;
-  overflow-x: hidden;
-  z-index: 99;
-}
-
-.left-bar a {
-  color: #ffffff;
-  text-decoration: none;
-}
-
-.left-bar a:hover {
-  color: #d4af37;
+  overflow: hidden; /* Keep this to prevent outer scrolling */
 }
 
 .working-area {
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-height: 0; /* Important for flex child to take remaining height */
-  overflow: auto;
-  padding: 20px;
+  min-height: 0;
+  overflow: auto; /* Allow scrolling for other pages */
+  padding: 20px; /* Restore padding for other pages */
   background-color: #f9fafb;
-  margin-left: 220px; /* Account for the left bar */
-  width: calc(
-    100% - 220px
-  ); /* Ensure the width accounts for the left bar offset */
+  width: 100%;
   box-sizing: border-box;
 }
 
@@ -66,15 +42,16 @@
   text-align: center;
   position: sticky;
   bottom: 0;
-  z-index: 100; /* Ensure it stays on top */
+  z-index: 100;
   height: 50px;
   color: #ffffff;
+  flex-shrink: 0;
 }
 
-/* Remove any fixed positioning that might interfere with the map layout */
 .map-page-container {
   width: 100%;
   height: 100%;
   display: flex;
   flex: 1;
+  overflow: hidden; /* Keep this for the map page */
 }

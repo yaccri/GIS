@@ -1,0 +1,164 @@
+// src/components/map/layers/NeighborhoodLayer.js
+import { useEffect, useRef } from "react";
+import { useMap } from "react-leaflet";
+import L from "leaflet";
+import { createNeighborhoodLabelIcon } from "../utils/mapIconUtils";
+
+const NeighborhoodLayer = ({ clickedNeighborhood }) => {
+  const map = useMap();
+  const layerGroupRef = useRef(null);
+
+  console.log(
+    "NeighborhoodLayer: Rendering or re-rendering. clickedNeighborhood:",
+    clickedNeighborhood
+  );
+
+  useEffect(() => {
+    console.log(
+      "NeighborhoodLayer: useEffect triggered. clickedNeighborhood:",
+      clickedNeighborhood
+    );
+
+    const clearLayerGroup = () => {
+      if (layerGroupRef.current) {
+        if (map && map.hasLayer(layerGroupRef.current)) {
+          map.removeLayer(layerGroupRef.current);
+          console.log(
+            "NeighborhoodLayer: Removed previous layer group from map."
+          );
+        } else {
+          console.log(
+            "NeighborhoodLayer: Previous layer group ref existed but wasn't on map."
+          );
+        }
+        layerGroupRef.current = null;
+      } else {
+        console.log("NeighborhoodLayer: No previous layer group ref to clear.");
+      }
+    };
+
+    clearLayerGroup();
+
+    // Check for the geometry object specifically
+    if (
+      clickedNeighborhood &&
+      clickedNeighborhood.geometry &&
+      clickedNeighborhood.geometry.coordinates // Add check for coordinates existence
+    ) {
+      console.log(
+        "%cNeighborhoodLayer: Valid data found. Attempting to add layer group for:",
+        "color: green",
+        clickedNeighborhood.name // Use direct name property
+      );
+      console.log("NeighborhoodLayer: Geometry:", clickedNeighborhood.geometry);
+
+      try {
+        const newLayerGroup = L.layerGroup();
+
+        // 1. Create GeoJSON polygon layer using ONLY the geometry
+        console.log("NeighborhoodLayer: Creating L.geoJSON with geometry...");
+        // *** FIX: Pass only the geometry object ***
+        const geoJsonLayer = L.geoJSON(clickedNeighborhood.geometry, {
+          style: {
+            color: "#ff7800",
+            weight: 4,
+            opacity: 0.8,
+            fillOpacity: 0.1,
+          },
+        });
+        console.log("NeighborhoodLayer: L.geoJSON created:", geoJsonLayer);
+        newLayerGroup.addLayer(geoJsonLayer);
+        console.log("NeighborhoodLayer: Polygon layer added to group.");
+
+        // 2. Calculate center and add label Marker
+        const bounds = geoJsonLayer.getBounds();
+        console.log("NeighborhoodLayer: Calculated bounds:", bounds);
+
+        // *** FIX: Check for clickedNeighborhood.name directly ***
+        if (bounds.isValid() && clickedNeighborhood.name) {
+          const center = bounds.getCenter();
+          console.log("NeighborhoodLayer: Calculated center:", center);
+          try {
+            console.log("NeighborhoodLayer: Creating label icon...");
+            // *** FIX: Use clickedNeighborhood.name directly ***
+            const icon = createNeighborhoodLabelIcon(clickedNeighborhood.name);
+            console.log("NeighborhoodLayer: Label icon created:", icon);
+            const labelMarker = L.marker(center, {
+              icon: icon,
+              interactive: false,
+              keyboard: false,
+              zIndexOffset: -100,
+            });
+            console.log(
+              "NeighborhoodLayer: Label marker created:",
+              labelMarker
+            );
+            newLayerGroup.addLayer(labelMarker);
+            console.log("NeighborhoodLayer: Label marker added to group.");
+          } catch (iconError) {
+            console.error(
+              "NeighborhoodLayer: Error creating or adding label marker:",
+              iconError
+            );
+          }
+        } else if (!bounds.isValid()) {
+          console.warn(
+            "NeighborhoodLayer: Calculated bounds are invalid for:",
+            // *** FIX: Use clickedNeighborhood.name directly ***
+            clickedNeighborhood.name
+          );
+        } else {
+          console.log(
+            "NeighborhoodLayer: No name property found, skipping label."
+          );
+        }
+
+        console.log("NeighborhoodLayer: Adding layer group to map...");
+        newLayerGroup.addTo(map);
+        console.log(
+          "%cNeighborhoodLayer: Layer group successfully added to map.",
+          "color: green; font-weight: bold"
+        );
+
+        layerGroupRef.current = newLayerGroup;
+      } catch (error) {
+        console.error(
+          "%cNeighborhoodLayer: Error creating layers:",
+          "color: red; font-weight: bold",
+          error,
+          "Data:",
+          clickedNeighborhood
+        );
+      }
+    } else {
+      // Logging remains the same
+      if (!clickedNeighborhood) {
+        console.log(
+          "NeighborhoodLayer: Not adding layer because clickedNeighborhood is null or undefined."
+        );
+      } else if (!clickedNeighborhood.geometry) {
+        console.log(
+          "NeighborhoodLayer: Not adding layer because clickedNeighborhood.geometry is missing."
+        );
+      } else if (!clickedNeighborhood.geometry.coordinates) {
+        console.log(
+          "NeighborhoodLayer: Not adding layer because clickedNeighborhood.geometry.coordinates is missing."
+        );
+      } else {
+        console.log(
+          "NeighborhoodLayer: Not adding layer for unknown reason. Data:",
+          clickedNeighborhood
+        );
+      }
+    }
+
+    return () => {
+      console.log("NeighborhoodLayer: Cleanup effect running.");
+      clearLayerGroup();
+    };
+  }, [clickedNeighborhood, map]);
+
+  return null;
+};
+
+export default NeighborhoodLayer;

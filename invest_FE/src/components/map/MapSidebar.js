@@ -1,86 +1,116 @@
-// src/components/map/MapSidebar.js
-import React, { useState, useEffect } from "react";
-import HoveringPropertyForm from "../HoveringPropertyForm"; // Import the hovering form
-import "./MapSidebar.css";
-
-// Read isAdmin from localStorage (assuming you store login result as "loginResult")
-function getIsAdmin() {
-  try {
-    const loginData = JSON.parse(localStorage.getItem("loginResult"));
-    return loginData?.isAdmin === true;
-  } catch {
-    return false;
-  }
-}
+// src/components/map/sidebar/MapSidebar.js
+import React from "react";
+import "./MapSidebar.css"; // Imports its dedicated styles
+// Removed RadiusSearchPanel import as the list is now rendered here directly
+// import RadiusSearchPanel from "./RadiusSearchPanel";
 
 const MapSidebar = ({
-  radiusSearchResults,
+  // Combined props for property list display
+  isSearching, // Combined loading state (radius OR neighborhood)
+  propertiesToDisplay, // The list of properties to show
+  searchRadius, // To know if it was a radius search
+  clickedNeighborhood, // To know if it was a neighborhood search
+  selectedLocationDetails, // To know if *any* search context exists
+  formatCurrencyForDisplay, // Utility
+
+  // Props for Saved Polygons / Areas
+  // drawnItems,
+  // handleDeletePolygon,
+  // showPolygonCoordinates,
+  // formatArea,
+  // exportToGeoJSON,
+  // searchPropertiesInPolygon,
+
+  // // Props for Active Polygon Display
+  // activePolygon,
+  // setActivePolygon,
 }) => {
-  const [isAdmin, setIsAdmin] = useState(getIsAdmin());
-  const [selectedProperty, setSelectedProperty] = useState(null); // Track the selected property
-  const [isHoveringFormOpen, setHoveringFormOpen] = useState(false); // Track if the hovering form is open
+  // Determine the heading for the results section
+  let resultsHeading = "Search Results"; // Default
+  if (searchRadius > 0) {
+    resultsHeading = `Properties within ${searchRadius} miles`;
+  } else if (clickedNeighborhood) {
+    resultsHeading = `Properties in ${
+      clickedNeighborhood.name || "Selected Neighborhood"
+    }`;
+  }
 
-  // Listen for both "storage" and a custom "loginStatusChanged" event
-  useEffect(() => {
-    // Handler to update isAdmin state
-    const updateIsAdmin = () => setIsAdmin(getIsAdmin());
+  // Determine if a search context is active (radius selected or neighborhood clicked)
+  const isSearchActive = searchRadius > 0 || !!clickedNeighborhood;
 
-    // Listen for localStorage changes (other tabs/windows)
-    window.addEventListener("storage", updateIsAdmin);
-
-    // Listen for custom event (same tab, after login)
-    window.addEventListener("loginStatusChanged", updateIsAdmin);
-
-    // Also check on mount
-    setIsAdmin(getIsAdmin());
-
-    // Cleanup listeners on unmount
-    return () => {
-      window.removeEventListener("storage", updateIsAdmin);
-      window.removeEventListener("loginStatusChanged", updateIsAdmin);
-    };
-  }, []);
-
-  console.log("isAdmin in MapSidebar:", isAdmin); // This should now show true or false
-
-  const handlePropertyClick = (property) => {
-    setSelectedProperty(property); // Set the selected property
-    setHoveringFormOpen(true); // Open the form
-  };
+  // Determine if the "No properties found" message should show
+  const shouldShowNoResults =
+    !isSearching &&
+    propertiesToDisplay.length === 0 &&
+    isSearchActive && // Only show if a search was actually active
+    selectedLocationDetails; // And a location was selected to search around/in
 
   return (
-    <div>
-      <ul className="property-list">
-        {radiusSearchResults.map((property) => (
-          <li
-            key={property.propertyID || property.id}
-            onClick={() => handlePropertyClick(property)}
-            className="property-card"
-            style={{ cursor: "pointer", border: "1px solid #ccc", borderRadius: "8px", margin: "8px 0", padding: "12px", background: "#fafafa" }}
-          >
-            <div><strong>ID:</strong> {property.propertyID || property.id}</div>
-            <div><strong>Address:</strong> {property.address}</div>
-            <div><strong>Type:</strong> {property.type}</div>
-            <div><strong>Beds:</strong> {property.beds} | <strong>Baths:</strong> {property.baths}</div>
-            <div><strong>Price:</strong> {property.price ? `$${property.price}` : "N/A"}</div>
-          </li>
-        ))}
-      </ul>
-      {isHoveringFormOpen && (
-        <HoveringPropertyForm
-          isOpen={isHoveringFormOpen}
-          onClose={() => setHoveringFormOpen(false)}
-          property={selectedProperty}
-          isAdmin={isAdmin}
-          onEdit={(updatedProperty) => {
-            // handle edit
-            setHoveringFormOpen(false);
-          }}
-          onDelete={(propertyID) => {
-            // handle delete
-            setHoveringFormOpen(false);
-          }}
-        />
+    <div className="map-sidebar-container">
+      {/* --- Property Results Section (Combined) --- */}
+      {/* Show loading indicator if either search is running */}
+      {isSearching && (
+        <div className="loading-indicator sidebar-section">
+          {" "}
+          {/* Added sidebar-section class */}
+          <p>Searching properties...</p>
+        </div>
+      )}
+
+      {/* Show results if not loading AND there are properties to display */}
+      {!isSearching && propertiesToDisplay.length > 0 && (
+        <div className="property-results sidebar-section">
+          {" "}
+          {/* Added sidebar-section class */}
+          <h3>{resultsHeading}</h3>
+          <ul className="property-list">
+            {propertiesToDisplay.map((property) => {
+              // Simplified location string logic (can be enhanced)
+              let locationString = "Location N/A";
+              if (property.address) {
+                locationString = `${property.address}, ${property.city || ""}`;
+              } else if (
+                property.location?.type === "Point" &&
+                Array.isArray(property.location.coordinates) &&
+                property.location.coordinates.length === 2
+              ) {
+                const lat = property.location.coordinates[1];
+                const lon = property.location.coordinates[0];
+                locationString = `Lat: ${lat.toFixed(4)}, Lng: ${lon.toFixed(
+                  4
+                )}`;
+              }
+
+              return (
+                <li
+                  key={property.propertyID || property._id || Math.random()}
+                  className="property-item"
+                >
+                  {property.propertyID && (
+                    <div className="property-id">ID: {property.propertyID}</div>
+                  )}
+                  <div className="property-title">
+                    {property.address || "Untitled Property"}
+                  </div>
+                  <div className="property-price">
+                    {property.price
+                      ? formatCurrencyForDisplay(property.price)
+                      : "Price N/A"}
+                  </div>
+                  <div className="property-location">{locationString}</div>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
+
+      {/* Show "No Results" message if applicable */}
+      {shouldShowNoResults && (
+        <div className="no-results-message sidebar-section">
+          {" "}
+          <p>No properties found for the current selection.</p>
+        </div>
       )}
     </div>
   );

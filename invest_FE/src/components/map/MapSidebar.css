@@ -1,7 +1,6 @@
 /* src/components/map/MapSidebar.css */
 
 /* --- Sidebar Container (Internal Layout) --- */
-/* Styles defining the internal layout and appearance of the sidebar itself */
 .search-container {
   padding-left: 15px;
   padding-right: 15px;
@@ -10,7 +9,14 @@
   display: flex;
   flex-direction: column;
   gap: 20px; /* Space between sections */
-  /* NOTE: Width/flex-basis and height are controlled in Map.css */
+}
+
+/* Ensure the sidebar container itself doesn’t expand beyond its parent */
+.map-sidebar-container {
+  flex: 1; /* Take available space */
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto; /* Additional safety for scrolling */
 }
 
 /* --- Loading Indicator --- */
@@ -43,6 +49,7 @@
   border: 1px solid #dee2e6;
 }
 
+/* Ensure the property list grows within the scrollable area */
 .property-list {
   list-style: none;
   padding: 0;
@@ -54,28 +61,15 @@
 
 /* --- Property Card Item Styling (Refined Look) --- */
 .property-item {
-  /* Background */
   background-color: #f5f5f5; /* Lighter grey background */
-
-  /* Left Green Border */
   border-left: 3px solid #28a745; /* Thinner green left border */
-
-  /* Remove other borders */
   border-top: none;
   border-right: none;
   border-bottom: none;
-
-  /* Padding */
   padding: 10px 15px; /* Padding inside the card */
-
-  /* Shadow */
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); /* Slightly softer shadow */
-
-  /* Rounded Corners */
   border-radius: 4px; /* Apply rounded corners */
 }
-
-/* No need for :last-child rule if using gap and no border-bottom */
 
 .property-id {
   font-size: 0.8em;
@@ -103,7 +97,6 @@
 }
 
 /* --- Saved Polygons / Areas --- */
-/* Styles remain unchanged from your provided file unless specified */
 .saved-polygons {
   border: 1px solid #e0e0e0;
   border-radius: 4px;
@@ -130,6 +123,7 @@
   border-bottom: 1px solid #eee;
   padding: 10px 0;
 }
+
 .polygon-item:last-child {
   border-bottom: none;
 }
@@ -173,7 +167,6 @@
   gap: 10px;
 }
 
-/* Specific button styles within the polygon list item */
 .polygon-actions-row button {
   padding: 4px 8px;
   font-size: 0.85em;
@@ -186,25 +179,24 @@
 .show-coords-button {
   background-color: #007bff; /* Blue */
 }
+
 .show-coords-button:hover {
   background-color: #0056b3;
 }
 
-/* find-properties-button is used in multiple places, ensure consistent styling */
 .find-properties-button {
   background-color: #6610f2; /* Purple */
 }
+
 .find-properties-button:hover {
   background-color: #510bc4;
 }
 
-/* Actions below the polygon list */
 .polygon-actions {
   margin-top: 15px;
   text-align: right;
 }
 
-/* General export button style (if not defined globally) */
 .export-button {
   padding: 6px 12px;
   font-size: 0.9em;
@@ -214,12 +206,12 @@
   border-radius: 4px;
   cursor: pointer;
 }
+
 .export-button:hover {
   background-color: #117a8b;
 }
 
 /* --- Active Polygon Coordinates Display --- */
-/* Styles remain unchanged from your provided file unless specified */
 .coordinates-display {
   border: 1px solid #e0e0e0;
   border-radius: 4px;
@@ -256,7 +248,6 @@
   gap: 10px;
 }
 
-/* General close button style (if not defined globally) */
 .close-button {
   padding: 6px 12px;
   font-size: 0.9em;
@@ -266,12 +257,12 @@
   border-radius: 4px;
   cursor: pointer;
 }
+
 .close-button:hover {
   background-color: #5a6268;
 }
 
 /* --- Instruction Sections (Example) --- */
-/* Styles remain unchanged from your provided file unless specified */
 .polygon-info,
 .radius-info-instructions,
 .polygon-draw-instructions {
@@ -282,6 +273,3 @@
   border-radius: 4px;
   margin-top: 15px;
 }
-
-/* --- Add styles for Saved Searches if implemented --- */
-/* ... */
