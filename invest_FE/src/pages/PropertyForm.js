@@ -1,11 +1,4 @@
-// src/pages/PropertyForm.js
-import React, {
-  useState,
-  useEffect,
-  useContext,
-  useCallback,
-  useMemo, // Import useMemo
-} from "react";
+import React, { useState, useEffect, useContext, useCallback } from "react";
 import "./PropertyForm.css";
 import { UserContext } from "../context/UserContext";
 import PropertyFields from "../components/PropertyFields";
@@ -35,7 +28,6 @@ const PropertyForm = ({
     handleDelete,
   } = usePropertyApi(mode, propertyID, onCancel, onDelete, onSuccess);
 
-  // --- Updated resetFormData to include Rent ---
   const resetFormData = useCallback(() => {
     setFormData({
       propertyID: "",
@@ -49,7 +41,7 @@ const PropertyForm = ({
       hoa: "",
       propertyTax: "",
       insurance: "",
-      Rent: "", // Added Rent field
+      Rent: "",
       beds: "",
       baths: "",
       size: "",
@@ -66,18 +58,15 @@ const PropertyForm = ({
     setError(null);
   }, [setError]);
 
-  // Initialize formData based on mode
   useEffect(() => {
     if (mode === "edit" || (mode === "view" && !property)) {
       const loadProperty = async () => {
         const data = await fetchProperty();
         if (data) {
-          // Ensure Rent field exists in fetched data or initialize it
-          setFormData({ Rent: "", ...data }); // Default Rent to "" if not present
+          setFormData({ Rent: "", ...data });
           setDisplayAddress(data.address || "");
         } else {
-          // Handle case where property fetch fails but we are in edit/view
-          resetFormData(); // Reset to default structure if fetch fails
+          resetFormData();
         }
       };
       loadProperty();
@@ -86,70 +75,32 @@ const PropertyForm = ({
     }
   }, [mode, propertyID, fetchProperty, property, resetFormData]);
 
-  // Update formData when property changes in view mode
   useEffect(() => {
     if (mode === "view" && property) {
-      // Ensure Rent field exists in property data or initialize it
-      setFormData({ Rent: "", ...property }); // Default Rent to "" if not present
+      setFormData({ Rent: "", ...property });
       setDisplayAddress(property.address || "");
     }
   }, [mode, property]);
 
-  // --- Updated handleChange to handle Rent ---
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    // Add 'Rent' to the list of fields parsed as currency
-    if (["price", "hoa", "propertyTax", "insurance", "Rent"].includes(name)) {
-      const rawValue = parseCurrency(value);
-      setFormData((prev) => ({
+    setFormData((prev) => {
+      const newFormData = {
         ...prev,
-        [name]: rawValue,
-      }));
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: type === "checkbox" ? checked : value,
-      }));
-    }
+        [name]: ["price", "hoa", "propertyTax", "insurance", "Rent"].includes(
+          name
+        )
+          ? parseCurrency(value)
+          : type === "checkbox"
+          ? checked
+          : value,
+      };
+      console.log(`handleChange: ${name}=${value}, newFormData:`, newFormData);
+      return newFormData;
+    });
   };
-  console.log("Form Data:", formData);
 
-  // --- Calculate ROI using useMemo ---
-  const roiValue = useMemo(() => {
-    if (!formData) return null; // Guard clause if formData is null
-
-    // Extract and parse values, defaulting potentially missing ones to 0
-    // Crucially, check Rent and Price specifically for validity
-    const rent = parseFloat(formData.Rent) || 0;
-    const price = parseFloat(formData.price) || 0;
-    const hoa = parseFloat(formData.hoa) || 0;
-    const insurance = parseFloat(formData.insurance) || 0;
-    const propertyTax = parseFloat(formData.propertyTax) || 0;
-
-    // If Rent or Price are zero or invalid, ROI is null
-    if (rent <= 0 || price <= 0) {
-      return null;
-    }
-
-    // Calculate ROI based on the provided formula:
-    // (((Rent*0.8 - HOA - insurance)) * 12) - PropertyTax) / Price)
-    // Assuming: Rent=Monthly, HOA=Monthly, Insurance=Monthly, PropertyTax=Annual, Price=Total
-    const numerator = (rent * 0.8 - hoa - insurance) * 12 - propertyTax;
-    const roi = (numerator / price) * 100; // Calculate as percentage
-
-    // Format the result
-    return roi.toFixed(2) + "%";
-  }, [
-    formData?.Rent,
-    formData?.price,
-    formData?.hoa,
-    formData?.insurance,
-    formData?.propertyTax,
-  ]); // Dependencies for recalculation
-
-  // Updated handler for AddressSearch component selection
   const handleAddressSelect = (selectedAddressData) => {
-    // ... (existing handleAddressSelect logic - no changes needed here for ROI) ...
     console.log("Selected Address Data:", selectedAddressData);
 
     if (!selectedAddressData) return;
@@ -179,7 +130,6 @@ const PropertyForm = ({
     onCancel();
   };
 
-  // --- Loading/Error/Initial State Handling ---
   if (isLoading) {
     return <p>Loading property...</p>;
   }
@@ -193,14 +143,12 @@ const PropertyForm = ({
     );
   }
 
-  // Ensure formData is initialized before rendering the form fields
   if (!formData) {
     return <p>Initializing form...</p>;
   }
 
   const isReadOnly = mode === "view";
 
-  // --- Render ---
   return (
     <div className="property-page-container">
       <div className="property-container">
@@ -225,7 +173,6 @@ const PropertyForm = ({
           </div>
         )}
         <form onSubmit={(e) => handleSubmit(e, formData)}>
-          {/* Pass formData, handlers, and calculated ROI to PropertyFields */}
           <PropertyFields
             formData={formData}
             handleChange={handleChange}
@@ -234,7 +181,6 @@ const PropertyForm = ({
             currentYear={currentYear}
             mode={mode}
             displayAddress={displayAddress}
-            roiValue={roiValue} // Pass calculated ROI value
           />
           {!isReadOnly && (
             <div className="button-group">
@@ -251,7 +197,6 @@ const PropertyForm = ({
             </div>
           )}
         </form>
-        {/* Debugging display */}
         {!isReadOnly && formData.location?.coordinates?.length === 2 && (
           <div style={{ marginTop: "10px", fontSize: "0.8em", color: "#555" }}>
             Coords: [{formData.location.coordinates[1].toFixed(6)},{" "}

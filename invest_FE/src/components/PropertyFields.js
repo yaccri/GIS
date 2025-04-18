@@ -1,13 +1,10 @@
-// src/components/PropertyFields.js
 import React from "react";
 import { states } from "../utils/states";
 import { formatCurrencyForDisplay } from "../utils/currencyFormatter";
-import { format } from "date-fns"; // to format createdOn date
-// Assuming you might switch between Google and OSM, keep the import flexible or choose one
-// import AddressSearch from "./AddressSearch-Google";
-import AddressSearch from "./AddressSearch-OpenStreetMap"; // Using OSM based on other files
+import { format } from "date-fns";
+import AddressSearch from "./AddressSearch-OpenStreetMap";
+import { calcROI } from "../utils/calcROI";
 
-// Options for property type
 const PROPERTY_TYPES = [
   "Single-family",
   "Multi-family",
@@ -25,16 +22,31 @@ const PropertyFields = ({
   currentYear,
   mode,
   displayAddress,
-  roiValue, // <-- Destructure the new roiValue prop
 }) => {
-  // Format the createdOn date if it exists, otherwise display "N/A"
   const formattedCreatedOn = formData.createdOn
     ? format(new Date(formData.createdOn), "MMM-dd-yyyy HH:mm")
     : "N/A";
 
+  const roiValue = calcROI({
+    price: formData.price,
+    rent: formData.Rent,
+    hoa: formData.hoa,
+    propertyTax: formData.propertyTax,
+    insurance: formData.insurance,
+  });
+
+  console.log("PropertyFields formData:", formData);
+  console.log("calcROI inputs:", {
+    price: formData.price,
+    rent: formData.Rent,
+    hoa: formData.hoa,
+    propertyTax: formData.propertyTax,
+    insurance: formData.insurance,
+  });
+  console.log("roiValue:", roiValue);
+
   return (
     <>
-      {/* propertyID */}
       <div className="form-group">
         <label htmlFor="propertyID">Property ID:</label>
         <input
@@ -49,8 +61,6 @@ const PropertyFields = ({
           disabled={isReadOnly || mode === "edit"}
         />
       </div>
-
-      {/* address */}
       <div className="form-group">
         <label htmlFor="address">Address Search:</label>
         <AddressSearch
@@ -62,8 +72,6 @@ const PropertyFields = ({
           placeholder="Start typing address..."
         />
       </div>
-
-      {/* city */}
       <div className="form-group">
         <label htmlFor="city">City:</label>
         <input
@@ -73,11 +81,9 @@ const PropertyFields = ({
           value={formData.city}
           onChange={handleChange}
           required
-          disabled={true} // Assuming auto-filled and non-editable
+          disabled={true}
         />
       </div>
-
-      {/* state */}
       <div className="form-group">
         <label htmlFor="state">State:</label>
         <select
@@ -86,7 +92,7 @@ const PropertyFields = ({
           value={formData.state}
           onChange={handleChange}
           required
-          disabled={true} // Assuming auto-filled and non-editable
+          disabled={true}
         >
           <option value="">Select State</option>
           {states.map((state) => (
@@ -96,8 +102,6 @@ const PropertyFields = ({
           ))}
         </select>
       </div>
-
-      {/* zipCode */}
       <div className="form-group">
         <label htmlFor="zipCode">Zip Code:</label>
         <input
@@ -107,12 +111,10 @@ const PropertyFields = ({
           value={formData.zipCode}
           onChange={handleChange}
           required
-          disabled={true} // Assuming auto-filled and non-editable
+          disabled={true}
           maxLength="10"
         />
       </div>
-
-      {/* type */}
       <div className="form-group">
         <label htmlFor="type">Type:</label>
         <select
@@ -131,8 +133,6 @@ const PropertyFields = ({
           ))}
         </select>
       </div>
-
-      {/* description */}
       <div className="form-group">
         <label htmlFor="description">Description:</label>
         <textarea
@@ -143,8 +143,6 @@ const PropertyFields = ({
           readOnly={isReadOnly}
         />
       </div>
-
-      {/* price */}
       <div className="form-group">
         <label htmlFor="price">Price:</label>
         <input
@@ -157,10 +155,8 @@ const PropertyFields = ({
           readOnly={isReadOnly}
         />
       </div>
-
-      {/* HOA */}
       <div className="form-group">
-        <label htmlFor="hoa">HOA/mo:</label> {/* Added /mo for clarity */}
+        <label htmlFor="hoa">HOA/mo:</label>
         <input
           type="text"
           id="hoa"
@@ -170,11 +166,8 @@ const PropertyFields = ({
           readOnly={isReadOnly}
         />
       </div>
-
-      {/* Property Tax */}
       <div className="form-group">
-        <label htmlFor="propertyTax/yr">Property Tax/yr:</label>{" "}
-        {/* Added /yr */}
+        <label htmlFor="propertyTax/yr">Property Tax/yr:</label>
         <input
           type="text"
           id="propertyTax"
@@ -184,10 +177,8 @@ const PropertyFields = ({
           readOnly={isReadOnly}
         />
       </div>
-
-      {/* Insurance */}
       <div className="form-group">
-        <label htmlFor="insurance">Insurance/mo:</label> {/* Added /mo */}
+        <label htmlFor="insurance">Insurance/mo:</label>
         <input
           type="text"
           id="insurance"
@@ -197,37 +188,30 @@ const PropertyFields = ({
           readOnly={isReadOnly}
         />
       </div>
-
-      {/* --- NEW: Rent Field --- */}
       <div className="form-group">
         <label htmlFor="Rent">Rent Estimate/mo:</label>
         <input
-          type="text" // Use text to allow currency formatting during input
+          type="text"
           id="Rent"
           name="Rent"
-          value={formatCurrencyForDisplay(formData.Rent)} // Format for display
-          onChange={handleChange} // Use the same handler (it parses currency)
+          value={formatCurrencyForDisplay(formData.Rent)}
+          onChange={handleChange}
           readOnly={isReadOnly}
-          placeholder="$0" // Optional placeholder
+          placeholder="$0"
         />
       </div>
-
-      {/* --- NEW: ROI Field (Read-Only) --- */}
       <div className="form-group">
         <label htmlFor="roi">ROI %:</label>
         <input
           type="text"
           id="roi"
-          name="roi" // Name is optional for read-only
-          value={roiValue ?? "N/A"} // Display calculated value or N/A if null
-          readOnly // Make it non-editable by the user
-          disabled // Visually indicate it's non-interactive
-          className="calculated-field" // Optional: Add class for styling
+          name="roi"
+          value={roiValue || "N/A"}
+          readOnly
+          disabled
+          className="calculated-field"
         />
       </div>
-      {/* --- END NEW FIELDS --- */}
-
-      {/* beds */}
       <div className="form-group">
         <label htmlFor="beds">Beds:</label>
         <input
@@ -241,8 +225,6 @@ const PropertyFields = ({
           readOnly={isReadOnly}
         />
       </div>
-
-      {/* baths */}
       <div className="form-group">
         <label htmlFor="baths">Baths:</label>
         <input
@@ -256,8 +238,6 @@ const PropertyFields = ({
           readOnly={isReadOnly}
         />
       </div>
-
-      {/* size */}
       <div className="form-group">
         <label htmlFor="size">Size (sq ft):</label>
         <input
@@ -271,8 +251,6 @@ const PropertyFields = ({
           readOnly={isReadOnly}
         />
       </div>
-
-      {/* lotSize */}
       <div className="form-group">
         <label htmlFor="lotSize">Lot Size (sq ft):</label>
         <input
@@ -286,8 +264,6 @@ const PropertyFields = ({
           readOnly={isReadOnly}
         />
       </div>
-
-      {/* tenantInPlace */}
       <div className="form-group">
         <label htmlFor="tenantInPlace">Tenant in Place:</label>
         <input
@@ -299,8 +275,6 @@ const PropertyFields = ({
           disabled={isReadOnly}
         />
       </div>
-
-      {/* yearBuilt */}
       <div className="form-group">
         <label htmlFor="yearBuilt">Year Built:</label>
         <input
@@ -315,8 +289,6 @@ const PropertyFields = ({
           readOnly={isReadOnly}
         />
       </div>
-
-      {/* createdOn */}
       <div className="form-group">
         <label htmlFor="createdOn">Created On:</label>
         <input
@@ -325,7 +297,7 @@ const PropertyFields = ({
           name="createdOn"
           value={formattedCreatedOn}
           readOnly
-          disabled // Also disable visually
+          disabled
         />
       </div>
     </>

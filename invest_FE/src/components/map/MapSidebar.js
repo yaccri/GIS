@@ -1,32 +1,31 @@
-// src/components/map/sidebar/MapSidebar.js
-import React from "react";
-import "./MapSidebar.css"; // Imports its dedicated styles
-// Removed RadiusSearchPanel import as the list is now rendered here directly
-// import RadiusSearchPanel from "./RadiusSearchPanel";
+// src/components/map/MapSidebar.js
+import React, { useState } from "react";
+import "./MapSidebar.css";
+import PropertyDisplay from "./PropertyDisplay";
 
 const MapSidebar = ({
-  // Combined props for property list display
-  isSearching, // Combined loading state (radius OR neighborhood)
-  propertiesToDisplay, // The list of properties to show
-  searchRadius, // To know if it was a radius search
-  clickedNeighborhood, // To know if it was a neighborhood search
-  selectedLocationDetails, // To know if *any* search context exists
-  formatCurrencyForDisplay, // Utility
-
-  // Props for Saved Polygons / Areas
-  // drawnItems,
-  // handleDeletePolygon,
-  // showPolygonCoordinates,
-  // formatArea,
-  // exportToGeoJSON,
-  // searchPropertiesInPolygon,
-
-  // // Props for Active Polygon Display
-  // activePolygon,
-  // setActivePolygon,
+  isSearching,
+  propertiesToDisplay,
+  searchRadius,
+  clickedNeighborhood,
+  selectedLocationDetails,
+  formatCurrencyForDisplay,
 }) => {
+  // State to manage PropertyDisplay visibility and selected property
+  const [selectedProperty, setSelectedProperty] = useState(null);
+
+  // Handler to open PropertyDisplay with the clicked property
+  const handlePropertyClick = (property) => {
+    setSelectedProperty(property);
+  };
+
+  // Handler to close PropertyDisplay
+  const handleClosePropertyDisplay = () => {
+    setSelectedProperty(null);
+  };
+
   // Determine the heading for the results section
-  let resultsHeading = "Search Results"; // Default
+  let resultsHeading = "Search Results";
   if (searchRadius > 0) {
     resultsHeading = `Properties within ${searchRadius} miles`;
   } else if (clickedNeighborhood) {
@@ -35,37 +34,38 @@ const MapSidebar = ({
     }`;
   }
 
-  // Determine if a search context is active (radius selected or neighborhood clicked)
+  // Determine if a search context is active
   const isSearchActive = searchRadius > 0 || !!clickedNeighborhood;
 
   // Determine if the "No properties found" message should show
   const shouldShowNoResults =
     !isSearching &&
     propertiesToDisplay.length === 0 &&
-    isSearchActive && // Only show if a search was actually active
-    selectedLocationDetails; // And a location was selected to search around/in
+    isSearchActive &&
+    selectedLocationDetails;
 
   return (
     <div className="map-sidebar-container">
-      {/* --- Property Results Section (Combined) --- */}
-      {/* Show loading indicator if either search is running */}
+      {/* PropertyDisplay modal */}
+      <PropertyDisplay
+        isOpen={!!selectedProperty}
+        onClose={handleClosePropertyDisplay}
+        property={selectedProperty}
+        isAdmin={false} // View-only mode
+      />
+
+      {/* Property Results Section */}
       {isSearching && (
         <div className="loading-indicator sidebar-section">
-          {" "}
-          {/* Added sidebar-section class */}
           <p>Searching properties...</p>
         </div>
       )}
 
-      {/* Show results if not loading AND there are properties to display */}
       {!isSearching && propertiesToDisplay.length > 0 && (
         <div className="property-results sidebar-section">
-          {" "}
-          {/* Added sidebar-section class */}
           <h3>{resultsHeading}</h3>
           <ul className="property-list">
             {propertiesToDisplay.map((property) => {
-              // Simplified location string logic (can be enhanced)
               let locationString = "Location N/A";
               if (property.address) {
                 locationString = `${property.address}, ${property.city || ""}`;
@@ -85,6 +85,8 @@ const MapSidebar = ({
                 <li
                   key={property.propertyID || property._id || Math.random()}
                   className="property-item"
+                  onClick={() => handlePropertyClick(property)} // Open PropertyDisplay on click
+                  style={{ cursor: "pointer" }} // Indicate clickability
                 >
                   {property.propertyID && (
                     <div className="property-id">ID: {property.propertyID}</div>
@@ -105,10 +107,8 @@ const MapSidebar = ({
         </div>
       )}
 
-      {/* Show "No Results" message if applicable */}
       {shouldShowNoResults && (
         <div className="no-results-message sidebar-section">
-          {" "}
           <p>No properties found for the current selection.</p>
         </div>
       )}
