@@ -11,6 +11,7 @@ import TopBar from "./components/TopBar";
 import { MapProvider } from "./context/MapContext";
 import Properties from "./pages/Properties";
 import ProtectedRoute from "./components/ProtectedRoute";
+import AdminRoute from "./components/AdminRoute";
 import NoPage from "./pages/NoPage";
 import Preferences from "./pages/Preferences";
 import MapComponent from "./pages/Map";
@@ -37,31 +38,22 @@ function App() {
                 <Route path="/about" element={<About />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/subscribe" element={<Subscription />} />
-                <Route
-                  path="/testGoogleAddress"
-                  element={<TestGoogleAddressSearch />}
-                />
-                <Route
-                  path="/testOpenStreetMapAddress"
-                  element={<TestOpenStreetMapAddressSearch />}
-                />
-
                 {/* Protected Routes */}
                 <Route element={<ProtectedRoute />}>
-                  <Route path="/properties" element={<Properties />} />
                   <Route path="/preferences" element={<Preferences />} />
                   <Route path="/map" element={<MapComponent />} />{" "}
                   {/* Admin Routes */}
-                  {/* <Route element={<AdminRoute />}>
+                  <Route element={<AdminRoute />}>
+                    <Route path="/properties" element={<Properties />} />
                     <Route
-                      path="/property"
-                      element={<PropertyForm mode="add" />}
-                    />{" "}
-                    <Route
-                      path="/edit-property/:propertyID"
-                      element={<PropertyForm mode="edit" />}
+                      path="/testGoogleAddress"
+                      element={<TestGoogleAddressSearch />}
                     />
-                  </Route> */}
+                    <Route
+                      path="/testOpenStreetMapAddress"
+                      element={<TestOpenStreetMapAddressSearch />}
+                    />
+                  </Route>
                 </Route>
                 <Route path="*" element={<NoPage />} />
               </Routes>
