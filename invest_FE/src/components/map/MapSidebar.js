@@ -109,7 +109,9 @@ const MapSidebar = ({
 
       {shouldShowNoResults && (
         <div className="no-results-message sidebar-section">
-          <p>No properties found for the current selection.</p>
+          <p>No properties found for the current selection. </p>
+          <p>You may need to adjust your search criteria. </p>
+          <p>Click 'Search Neighborhood' or increase the search radius.</p>
         </div>
       )}
     </div>

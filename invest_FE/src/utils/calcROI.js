@@ -12,11 +12,15 @@
  * @returns {string} Formatted ROI percentage or empty string
  */
 export const calcROI = ({ price, rent, hoa, propertyTax, insurance }) => {
+  console.log("calcROI started");
   const parsedPrice = Number(price);
   const parsedRent = Number(rent);
 
   // Return "" if price or rent is not a number > 0
   if (!parsedPrice || !parsedRent || parsedPrice <= 0 || parsedRent <= 0) {
+    console.log(
+      `calcROI failed with parsedPrice ${parsedPrice} and parsedRent ${parsedRent}`
+    );
     return "";
   }
 
@@ -33,5 +37,6 @@ export const calcROI = ({ price, rent, hoa, propertyTax, insurance }) => {
   const roi = ((annualIncome - totalExpenses) / parsedPrice) * 100;
 
   // Return formatted percentage or "" if invalid
+  console.log(`calcROI returned ${roi.toFixed(1)}%`);
   return isFinite(roi) && roi >= 0 ? `${roi.toFixed(1)}%` : "";
 };

@@ -1,9 +1,9 @@
-// src/components/AddressSearch-Google.jsx
 import React, { useState, useEffect, useRef } from "react";
 import { GOOGLE_MAPS_API_KEY } from "../utils/config";
+import "./AddressSearch.css";
 
-const AddressSearch = ({ onAddressSelect }) => {
-  const [address, setAddress] = useState("");
+const AddressSearch = ({ onAddressSelect, initialValue = "" }) => {
+  const [address, setAddress] = useState(initialValue); // Initialize with prop
   const [suggestions, setSuggestions] = useState([]);
   const [error, setError] = useState(null);
   const scriptLoadedRef = useRef(false);
@@ -22,6 +22,10 @@ const AddressSearch = ({ onAddressSelect }) => {
     document.head.appendChild(script);
   }, []);
 
+  useEffect(() => {
+    setAddress(initialValue); // Update address state if initialValue changes
+  }, [initialValue]);
+
   const getAddressFields = (components) => {
     const getComponent = (type, useShort = false) =>
       components.find((c) => c.types.includes(type))?.[
@@ -37,7 +41,7 @@ const AddressSearch = ({ onAddressSelect }) => {
       city: getComponent("locality"),
       neighborhood: getComponent("sublocality") || getComponent("neighborhood"),
       county: getComponent("administrative_area_level_2"),
-      state: getComponent("administrative_area_level_1", true), // use short_name here
+      state: getComponent("administrative_area_level_1", true),
       ZIP: getComponent("postal_code"),
     };
   };
@@ -102,26 +106,34 @@ const AddressSearch = ({ onAddressSelect }) => {
       },
     };
 
-    if (onAddressSelect) onAddressSelect(location);
+    if (onAddressSelect) {
+      onAddressSelect({
+        formattedAddress: suggestion.formatted_address,
+        location: location,
+      });
+    }
   };
 
   return (
-    <div className="address-search">
+    <div className="address-search-input-container">
       <input
         type="text"
         value={address}
         onChange={handleAddressChange}
         placeholder="Enter a US street address..."
-        className="address-input"
+        className="address-search-box"
+        aria-label="Address Search Input"
       />
-      {error && <div className="error">{error}</div>}
+      {error && <div className="address-search-error">{error}</div>}
       {suggestions.length > 0 && (
-        <ul className="suggestions">
+        <ul className="address-suggestions-list">
           {suggestions.map((s) => (
             <li
               key={s.place_id}
               onClick={() => handleSuggestionClick(s)}
-              className="suggestion-item"
+              className="address-suggestion-item"
+              role="option"
+              aria-selected="false"
             >
               {s.formatted_address}
             </li>
