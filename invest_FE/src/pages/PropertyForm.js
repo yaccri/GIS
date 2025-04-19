@@ -1,9 +1,11 @@
+// src/pages/PropertyForm.js
 import React, { useState, useEffect, useContext, useCallback } from "react";
 import "./PropertyForm.css";
 import { UserContext } from "../context/UserContext";
 import PropertyFields from "../components/PropertyFields";
 import usePropertyApi from "../hooks/usePropertyApi";
 import { parseCurrency } from "../utils/currencyFormatter";
+import { states } from "../utils/states";
 
 const PropertyForm = ({
   mode,
@@ -51,7 +53,7 @@ const PropertyForm = ({
       createdOn: "",
       location: {
         type: "Point",
-        coordinates: [], // [longitude, latitude]
+        coordinates: [],
       },
     });
     setDisplayAddress("");
@@ -64,7 +66,7 @@ const PropertyForm = ({
         const data = await fetchProperty();
         if (data) {
           setFormData({ Rent: "", ...data });
-          setDisplayAddress(data.address || "");
+          setDisplayAddress(String(data.address || ""));
         } else {
           resetFormData();
         }
@@ -78,7 +80,7 @@ const PropertyForm = ({
   useEffect(() => {
     if (mode === "view" && property) {
       setFormData({ Rent: "", ...property });
-      setDisplayAddress(property.address || "");
+      setDisplayAddress(String(property.address || ""));
     }
   }, [mode, property]);
 
@@ -108,20 +110,49 @@ const PropertyForm = ({
     if (selectedAddressData.type === "Feature") {
       const { geometry, properties } = selectedAddressData;
       const coordinates = geometry?.coordinates || [];
-      const { components, address } = properties || {};
+      const { address, name } = properties || {};
+
+      console.log("Address components:", { address, name });
+
+      const streetAddress =
+        [address?.house_number, address?.road].filter(Boolean).join(" ") ||
+        name ||
+        "";
+      console.log("Computed streetAddress:", streetAddress);
+
+      const city =
+        address?.city ||
+        address?.town ||
+        address?.village ||
+        address?.hamlet ||
+        "";
+      console.log("Computed city:", city);
+
+      const fullState = address?.state || "";
+      console.log("Full state name:", fullState);
+      const stateObj = states.find(
+        (state) => state.label.toLowerCase() === fullState.toLowerCase()
+      );
+      const state = stateObj ? stateObj.value : "";
+      console.log("Converted state to 2-letter code:", state);
+
+      const zipCode = address?.postcode || "";
+      console.log("Computed zipCode:", zipCode);
 
       setFormData((prev) => ({
         ...prev,
-        address: components?.street_address || address || prev.address,
-        city: components?.city || prev.city,
-        state: components?.state || prev.state,
-        zipCode: components?.ZIP || prev.zipCode,
+        address: streetAddress || prev.address,
+        city: city || prev.city,
+        state: state || prev.state,
+        zipCode: zipCode || prev.zipCode,
         location:
           coordinates.length === 2
             ? { type: "Point", coordinates: coordinates }
             : prev.location,
       }));
-      setDisplayAddress(address || "");
+      const newDisplayAddress = String(streetAddress || name || ""); // Prioritize streetAddress
+      console.log("Setting displayAddress to:", newDisplayAddress);
+      setDisplayAddress(newDisplayAddress);
     }
   };
 

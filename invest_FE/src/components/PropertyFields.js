@@ -1,3 +1,4 @@
+// src/components/PropertyFields.js
 import React from "react";
 import { states } from "../utils/states";
 import { formatCurrencyForDisplay } from "../utils/currencyFormatter";
@@ -66,8 +67,8 @@ const PropertyFields = ({
         <AddressSearch
           id="address"
           initialValue={displayAddress}
-          onLocationSelect={handleAddressSelect}
-          disabled={isReadOnly}
+          onLocationSelect={handleAddressSelect} // Changed to onLocationSelect
+          disabled={isReadOnly} // Add disabled prop
           required
           placeholder="Start typing address..."
         />
