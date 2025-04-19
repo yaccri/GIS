@@ -111,15 +111,13 @@ const PropertyDisplay = ({ isOpen, onClose, property }) => {
               <span className="zillow-price">
                 {formatCurrency(formData.price)}
               </span>
-              <span className="zillow-roi-inline">
-                {roiValue !== "N/A" && (
-                  <>
-                    <i className="fas fa-percentage"></i>
-                    <span className="zillow-roi-label">ROI </span>
-                  </>
-                )}
-                <span className="zillow-roi-value">{roiValue}</span>
-              </span>
+              {roiValue !== "" && (
+                <span className="zillow-roi-inline">
+                  <i className="fas fa-percentage"></i>
+                  <span className="zillow-roi-label">ROI </span>
+                  <span className="zillow-roi-value">{roiValue}</span>
+                </span>
+              )}
             </div>
           </div>
           <div className="zillow-address-row">
