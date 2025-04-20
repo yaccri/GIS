@@ -78,3 +78,16 @@
   color: red;
   margin-top: 5px;
 }
+
+.admin-only-tooltip {
+  display: block;
+  color: #666;
+  font-size: 0.8em;
+  margin-top: 5px;
+  font-style: italic;
+}
+
+input:disabled {
+  background-color: #f5f5f5;
+  cursor: not-allowed;
+}
