@@ -1,4 +1,5 @@
 // app.js
+require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
@@ -16,23 +17,25 @@ app.use("/api/properties", authPropertyRoutes);
 app.use("/api/neighborhoods", neighborhoodRoutes);
 app.use("/protected", protectedRoute);
 
+const mongoURI = process.env.MONGODB_URI;
+
+if (!mongoURI) {
+  console.error("FATAL ERROR: MONGODB_URI environment variable is not set.");
+  process.exit(1);
+}
+
 // MongoDB Connection
 mongoose
-  //  .connect("mongodb+srv://yaccri:x3Xoi0o5BWB1mkZ9@cluster0.oroua.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0", {
-  .connect(
-    "mongodb+srv://yaccri:x3Xoi0o5BWB1mkZ9@cluster0.oroua.mongodb.net/GIS",
-    {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    }
-  )
+  .connect(mongoURI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
   .then(() => {
     console.log("Connected to MongoDB");
   })
   .catch((err) => console.error("MongoDB connection error:", err));
 
 const PORT = process.env.PORT || 4000;
-//const PORT = 4000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
