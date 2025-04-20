@@ -17,6 +17,7 @@ Clone the repository with 'git clone https://github.com/yaccri/invest.git'??????
 Navigate to the backend folder ('cd invest_BE'), and run 'npm install'.
 
 ### Backend launch:
+npm install --save @fortawesome/fontawesome-free??????
 
 Run the server with the command 'node app.js'. It will run on http://localhost:4000.
 
