@@ -118,25 +118,20 @@ const Preferences = () => {
           </div>
 
           {/* Items Per Page */}
-          <div className="form-group">
-            <label htmlFor="itemsPerPage">Items Per Page:</label>
-            <input
-              type="number"
-              id="itemsPerPage"
-              name="itemsPerPage"
-              value={formData.itemsPerPage}
-              onChange={handleChange}
-              min="3"
-              max="50"
-              disabled={!user.isAdmin}
-              title={!user.isAdmin ? "Only administrators can change the number of items per page" : ""}
-            />
-            {!user.isAdmin && (
-              <span className="admin-only-tooltip">
-                Only administrators can change this setting
-              </span>
-            )}
-          </div>
+          {user.isAdmin && (
+            <div className="form-group">
+              <label htmlFor="itemsPerPage">Items Per Page:</label>
+              <input
+                type="number"
+                id="itemsPerPage"
+                name="itemsPerPage"
+                value={formData.itemsPerPage}
+                onChange={handleChange}
+                min="3"
+                max="50"
+              />
+            </div>
+          )}
 
           {/* Subscribe */}
           <div className="form-group">
