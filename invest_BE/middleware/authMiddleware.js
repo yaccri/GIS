@@ -16,7 +16,7 @@ function verifyToken(req, res, next) {
 
   try {
     console.log("middleware.js trying to decode: token:", token);
-    const decoded = jwt.verify(token, "your-secret-key");
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     console.log("middleware.js decoded: :", decoded);
     // Set req.user as an object with id and isAdmin properties
     req.user = {
