@@ -118,18 +118,20 @@ const Preferences = () => {
           </div>
 
           {/* Items Per Page */}
-          <div className="form-group">
-            <label htmlFor="itemsPerPage">Items Per Page:</label>
-            <input
-              type="number"
-              id="itemsPerPage"
-              name="itemsPerPage"
-              value={formData.itemsPerPage}
-              onChange={handleChange}
-              min="3"
-              max="50"
-            />
-          </div>
+          {user.isAdmin && (
+            <div className="form-group">
+              <label htmlFor="itemsPerPage">Items Per Page:</label>
+              <input
+                type="number"
+                id="itemsPerPage"
+                name="itemsPerPage"
+                value={formData.itemsPerPage}
+                onChange={handleChange}
+                min="3"
+                max="50"
+              />
+            </div>
+          )}
 
           {/* Subscribe */}
           <div className="form-group">
