@@ -124,6 +124,32 @@ function DrawControl({ onPolygonCreated, deleteShape }) {
       }
     };
 
+    const handleDrawEdited = (e) => {
+      e.layers.eachLayer((layer) => {
+        const featureId = L.Util.stamp(layer);
+        if (onPolygonCreated) {
+          const latLngs = layer.getLatLngs()[0];
+          const area = L.GeometryUtil.geodesicArea(latLngs);
+          const center = layer.getBounds().getCenter();
+          const geoJsonCoords = [latLngs.map((point) => [point.lng, point.lat])];
+          geoJsonCoords[0].push(geoJsonCoords[0][0]);
+          const geoJsonGeometry = { type: "Polygon", coordinates: geoJsonCoords };
+          onPolygonCreated({
+            id: featureId,
+            type: layer instanceof L.Rectangle ? 'rectangle' : 'polygon',
+            coordinates: latLngs.map((point) => [point.lat, point.lng]),
+            center: center,
+            area: area,
+            geoJSON: {
+              type: "Feature",
+              geometry: geoJsonGeometry,
+              properties: { id: featureId, area_sqm: area },
+            },
+          });
+        }
+      });
+    };
+
     const handleDrawDeleted = (e) => {
       e.layers.eachLayer((layer) => {
         const featureId = L.Util.stamp(layer);
@@ -134,11 +160,13 @@ function DrawControl({ onPolygonCreated, deleteShape }) {
     };
 
     map.on(L.Draw.Event.CREATED, handleDrawCreated);
+    map.on(L.Draw.Event.EDITED, handleDrawEdited);
     map.on("draw:deleted", handleDrawDeleted);
 
     // --- Cleanup ---
     return () => {
       map.off(L.Draw.Event.CREATED, handleDrawCreated);
+      map.off(L.Draw.Event.EDITED, handleDrawEdited);
       map.off("draw:deleted", handleDrawDeleted);
       if (map && drawControl) map.removeControl(drawControl);
       if (map && drawnItemsFeatureGroup)
