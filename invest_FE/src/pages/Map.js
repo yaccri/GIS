@@ -245,25 +245,23 @@ const MapComponent = () => {
   } = useActiveShapeDetails();
 
   // הגדרת פונקציית הסינון לפני השימוש בה
-  const filterProperties = (properties, filters) => {
-    return properties.filter(property => {
-      // בדיקת מחיר
-      if (filters.price?.min && property.price < parseFloat(filters.price.min)) return false;
-      if (filters.price?.max && property.price > parseFloat(filters.price.max)) return false;
-
-      // בדיקת חדרי שינה
-      if (filters.beds?.min && property.beds < parseInt(filters.beds.min)) return false;
-      if (filters.beds?.max && property.beds > parseInt(filters.beds.max)) return false;
-
-      // בדיקת סוג נכס
-      if (filters.type && property.type !== filters.type) return false;
-
-      // בדיקת שנת בנייה
-      if (filters.builtYear?.min && property.yearBuilt < parseInt(filters.builtYear.min)) return false;
-      if (filters.builtYear?.max && property.yearBuilt > parseInt(filters.builtYear.max)) return false;
-
-      return true;
-    });
+  const filterProperties = (property) => {
+    if (filters.builtYear?.min && property.yearBuilt < parseInt(filters.builtYear.min)) return false;
+    if (filters.builtYear?.max && property.yearBuilt > parseInt(filters.builtYear.max)) return false;
+    
+    if (filters.propertyTax?.min && property.propertyTax < parseInt(filters.propertyTax.min)) return false;
+    if (filters.propertyTax?.max && property.propertyTax > parseInt(filters.propertyTax.max)) return false;
+    
+    if (filters.hoa?.min && property.hoa < parseInt(filters.hoa.min)) return false;
+    if (filters.hoa?.max && property.hoa > parseInt(filters.hoa.max)) return false;
+    
+    if (filters.insurance?.min && property.insurance < parseInt(filters.insurance.min)) return false;
+    if (filters.insurance?.max && property.insurance > parseInt(filters.insurance.max)) return false;
+    
+    if (filters.rent?.min && property.rent < parseInt(filters.rent.min)) return false;
+    if (filters.rent?.max && property.rent > parseInt(filters.rent.max)) return false;
+    
+    return true;
   };
 
   // Combined property filtering and display logic
@@ -290,7 +288,7 @@ const MapComponent = () => {
     }
 
     // Then apply filters
-    return filterProperties(sourceProperties, filters);
+    return sourceProperties.filter(filterProperties);
   }, [
     propertiesByPolygon,
     neighborhoodProperties,

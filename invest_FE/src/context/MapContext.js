@@ -17,9 +17,11 @@ export const useMapContext = () => {
 export const MapProvider = ({ children }) => {
   const [selectedMapLocation, setSelectedMapLocation] = useState(null); // { lat: number, lon: number } | null
   const [filters, setFilters] = useState({
-    price: { min: "", max: "" },
-    beds: { min: "", max: "" },
-    type: "",
+    builtYear: { min: "", max: "" },
+    propertyTax: { min: "", max: "" },
+    hoa: { min: "", max: "" },
+    insurance: { min: "", max: "" },
+    rent: { min: "", max: "" }
   });
 
   // Function to update the location - MODIFIED TO HANDLE GEOJSON

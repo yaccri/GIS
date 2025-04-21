@@ -5,7 +5,7 @@ import { useMapContext } from "../context/MapContext";
 // Import useLocation along with other router hooks
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import AddressSearchInput from "./AddressSearch-OpenStreetMap";
-import { FaFilter, FaChevronDown, FaHome, FaBed, FaBath, FaRuler, FaCalendar, FaMoneyBill, FaUser } from "react-icons/fa";
+import { FaFilter, FaChevronDown, FaHome, FaBed, FaBath, FaRuler, FaCalendar, FaMoneyBill, FaUser, FaBuilding, FaShieldAlt } from "react-icons/fa";
 import "./TopBar.css";
 import menuIcon from "../assets/images/account.svg";
 
@@ -19,25 +19,11 @@ const TopBar = () => {
   const [isAdminSubMenuOpen, setIsAdminSubMenuOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState(null);
   const [filters, setLocalFilters] = useState({
-    propertyID: "",
-    address: "",
-    city: "",
-    state: "",
-    zipCode: "",
-    type: "",
-    price: { min: "", max: "" },
-    beds: { min: "", max: "" },
-    baths: { min: "", max: "" },
-    size: { min: "", max: "" },
-    lotSize: { min: "", max: "" },
-    yearBuilt: { min: "", max: "" },
-    hoa: { min: "", max: "" },
+    builtYear: { min: "", max: "" },
     propertyTax: { min: "", max: "" },
+    hoa: { min: "", max: "" },
     insurance: { min: "", max: "" },
-    rent: { min: "", max: "" },
-    tenantInPlace: "",
-    createdOn: { start: "", end: "" },
-    builtYear: { min: "", max: "" }
+    rent: { min: "", max: "" }
   });
   const adminMenuTimerRef = useRef(null);
   const menuRef = useRef(null);
@@ -141,179 +127,30 @@ const TopBar = () => {
   };
 
   const renderFilterInputs = (filterType) => {
-    switch (filterType) {
-      case 'price':
-      case 'hoa':
-      case 'propertyTax':
-      case 'insurance':
-      case 'rent':
-        return (
-          <div className="filter-dropdown">
-            <div className="range-inputs">
-              <input
-                type="number"
-                name={`${filterType}.min`}
-                placeholder={`Min ${filterType}`}
-                value={filters[filterType].min}
-                onChange={handleFilterChange}
-              />
-              <span>to</span>
-              <input
-                type="number"
-                name={`${filterType}.max`}
-                placeholder={`Max ${filterType}`}
-                value={filters[filterType].max}
-                onChange={handleFilterChange}
-              />
-            </div>
-          </div>
-        );
-      case 'beds':
-      case 'baths':
-        return (
-          <div className="filter-dropdown">
-            <div className="range-inputs">
-              <input
-                type="number"
-                name={`${filterType}.min`}
-                placeholder={`Min ${filterType}`}
-                value={filters[filterType].min}
-                onChange={handleFilterChange}
-              />
-              <span>to</span>
-              <input
-                type="number"
-                name={`${filterType}.max`}
-                placeholder={`Max ${filterType}`}
-                value={filters[filterType].max}
-                onChange={handleFilterChange}
-              />
-            </div>
-          </div>
-        );
-      case 'size':
-      case 'lotSize':
-        return (
-          <div className="filter-dropdown">
-            <div className="range-inputs">
-              <input
-                type="number"
-                name={`${filterType}.min`}
-                placeholder={`Min ${filterType} (sqft)`}
-                value={filters[filterType].min}
-                onChange={handleFilterChange}
-              />
-              <span>to</span>
-              <input
-                type="number"
-                name={`${filterType}.max`}
-                placeholder={`Max ${filterType} (sqft)`}
-                value={filters[filterType].max}
-                onChange={handleFilterChange}
-              />
-            </div>
-          </div>
-        );
-      case 'yearBuilt':
-        return (
-          <div className="filter-dropdown">
-            <div className="range-inputs">
-              <input
-                type="number"
-                name={`${filterType}.min`}
-                placeholder="Min Year"
-                value={filters[filterType].min}
-                onChange={handleFilterChange}
-              />
-              <span>to</span>
-              <input
-                type="number"
-                name={`${filterType}.max`}
-                placeholder="Max Year"
-                value={filters[filterType].max}
-                onChange={handleFilterChange}
-              />
-            </div>
-          </div>
-        );
-      case 'type':
-        return (
-          <div className="filter-dropdown">
-            <select
-              name="type"
-              value={filters.type}
+    if (['builtYear', 'propertyTax', 'hoa', 'insurance', 'rent'].includes(filterType)) {
+      return (
+        <div className="filter-dropdown">
+          <div className="range-inputs">
+            <input
+              type="number"
+              name={`${filterType}.min`}
+              placeholder="Min"
+              value={filters[filterType].min}
               onChange={handleFilterChange}
-            >
-              <option value="">All Types</option>
-              <option value="Apartment">Apartment</option>
-              <option value="House">House</option>
-              <option value="Condo">Condo</option>
-            </select>
-          </div>
-        );
-      case 'tenantInPlace':
-        return (
-          <div className="filter-dropdown">
-            <select
-              name="tenantInPlace"
-              value={filters.tenantInPlace}
+            />
+            <span>to</span>
+            <input
+              type="number"
+              name={`${filterType}.max`}
+              placeholder="Max"
+              value={filters[filterType].max}
               onChange={handleFilterChange}
-            >
-              <option value="">Any</option>
-              <option value="true">With Tenant</option>
-              <option value="false">Without Tenant</option>
-            </select>
+            />
           </div>
-        );
-      case 'createdOn':
-        return (
-          <div className="filter-dropdown">
-            <div className="date-range-inputs">
-              <input
-                type="date"
-                name="createdOn.start"
-                value={filters.createdOn.start}
-                onChange={handleFilterChange}
-              />
-              <span>to</span>
-              <input
-                type="date"
-                name="createdOn.end"
-                value={filters.createdOn.end}
-                onChange={handleFilterChange}
-              />
-            </div>
-          </div>
-        );
-      case 'builtYear':
-        return (
-          <div className="filter-dropdown">
-            <div className="range-inputs">
-              <input
-                type="number"
-                name="builtYear.min"
-                placeholder="משנה"
-                value={filters.builtYear.min}
-                onChange={handleFilterChange}
-                min="1800"
-                max={new Date().getFullYear()}
-              />
-              <span>עד</span>
-              <input
-                type="number"
-                name="builtYear.max"
-                placeholder="עד שנה"
-                value={filters.builtYear.max}
-                onChange={handleFilterChange}
-                min="1800"
-                max={new Date().getFullYear()}
-              />
-            </div>
-          </div>
-        );
-      default:
-        return null;
+        </div>
+      );
     }
+    return null;
   };
 
   return (
@@ -327,59 +164,38 @@ const TopBar = () => {
 
       <div className="filters-container">
         <button 
-          className={`filter-button ${activeFilter === 'price' ? 'active' : ''}`}
-          onClick={() => toggleFilter('price')}
-        >
-          <FaMoneyBill /> Price
-        </button>
-
-        <button 
-          className={`filter-button ${activeFilter === 'beds' ? 'active' : ''}`}
-          onClick={() => toggleFilter('beds')}
-        >
-          <FaBed /> Beds
-        </button>
-
-        <button 
-          className={`filter-button ${activeFilter === 'baths' ? 'active' : ''}`}
-          onClick={() => toggleFilter('baths')}
-        >
-          <FaBath /> Baths
-        </button>
-
-        <button 
-          className={`filter-button ${activeFilter === 'type' ? 'active' : ''}`}
-          onClick={() => toggleFilter('type')}
-        >
-          <FaHome /> Type
-        </button>
-
-        <button 
-          className={`filter-button ${activeFilter === 'size' ? 'active' : ''}`}
-          onClick={() => toggleFilter('size')}
-        >
-          <FaRuler /> Size
-        </button>
-
-        <button 
-          className={`filter-button ${activeFilter === 'yearBuilt' ? 'active' : ''}`}
-          onClick={() => toggleFilter('yearBuilt')}
+          className={`filter-button ${activeFilter === 'builtYear' ? 'active' : ''}`}
+          onClick={() => toggleFilter('builtYear')}
         >
           <FaCalendar /> Year Built
         </button>
 
         <button 
-          className={`filter-button ${activeFilter === 'tenantInPlace' ? 'active' : ''}`}
-          onClick={() => toggleFilter('tenantInPlace')}
+          className={`filter-button ${activeFilter === 'propertyTax' ? 'active' : ''}`}
+          onClick={() => toggleFilter('propertyTax')}
         >
-          <FaUser /> Tenant
+          <FaMoneyBill /> Property Tax
         </button>
 
         <button 
-          className={`filter-button ${activeFilter === 'builtYear' ? 'active' : ''}`}
-          onClick={() => toggleFilter('builtYear')}
+          className={`filter-button ${activeFilter === 'hoa' ? 'active' : ''}`}
+          onClick={() => toggleFilter('hoa')}
         >
-          <FaCalendar /> שנת בנייה
+          <FaBuilding /> HOA Fees
+        </button>
+
+        <button 
+          className={`filter-button ${activeFilter === 'insurance' ? 'active' : ''}`}
+          onClick={() => toggleFilter('insurance')}
+        >
+          <FaShieldAlt /> Insurance
+        </button>
+
+        <button 
+          className={`filter-button ${activeFilter === 'rent' ? 'active' : ''}`}
+          onClick={() => toggleFilter('rent')}
+        >
+          <FaHome /> Rent
         </button>
 
         {activeFilter && renderFilterInputs(activeFilter)}

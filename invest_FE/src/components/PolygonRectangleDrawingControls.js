@@ -154,14 +154,14 @@ const PolygonRectangleDrawingControls = ({ onShapeDrawn }) => {
         onClick={() => startDrawing('polygon')}
         disabled={drawingMode === 'rectangle'}
       >
-        צייר פוליגון
+        Draw Polygon
       </button>
       <button
         className={`drawing-button ${drawingMode === 'rectangle' ? 'active' : ''}`}
         onClick={() => startDrawing('rectangle')}
         disabled={drawingMode === 'polygon'}
       >
-        צייר מלבן
+        Draw Rectangle
       </button>
       {drawingMode && (
         <button
@@ -172,7 +172,7 @@ const PolygonRectangleDrawingControls = ({ onShapeDrawn }) => {
             setTempShape(null);
           }}
         >
-          בטל ציור
+          Cancel Drawing
         </button>
       )}
       {points.length > 0 && drawingMode === 'polygon' && (
@@ -180,7 +180,7 @@ const PolygonRectangleDrawingControls = ({ onShapeDrawn }) => {
           className="drawing-button finish"
           onClick={() => finishPolygon(map)}
         >
-          סיים ציור
+          Finish Drawing
         </button>
       )}
     </div>

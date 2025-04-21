@@ -29,11 +29,11 @@ const MapSidebar = ({
   };
 
   // Determine headings and messages
-  let resultsHeading = "תוצאות חיפוש";
+  let resultsHeading = "Search Results";
   if (searchRadius > 0) {
-    resultsHeading = `נכסים במרחק ${searchRadius} מייל`;
+    resultsHeading = `Properties within ${searchRadius} miles`;
   } else if (clickedNeighborhood) {
-    resultsHeading = `נכסים ב${clickedNeighborhood.name || "שכונה נבחרת"}`;
+    resultsHeading = `Properties in ${clickedNeighborhood.name || "selected neighborhood"}`;
   }
 
   const isSearchActive = searchRadius > 0 || !!clickedNeighborhood;
@@ -51,7 +51,7 @@ const MapSidebar = ({
       {/* Results Section */}
       {isSearching && (
         <div className="loading-indicator sidebar-section">
-          <p>מחפש נכסים...</p>
+          <p>Searching properties...</p>
         </div>
       )}
 
@@ -60,7 +60,7 @@ const MapSidebar = ({
           <h3>{resultsHeading}</h3>
           <ul className="property-list">
             {propertiesToDisplay.map((property) => {
-              let locationString = "מיקום לא זמין";
+              let locationString = "Location not available";
               if (property.address) {
                 locationString = `${property.address}, ${property.city || ""}`;
               } else if (
@@ -70,7 +70,7 @@ const MapSidebar = ({
               ) {
                 const lat = property.location.coordinates[1];
                 const lon = property.location.coordinates[0];
-                locationString = `קו רוחב: ${lat.toFixed(4)}, קו אורך: ${lon.toFixed(4)}`;
+                locationString = `Lat: ${lat.toFixed(4)}, Lng: ${lon.toFixed(4)}`;
               }
 
               return (
@@ -81,15 +81,15 @@ const MapSidebar = ({
                   style={{ cursor: "pointer" }}
                 >
                   {property.propertyID && (
-                    <div className="property-id">מזהה: {property.propertyID}</div>
+                    <div className="property-id">ID: {property.propertyID}</div>
                   )}
                   <div className="property-title">
-                    {property.address || "נכס ללא כותרת"}
+                    {property.address || "Property without title"}
                   </div>
                   <div className="property-price">
                     {property.price
                       ? formatCurrencyForDisplay(property.price)
-                      : "מחיר לא זמין"}
+                      : "Price not available"}
                   </div>
                   <div className="property-location">{locationString}</div>
                 </li>
@@ -101,7 +101,7 @@ const MapSidebar = ({
 
       {shouldShowNoResults && (
         <div className="no-results sidebar-section">
-          <p>לא נמצאו נכסים בחיפוש הנוכחי</p>
+          <p>No properties found in current search</p>
         </div>
       )}
     </div>

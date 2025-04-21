@@ -251,7 +251,7 @@ const PropertyDisplay = ({ isOpen, onClose, property }) => {
           />
         </div>
         <div className="zillow-filters">
-          <h4>סנן נכסים דומים</h4>
+          <h4>Filter Similar Properties</h4>
           <div className="filter-buttons">
             <button 
               onClick={() => applyQuickFilter('price', {
@@ -261,7 +261,7 @@ const PropertyDisplay = ({ isOpen, onClose, property }) => {
               className="filter-btn"
             >
               <i className="fas fa-dollar-sign"></i>
-              מחיר דומה
+              Similar Price
             </button>
             
             <button 
@@ -272,7 +272,7 @@ const PropertyDisplay = ({ isOpen, onClose, property }) => {
               className="filter-btn"
             >
               <i className="fas fa-bed"></i>
-              {formData.beds} חדרי שינה
+              {formData.beds} Bedrooms
             </button>
             
             <button 
