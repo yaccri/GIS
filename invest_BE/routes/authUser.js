@@ -6,7 +6,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const HttpStatus = require("http-status-codes");
 const Gender = require("../models/enums");
-const { verifyToken } = require("../middleware/authMiddleware");
+const { verifyToken, isAdmin } = require("../middleware/authMiddleware");
 
 // User registration
 router.post("/register", async (req, res) => {
@@ -175,6 +175,145 @@ router.put("/preferences", verifyToken, async (req, res) => {
     console.error("Error updating preferences:", err);
     res.status(500).json({ error: "Internal server error" });
   }
+});
+
+// GET /authUser/users - Fetch basic details for all users (Admin only)
+router.get("/users", verifyToken, isAdmin, async (req, res) => {
+  try {
+    // Fetch users and select only the specified fields
+    // .lean() returns plain JS objects instead of Mongoose documents for better performance
+    const users = await User.find({})
+      .select("_id username firstName lastName email")
+      .lean();
+
+    // Send the list of users
+    res.status(HttpStatus.StatusCodes.OK).json(users);
+  } catch (error) {
+    console.error("Error fetching all users:", error);
+    res
+      .status(HttpStatus.StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ error: "Failed to fetch users" });
+  }
+});
+
+// GET /authUser/users/:id - Fetch details for a specific user (Admin only)
+router.get("/users/:id", verifyToken, isAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Validate if the provided ID is a valid MongoDB ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res
+        .status(HttpStatus.StatusCodes.BAD_REQUEST)
+        .json({ error: "Invalid user ID format" });
+    }
+
+    // Fetch the user by ID and exclude the password field
+    const user = await User.findById(id).select("-password").lean(); // Exclude password, use lean
+
+    if (!user) {
+      return res
+        .status(HttpStatus.StatusCodes.NOT_FOUND)
+        .json({ error: "User not found" });
+    }
+
+    // Send the user details
+    res.status(HttpStatus.StatusCodes.OK).json(user);
+  } catch (error) {
+    console.error(`Error fetching user with ID ${req.params.id}:`, error);
+    res
+      .status(HttpStatus.StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ error: "Failed to fetch user details" });
+  }
+});
+
+// PUT /authUser/users/:id - Edit User Details (Admin only) ---
+router.put("/users/:id", verifyToken, isAdmin, async (req, res) => {
+  const { id } = req.params;
+
+  // 1. Validate ID format
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res
+      .status(HttpStatus.StatusCodes.BAD_REQUEST)
+      .json({ error: "Invalid user ID format" });
+  }
+
+  // 2. Extract allowed fields from request body
+  const { firstName, lastName, email, gender, dateOfBirth, preferences } =
+    req.body;
+
+  // 3. Construct the update object with only allowed fields
+  const updateData = {};
+  if (firstName !== undefined) updateData.firstName = firstName;
+  if (lastName !== undefined) updateData.lastName = lastName;
+  if (email !== undefined) updateData.email = email; // Unique index check handled by DB/errorHandler
+  if (dateOfBirth !== undefined) updateData.dateOfBirth = dateOfBirth;
+
+  // Handle gender conversion if provided
+  if (gender !== undefined) {
+    let genderValue;
+    switch (gender) {
+      case "Male":
+        genderValue = Gender.Male;
+        break;
+      case "Female":
+        genderValue = Gender.Female;
+        break;
+      case "Other":
+        genderValue = Gender.Other;
+        break;
+      default:
+        genderValue = Gender.Unknown; // Or handle as error if specific values required
+    }
+    updateData.gender = genderValue;
+  }
+
+  // Handle nested preferences update if provided
+  if (preferences !== undefined) {
+    if (preferences.itemsPerPage !== undefined) {
+      updateData["preferences.itemsPerPage"] = preferences.itemsPerPage; // Use dot notation for nested fields
+    }
+    if (preferences.subscribe !== undefined) {
+      updateData["preferences.subscribe"] = preferences.subscribe;
+    }
+  }
+
+  // Prevent updating sensitive fields directly via this route
+  delete updateData.password;
+  delete updateData.isAdmin;
+  delete updateData.username; // Usually username is immutable
+
+  // Check if there's anything to update
+  if (Object.keys(updateData).length === 0) {
+    return res
+      .status(HttpStatus.StatusCodes.BAD_REQUEST)
+      .json({ error: "No valid fields provided for update." });
+  }
+
+  // 4. Perform the update using findByIdAndUpdate
+  // - { new: true } returns the updated document
+  // - { runValidators: true } ensures schema validation rules are applied
+  // - { context: 'query' } might be needed for certain complex validators with findOneAndUpdate
+  const updatedUser = await User.findByIdAndUpdate(
+    id,
+    { $set: updateData }, // Use $set to apply the changes
+    { new: true, runValidators: true, context: "query" }
+  )
+    .select("-password")
+    .lean(); // Exclude password from the returned object
+
+  // 5. Handle User Not Found during update
+  if (!updatedUser) {
+    return res
+      .status(HttpStatus.StatusCodes.NOT_FOUND)
+      .json({ error: "User not found" });
+  }
+
+  // 6. Send Success Response with updated user data (excluding password)
+  res.status(HttpStatus.StatusCodes.OK).json(updatedUser);
+
+  // Note: Potential validation errors (including duplicate email) during update
+  // will be caught by express-async-errors and handled by the central errorHandler.
 });
 
 module.exports = router;
