@@ -5,22 +5,23 @@ import { searchPropertiesInRadius } from "../components/SearchRadius"; // Assumi
 /**
  * Custom hook to manage the state and logic for radius-based property searches.
  *
- * @param {Array|null} centerCoordinates - The center coordinates for the search [lng, lat] or null.
- * @param {number} radius - The search radius in miles.
- * @param {string|null} token - The user authentication token.
  * @returns {object} An object containing:
  *   - results {Array}: The array of property results.
  *   - isLoading {boolean}: Indicates if a search is in progress.
  *   - error {string|null}: Any error message from the search.
- *   - triggerSearch {function}: A function to manually trigger the search (optional, primarily uses useEffect).
+ *   - searchRadius {number}: The current search radius.
+ *   - setSearchRadius {function}: Function to update the search radius.
+ *   - triggerSearch {function}: Function to trigger the search with given parameters.
+ *   - isSearching {boolean}: Alias for isLoading.
  */
-const useRadiusSearch = (centerCoordinates, radius, token) => {
+const useRadiusSearch = () => {
   const [results, setResults] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [searchRadius, setSearchRadius] = useState(0);
 
   // Define the search function using useCallback for stability
-  const triggerSearch = useCallback(async () => {
+  const triggerSearch = useCallback(async (centerCoordinates, radius, token) => {
     // Validate inputs before proceeding
     if (!centerCoordinates || radius <= 0 || !token) {
       setResults([]); // Clear results if inputs are invalid
@@ -33,7 +34,6 @@ const useRadiusSearch = (centerCoordinates, radius, token) => {
     setError(null); // Clear previous errors
 
     try {
-      // centerCoordinates is already [lng, lat] as needed by searchPropertiesInRadius
       const fetchedResults = await searchPropertiesInRadius(
         centerCoordinates,
         radius,
@@ -49,30 +49,16 @@ const useRadiusSearch = (centerCoordinates, radius, token) => {
     } finally {
       setIsLoading(false);
     }
-  }, [centerCoordinates, radius, token]); // Dependencies for the search logic
-
-  // Automatically trigger search when center, radius, or token changes
-  useEffect(() => {
-    // Only trigger if we have valid coordinates and a radius > 0
-    if (centerCoordinates && radius > 0 && token) {
-      triggerSearch();
-    } else {
-      // Clear results if conditions aren't met (e.g., radius set to 0, location cleared)
-      setResults([]);
-      setIsLoading(false);
-      setError(null);
-    }
-    // The effect depends on the triggerSearch function, which itself
-    // depends on centerCoordinates, radius, and token.
-  }, [triggerSearch, centerCoordinates, radius, token]);
+  }, []); // No dependencies needed as we pass all required data
 
   return {
     results,
     isLoading,
     error,
-    // Expose triggerSearch if manual re-triggering might be needed elsewhere,
-    // though the useEffect handles the primary use case.
-    // triggerSearch
+    searchRadius,
+    setSearchRadius,
+    triggerSearch,
+    isSearching: isLoading
   };
 };
 

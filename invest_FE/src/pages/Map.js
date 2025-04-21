@@ -198,7 +198,6 @@ const MapComponent = () => {
   const [selectedLocationDetails, setSelectedLocationDetails] = useState(null);
   const [initialCenter] = useState([40.7128, -74.006]);
   const [initialZoom] = useState(13);
-  const [searchRadius, setSearchRadius] = useState(0);
   const [clickedNeighborhood, setClickedNeighborhood] = useState(null);
   const [neighborhoodProperties, setNeighborhoodProperties] = useState([]);
   const [isFetchingNeighborhoodProps, setIsFetchingNeighborhoodProps] =
@@ -209,7 +208,7 @@ const MapComponent = () => {
   // --- Context & Hooks ---
   const { user } = useContext(UserContext);
   const token = user?.token;
-  const { selectedMapLocation } = useMapContext();
+  const { selectedMapLocation, filters } = useMapContext();
   const {
     isLoading: isLoadingPolygonProps,
     error: polygonError,
@@ -228,7 +227,11 @@ const MapComponent = () => {
     results: radiusSearchResults,
     isLoading: isSearchingRadius,
     error: radiusSearchError,
-  } = useRadiusSearch(centerCoordsForSearch, searchRadius, token);
+    searchRadius,
+    setSearchRadius,
+    triggerSearch: handleRadiusSearch,
+    isSearching
+  } = useRadiusSearch();
   const {
     shapes: drawnItems,
     addShape,
@@ -240,6 +243,46 @@ const MapComponent = () => {
     showDetails: showPolygonCoordinates,
     hideDetails: hideActivePolygonDetails,
   } = useActiveShapeDetails();
+
+  // Combined property filtering and display logic
+  const propertiesToDisplay = useMemo(() => {
+    // First, get properties from the appropriate source
+    let sourceProperties = [];
+    
+    // Check polygon properties first
+    const allPolygonProperties = Object.values(propertiesByPolygon).flat();
+    const uniquePropertiesMap = new Map();
+    allPolygonProperties.forEach((prop) => {
+      const key = prop._id || prop.propertyID;
+      if (key && !uniquePropertiesMap.has(key))
+        uniquePropertiesMap.set(key, prop);
+    });
+    const uniquePolygonProperties = Array.from(uniquePropertiesMap.values());
+    
+    if (uniquePolygonProperties.length > 0) {
+      sourceProperties = uniquePolygonProperties;
+    } else if (neighborhoodProperties.length > 0) {
+      sourceProperties = neighborhoodProperties;
+    } else if (searchRadius > 0) {
+      sourceProperties = radiusSearchResults;
+    }
+
+    // Then apply filters
+    return sourceProperties.filter(property => {
+      if (filters.price.min && property.price < parseInt(filters.price.min)) return false;
+      if (filters.price.max && property.price > parseInt(filters.price.max)) return false;
+      if (filters.beds.min && property.beds < parseInt(filters.beds.min)) return false;
+      if (filters.beds.max && property.beds > parseInt(filters.beds.max)) return false;
+      if (filters.type && property.type !== filters.type) return false;
+      return true;
+    });
+  }, [
+    propertiesByPolygon,
+    neighborhoodProperties,
+    searchRadius,
+    radiusSearchResults,
+    filters
+  ]);
 
   // --- Effects ---
   useEffect(() => {
@@ -271,6 +314,13 @@ const MapComponent = () => {
       setPropertiesByPolygon(nextPropertiesState);
     }
   }, [drawnItems, propertiesByPolygon]);
+
+  // Effect to trigger radius search when needed
+  useEffect(() => {
+    if (centerCoordsForSearch && searchRadius > 0 && token) {
+      handleRadiusSearch(centerCoordsForSearch, searchRadius, token);
+    }
+  }, [centerCoordsForSearch, searchRadius, token, handleRadiusSearch]);
 
   // --- Core Functions ---
   const handlePolygonCreatedAndFetch = useCallback(
@@ -491,31 +541,6 @@ const MapComponent = () => {
       : null;
   }, [selectedLocationDetails]);
 
-  const propertiesToDisplay = useMemo(() => {
-    const allPolygonProperties = Object.values(propertiesByPolygon).flat();
-    const uniquePropertiesMap = new Map();
-    allPolygonProperties.forEach((prop) => {
-      const key = prop._id || prop.propertyID;
-      if (key && !uniquePropertiesMap.has(key))
-        uniquePropertiesMap.set(key, prop);
-    });
-    const uniquePolygonProperties = Array.from(uniquePropertiesMap.values());
-    let result = [];
-    if (uniquePolygonProperties.length > 0) {
-      result = uniquePolygonProperties;
-    } else if (neighborhoodProperties.length > 0) {
-      result = neighborhoodProperties;
-    } else if (searchRadius > 0) {
-      result = radiusSearchResults;
-    }
-    return result;
-  }, [
-    propertiesByPolygon,
-    searchRadius,
-    radiusSearchResults,
-    neighborhoodProperties,
-  ]);
-
   const isLoadingProperties =
     isLoadingPolygonProps || isSearchingRadius || isFetchingNeighborhoodProps;
   const radiusOptions = [0, 0.5, 1, 3, 5, 10, 20, 50];
@@ -607,6 +632,7 @@ const MapComponent = () => {
           isSearching={isLoadingProperties}
           propertiesToDisplay={propertiesToDisplay}
           searchRadius={searchRadius}
+          setSearchRadius={setSearchRadius}
           clickedNeighborhood={clickedNeighborhood}
           selectedLocationDetails={selectedLocationDetails}
           formatCurrencyForDisplay={formatCurrencyForDisplay}

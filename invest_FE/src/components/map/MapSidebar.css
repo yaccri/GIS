@@ -57,9 +57,6 @@
   list-style: none;
   padding: 0;
   margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 10px; /* Space between cards */
 }
 
 /* --- Property Card Item Styling (Refined Look) --- */
@@ -274,11 +271,118 @@
 }
 
 .filters-section {
-  padding: 10px;
-  border-bottom: 1px solid #ddd;
+  padding: 1rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.filter-toggle {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 4px;
   display: flex;
-  flex-direction: column;
-  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-toggle:hover {
+  background-color: #e0e0e0;
+}
+
+.filter-toggle.active {
+  background-color: #e3f2fd;
+  border-color: #2196f3;
+}
+
+.filters-container {
+  margin-top: 1rem;
+  padding: 1rem;
+  background-color: #fff;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.filter-group {
+  margin-bottom: 1rem;
+}
+
+.filter-group label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #333;
+}
+
+.price-inputs,
+.beds-inputs {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.price-inputs input,
+.beds-inputs input,
+.filter-group select {
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.filter-group select {
+  width: 100%;
+}
+
+.filter-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.apply-filters,
+.reset-filters {
+  flex: 1;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.apply-filters {
+  background-color: #2196f3;
+  color: white;
+}
+
+.apply-filters:hover {
+  background-color: #1976d2;
+}
+
+.reset-filters {
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+.reset-filters:hover {
+  background-color: #e0e0e0;
+}
+
+/* RTL Support */
+.filters-container {
+  direction: rtl;
+}
+
+.filter-group label,
+.filter-toggle {
+  direction: rtl;
+  text-align: right;
 }
 
 .filter-button {

@@ -5,6 +5,7 @@ import { useMapContext } from "../context/MapContext";
 // Import useLocation along with other router hooks
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import AddressSearchInput from "./AddressSearch-OpenStreetMap";
+import { FaFilter, FaChevronDown } from "react-icons/fa";
 import "./TopBar.css";
 import menuIcon from "../assets/images/account.svg";
 
@@ -13,9 +14,15 @@ const MAP_PAGE_PATH = "/map";
 
 const TopBar = () => {
   const { user, updateUser, updateToken } = useContext(UserContext);
-  const { selectMapLocation } = useMapContext();
+  const { selectMapLocation, updateFilters } = useMapContext();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAdminSubMenuOpen, setIsAdminSubMenuOpen] = useState(false);
+  const [activeFilter, setActiveFilter] = useState(null);
+  const [filters, setLocalFilters] = useState({
+    price: { min: "", max: "" },
+    beds: { min: "", max: "" },
+    type: "",
+  });
   const adminMenuTimerRef = useRef(null);
   const menuRef = useRef(null);
 
@@ -97,14 +104,115 @@ const TopBar = () => {
     };
   }, [isMenuOpen]);
 
+  const toggleFilter = (filterName) => {
+    setActiveFilter(activeFilter === filterName ? null : filterName);
+  };
+
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    const [mainKey, subKey] = name.split(".");
+    
+    const newFilters = {
+      ...filters,
+      [mainKey]: {
+        ...filters[mainKey],
+        [subKey]: value
+      }
+    };
+    
+    setLocalFilters(newFilters);
+    updateFilters(newFilters);
+  };
+
   return (
     <div className="top-bar">
       <div className="top-bar-search">
-        {/* Pass the modified handler */}
         <AddressSearchInput
           onLocationSelect={handleLocationSelectInternal}
           placeholder="Search US Address on Map..."
         />
+      </div>
+
+      <div className="filters-container">
+        <button 
+          className={`filter-button ${activeFilter === 'price' ? 'active' : ''}`}
+          onClick={() => toggleFilter('price')}
+        >
+          <FaFilter /> Price <FaChevronDown />
+        </button>
+
+        <button 
+          className={`filter-button ${activeFilter === 'beds' ? 'active' : ''}`}
+          onClick={() => toggleFilter('beds')}
+        >
+          <FaFilter /> Beds <FaChevronDown />
+        </button>
+
+        <button 
+          className={`filter-button ${activeFilter === 'type' ? 'active' : ''}`}
+          onClick={() => toggleFilter('type')}
+        >
+          <FaFilter /> Type <FaChevronDown />
+        </button>
+
+        {activeFilter === 'price' && (
+          <div className="filter-dropdown">
+            <div className="price-range">
+              <input
+                type="number"
+                name="price.min"
+                placeholder="Min Price"
+                value={filters.price.min}
+                onChange={handleFilterChange}
+              />
+              <span>to</span>
+              <input
+                type="number"
+                name="price.max"
+                placeholder="Max Price"
+                value={filters.price.max}
+                onChange={handleFilterChange}
+              />
+            </div>
+          </div>
+        )}
+
+        {activeFilter === 'beds' && (
+          <div className="filter-dropdown">
+            <div className="beds-range">
+              <input
+                type="number"
+                name="beds.min"
+                placeholder="Min Beds"
+                value={filters.beds.min}
+                onChange={handleFilterChange}
+              />
+              <span>to</span>
+              <input
+                type="number"
+                name="beds.max"
+                placeholder="Max Beds"
+                value={filters.beds.max}
+                onChange={handleFilterChange}
+              />
+            </div>
+          </div>
+        )}
+
+        {activeFilter === 'type' && (
+          <div className="filter-dropdown">
+            <select
+              name="type"
+              value={filters.type}
+              onChange={handleFilterChange}
+            >
+              <option value="">All Types</option>
+              <option value="Apartment">Apartment</option>
+              <option value="House">House</option>
+              <option value="Condo">Condo</option>
+            </select>
+          </div>
+        )}
       </div>
 
       <div className="menu-container" ref={menuRef}>

@@ -6,16 +6,17 @@
   display: flex;
   align-items: center;
   justify-content: space-between; /* Keeps search left, menu right */
-  padding: 0 20px;
+  padding: 10px 20px;
   box-sizing: border-box; /* Add this for consistent padding behavior */
   position: sticky; /* relative/sticky/fixed */
   z-index: 1100; /* High base z-index for the entire bar */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* --- Search Input Area Styles --- */
 .top-bar-search {
   flex-grow: 1; /* Allow search container to take available horizontal space */
-  max-width: 500px; /* Optional: Limit width on very large screens */
+  max-width: 400px; /* Optional: Limit width on very large screens */
   margin-right: 20px; /* Add some space between search and menu */
   position: relative; /* Crucial for positioning the suggestions dropdown */
 }
@@ -320,3 +321,105 @@
   }
 }
 /* --- END Responsive adjustments --- */
+
+.filters-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 20px;
+  position: relative;
+}
+
+.filter-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background-color: #ffffff !important;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  color: #1a3c5a !important;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.filter-button:hover {
+  background-color: #f8f9fa !important;
+  border-color: #1a3c5a;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.filter-button.active {
+  background-color: #ffffff !important;
+  border-color: #1a3c5a;
+  color: #1a3c5a !important;
+  box-shadow: 0 0 0 2px rgba(26, 60, 90, 0.2);
+}
+
+.filter-button svg {
+  font-size: 14px;
+  color: #1a3c5a !important;
+}
+
+.filter-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  padding: 10px;
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 1001;
+  min-width: 200px;
+}
+
+.price-range,
+.beds-range {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.price-range input,
+.beds-range input {
+  width: 80px;
+  padding: 6px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  color: #333;
+}
+
+.filter-dropdown select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: white;
+  color: #333;
+}
+
+/* Add responsive styles for filters */
+@media (max-width: 768px) {
+  .filters-container {
+    margin: 0 10px;
+  }
+  
+  .filter-button {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .filters-container {
+    margin: 0 5px;
+  }
+  
+  .filter-button {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+}
