@@ -16,6 +16,13 @@ export const useMapContext = () => {
 // 3. Create the Provider Component
 export const MapProvider = ({ children }) => {
   const [selectedMapLocation, setSelectedMapLocation] = useState(null); // { lat: number, lon: number } | null
+  const [filters, setFilters] = useState({
+    builtYear: { min: "", max: "" },
+    propertyTax: { min: "", max: "" },
+    hoa: { min: "", max: "" },
+    insurance: { min: "", max: "" },
+    rent: { min: "", max: "" }
+  });
 
   // Function to update the location - MODIFIED TO HANDLE GEOJSON
   const selectMapLocation = (location) => {
@@ -54,10 +61,20 @@ export const MapProvider = ({ children }) => {
     }
   };
 
+  // Function to update filters
+  const updateFilters = (newFilters) => {
+    setFilters(prev => ({
+      ...prev,
+      ...newFilters
+    }));
+  };
+
   // The value provided to consuming components
   const value = {
     selectedMapLocation,
     selectMapLocation,
+    filters,
+    updateFilters
   };
 
   return <MapContext.Provider value={value}>{children}</MapContext.Provider>;

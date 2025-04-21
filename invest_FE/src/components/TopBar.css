@@ -6,16 +6,17 @@
   display: flex;
   align-items: center;
   justify-content: space-between; /* Keeps search left, menu right */
-  padding: 0 20px;
+  padding: 10px 20px;
   box-sizing: border-box; /* Add this for consistent padding behavior */
   position: sticky; /* relative/sticky/fixed */
   z-index: 1100; /* High base z-index for the entire bar */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* --- Search Input Area Styles --- */
 .top-bar-search {
   flex-grow: 1; /* Allow search container to take available horizontal space */
-  max-width: 500px; /* Optional: Limit width on very large screens */
+  max-width: 400px; /* Optional: Limit width on very large screens */
   margin-right: 20px; /* Add some space between search and menu */
   position: relative; /* Crucial for positioning the suggestions dropdown */
 }
@@ -320,3 +321,187 @@
   }
 }
 /* --- END Responsive adjustments --- */
+
+/* Filters Container */
+.filters-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 20px;
+  position: relative;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* Filter Buttons */
+.filter-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  color: #1a3c5a;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  white-space: nowrap;
+}
+
+.filter-button:hover {
+  background-color: #f8f9fa;
+  border-color: #1a3c5a;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.filter-button.active {
+  background-color: #ffffff;
+  border-color: #1a3c5a;
+  color: #1a3c5a;
+  box-shadow: 0 0 0 2px rgba(26, 60, 90, 0.2);
+}
+
+.filter-button svg {
+  font-size: 14px;
+  color: #1a3c5a;
+}
+
+/* Filter Dropdowns */
+.filter-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  padding: 15px;
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  z-index: 1001;
+  min-width: 250px;
+}
+
+.range-inputs,
+.date-range-inputs {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.range-inputs input,
+.date-range-inputs input {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.range-inputs span,
+.date-range-inputs span {
+  color: #666;
+  font-size: 14px;
+}
+
+.filter-dropdown select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: white;
+  color: #333;
+  font-size: 14px;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .filters-container {
+    gap: 8px;
+  }
+  
+  .filter-button {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 992px) {
+  .top-bar {
+    flex-direction: column;
+    height: auto;
+    padding: 15px;
+  }
+  
+  .top-bar-search {
+    max-width: 100%;
+    margin-right: 0;
+    margin-bottom: 15px;
+  }
+  
+  .filters-container {
+    margin: 10px 0;
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 768px) {
+  .filters-container {
+    gap: 6px;
+  }
+  
+  .filter-button {
+    padding: 5px 8px;
+    font-size: 12px;
+  }
+  
+  .filter-dropdown {
+    min-width: 200px;
+  }
+}
+
+@media (max-width: 480px) {
+  .filters-container {
+    gap: 4px;
+  }
+  
+  .filter-button {
+    padding: 4px 6px;
+    font-size: 11px;
+  }
+  
+  .filter-button svg {
+    font-size: 12px;
+  }
+  
+  .filter-dropdown {
+    min-width: 180px;
+    padding: 10px;
+  }
+  
+  .range-inputs input,
+  .date-range-inputs input,
+  .filter-dropdown select {
+    padding: 6px;
+    font-size: 12px;
+  }
+}
+
+/* RTL Support */
+[dir="rtl"] .filters-container {
+  direction: rtl;
+}
+
+[dir="rtl"] .filter-button {
+  direction: rtl;
+}
+
+[dir="rtl"] .filter-dropdown {
+  direction: rtl;
+}
+
+[dir="rtl"] .range-inputs,
+[dir="rtl"] .date-range-inputs {
+  direction: rtl;
+}

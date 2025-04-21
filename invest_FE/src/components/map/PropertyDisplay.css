@@ -200,3 +200,47 @@
   box-sizing: border-box;
   font-family: inherit;
 }
+
+.zillow-filters {
+  margin-top: 20px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  direction: rtl;
+}
+
+.zillow-filters h4 {
+  margin: 0 0 10px 0;
+  color: #333;
+  font-size: 1rem;
+}
+
+.filter-buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.filter-btn:hover {
+  background: #007bff;
+  color: white;
+  border-color: #0056b3;
+}
+
+.filter-btn i {
+  font-size: 1rem;
+}

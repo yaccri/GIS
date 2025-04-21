@@ -2,59 +2,53 @@
 import React, { useState } from "react";
 import "./MapSidebar.css";
 import PropertyDisplay from "./PropertyDisplay";
+import { useMapContext } from "../../context/MapContext";
 
 const MapSidebar = ({
   isSearching,
   propertiesToDisplay,
   searchRadius,
+  setSearchRadius,
   clickedNeighborhood,
   selectedLocationDetails,
   formatCurrencyForDisplay,
 }) => {
-  // State to manage PropertyDisplay visibility and selected property
+  // State for PropertyDisplay
   const [selectedProperty, setSelectedProperty] = useState(null);
-
-  // Handler to open PropertyDisplay with the clicked property
+  
+  // Get filters from context
+  const { filters } = useMapContext();
+  
+  // PropertyDisplay handlers
   const handlePropertyClick = (property) => {
     setSelectedProperty(property);
   };
 
-  // Handler to close PropertyDisplay
   const handleClosePropertyDisplay = () => {
     setSelectedProperty(null);
   };
 
-  // Determine the heading for the results section
+  // Determine headings and messages
   let resultsHeading = "Search Results";
   if (searchRadius > 0) {
     resultsHeading = `Properties within ${searchRadius} miles`;
   } else if (clickedNeighborhood) {
-    resultsHeading = `Properties in ${
-      clickedNeighborhood.name || "Selected Neighborhood"
-    }`;
+    resultsHeading = `Properties in ${clickedNeighborhood.name || "selected neighborhood"}`;
   }
 
-  // Determine if a search context is active
   const isSearchActive = searchRadius > 0 || !!clickedNeighborhood;
-
-  // Determine if the "No properties found" message should show
-  const shouldShowNoResults =
-    !isSearching &&
-    propertiesToDisplay.length === 0 &&
-    isSearchActive &&
-    selectedLocationDetails;
+  const shouldShowNoResults = !isSearching && propertiesToDisplay.length === 0 && isSearchActive && selectedLocationDetails;
 
   return (
     <div className="map-sidebar-container">
-      {/* PropertyDisplay modal */}
       <PropertyDisplay
         isOpen={!!selectedProperty}
         onClose={handleClosePropertyDisplay}
         property={selectedProperty}
-        isAdmin={false} // View-only mode
+        isAdmin={false}
       />
 
-      {/* Property Results Section */}
+      {/* Results Section */}
       {isSearching && (
         <div className="loading-indicator sidebar-section">
           <p>Searching properties...</p>
@@ -66,7 +60,7 @@ const MapSidebar = ({
           <h3>{resultsHeading}</h3>
           <ul className="property-list">
             {propertiesToDisplay.map((property) => {
-              let locationString = "Location N/A";
+              let locationString = "Location not available";
               if (property.address) {
                 locationString = `${property.address}, ${property.city || ""}`;
               } else if (
@@ -76,28 +70,26 @@ const MapSidebar = ({
               ) {
                 const lat = property.location.coordinates[1];
                 const lon = property.location.coordinates[0];
-                locationString = `Lat: ${lat.toFixed(4)}, Lng: ${lon.toFixed(
-                  4
-                )}`;
+                locationString = `Lat: ${lat.toFixed(4)}, Lng: ${lon.toFixed(4)}`;
               }
 
               return (
                 <li
                   key={property.propertyID || property._id || Math.random()}
                   className="property-item"
-                  onClick={() => handlePropertyClick(property)} // Open PropertyDisplay on click
-                  style={{ cursor: "pointer" }} // Indicate clickability
+                  onClick={() => handlePropertyClick(property)}
+                  style={{ cursor: "pointer" }}
                 >
                   {property.propertyID && (
                     <div className="property-id">ID: {property.propertyID}</div>
                   )}
                   <div className="property-title">
-                    {property.address || "Untitled Property"}
+                    {property.address || "Property without title"}
                   </div>
                   <div className="property-price">
                     {property.price
                       ? formatCurrencyForDisplay(property.price)
-                      : "Price N/A"}
+                      : "Price not available"}
                   </div>
                   <div className="property-location">{locationString}</div>
                 </li>
@@ -108,10 +100,8 @@ const MapSidebar = ({
       )}
 
       {shouldShowNoResults && (
-        <div className="no-results-message sidebar-section">
-          <p>No properties found for the current selection. </p>
-          <p>You may need to adjust your search criteria. </p>
-          <p>Click 'Search Neighborhood' or increase the search radius.</p>
+        <div className="no-results sidebar-section">
+          <p>No properties found in current search</p>
         </div>
       )}
     </div>

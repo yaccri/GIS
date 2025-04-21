@@ -5,6 +5,7 @@ import { useMapContext } from "../context/MapContext";
 // Import useLocation along with other router hooks
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import AddressSearchInput from "./AddressSearch-OpenStreetMap";
+import { FaFilter, FaChevronDown, FaHome, FaBed, FaBath, FaRuler, FaCalendar, FaMoneyBill, FaUser, FaBuilding, FaShieldAlt } from "react-icons/fa";
 import "./TopBar.css";
 import menuIcon from "../assets/images/account.svg";
 
@@ -13,9 +14,17 @@ const MAP_PAGE_PATH = "/map";
 
 const TopBar = () => {
   const { user, updateUser, updateToken } = useContext(UserContext);
-  const { selectMapLocation } = useMapContext();
+  const { selectMapLocation, updateFilters } = useMapContext();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAdminSubMenuOpen, setIsAdminSubMenuOpen] = useState(false);
+  const [activeFilter, setActiveFilter] = useState(null);
+  const [filters, setLocalFilters] = useState({
+    builtYear: { min: "", max: "" },
+    propertyTax: { min: "", max: "" },
+    hoa: { min: "", max: "" },
+    insurance: { min: "", max: "" },
+    rent: { min: "", max: "" }
+  });
   const adminMenuTimerRef = useRef(null);
   const menuRef = useRef(null);
 
@@ -97,14 +106,99 @@ const TopBar = () => {
     };
   }, [isMenuOpen]);
 
+  const toggleFilter = (filterName) => {
+    setActiveFilter(activeFilter === filterName ? null : filterName);
+  };
+
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    const [mainKey, subKey] = name.split(".");
+    
+    const newFilters = {
+      ...filters,
+      [mainKey]: subKey ? {
+        ...filters[mainKey],
+        [subKey]: value
+      } : value
+    };
+    
+    setLocalFilters(newFilters);
+    updateFilters(newFilters);
+  };
+
+  const renderFilterInputs = (filterType) => {
+    if (['builtYear', 'propertyTax', 'hoa', 'insurance', 'rent'].includes(filterType)) {
+      return (
+        <div className="filter-dropdown">
+          <div className="range-inputs">
+            <input
+              type="number"
+              name={`${filterType}.min`}
+              placeholder="Min"
+              value={filters[filterType].min}
+              onChange={handleFilterChange}
+            />
+            <span>to</span>
+            <input
+              type="number"
+              name={`${filterType}.max`}
+              placeholder="Max"
+              value={filters[filterType].max}
+              onChange={handleFilterChange}
+            />
+          </div>
+        </div>
+      );
+    }
+    return null;
+  };
+
   return (
     <div className="top-bar">
       <div className="top-bar-search">
-        {/* Pass the modified handler */}
         <AddressSearchInput
           onLocationSelect={handleLocationSelectInternal}
           placeholder="Search US Address on Map..."
         />
+      </div>
+
+      <div className="filters-container">
+        <button 
+          className={`filter-button ${activeFilter === 'builtYear' ? 'active' : ''}`}
+          onClick={() => toggleFilter('builtYear')}
+        >
+          <FaCalendar /> Year Built
+        </button>
+
+        <button 
+          className={`filter-button ${activeFilter === 'propertyTax' ? 'active' : ''}`}
+          onClick={() => toggleFilter('propertyTax')}
+        >
+          <FaMoneyBill /> Property Tax
+        </button>
+
+        <button 
+          className={`filter-button ${activeFilter === 'hoa' ? 'active' : ''}`}
+          onClick={() => toggleFilter('hoa')}
+        >
+          <FaBuilding /> HOA Fees
+        </button>
+
+        <button 
+          className={`filter-button ${activeFilter === 'insurance' ? 'active' : ''}`}
+          onClick={() => toggleFilter('insurance')}
+        >
+          <FaShieldAlt /> Insurance
+        </button>
+
+        <button 
+          className={`filter-button ${activeFilter === 'rent' ? 'active' : ''}`}
+          onClick={() => toggleFilter('rent')}
+        >
+          <FaHome /> Rent
+        </button>
+
+        {activeFilter && renderFilterInputs(activeFilter)}
       </div>
 
       <div className="menu-container" ref={menuRef}>

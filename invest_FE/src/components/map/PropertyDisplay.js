@@ -3,6 +3,7 @@ import ReactDOM from "react-dom";
 import "./PropertyDisplay.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import { calcROI } from "../../utils/calcROI";
+import { useMapContext } from "../../context/MapContext";
 
 // Utility for formatting numbers with commas
 const formatNumber = (num) =>
@@ -47,6 +48,7 @@ const formatDate = (dateStr) => {
 
 const PropertyDisplay = ({ isOpen, onClose, property }) => {
   const modalRef = useRef(null);
+  const { updateFilters } = useMapContext();
 
   const initialFormData = {
     propertyID: "",
@@ -97,6 +99,13 @@ const PropertyDisplay = ({ isOpen, onClose, property }) => {
     propertyTax: formData.propertyTax,
     insurance: formData.insurance,
   });
+
+  const applyQuickFilter = (filterType, value) => {
+    updateFilters({
+      [filterType]: value
+    });
+    onClose();
+  };
 
   return ReactDOM.createPortal(
     <div className="property-display-overlay">
@@ -240,6 +249,40 @@ const PropertyDisplay = ({ isOpen, onClose, property }) => {
             readOnly={true}
             rows={5}
           />
+        </div>
+        <div className="zillow-filters">
+          <h4>Filter Similar Properties</h4>
+          <div className="filter-buttons">
+            <button 
+              onClick={() => applyQuickFilter('price', {
+                min: Math.floor(formData.price * 0.8),
+                max: Math.ceil(formData.price * 1.2)
+              })}
+              className="filter-btn"
+            >
+              <i className="fas fa-dollar-sign"></i>
+              Similar Price
+            </button>
+            
+            <button 
+              onClick={() => applyQuickFilter('beds', {
+                min: formData.beds,
+                max: formData.beds
+              })}
+              className="filter-btn"
+            >
+              <i className="fas fa-bed"></i>
+              {formData.beds} Bedrooms
+            </button>
+            
+            <button 
+              onClick={() => applyQuickFilter('type', formData.type)}
+              className="filter-btn"
+            >
+              <i className="fas fa-home"></i>
+              {formData.type}
+            </button>
+          </div>
         </div>
       </div>
     </div>,

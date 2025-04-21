@@ -11,12 +11,15 @@
   gap: 20px; /* Space between sections */
 }
 
-/* Ensure the sidebar container itself doesn’t expand beyond its parent */
+/* Ensure the sidebar container itself doesn't expand beyond its parent */
 .map-sidebar-container {
-  flex: 1; /* Take available space */
+  width: 300px;
+  height: 100%;
+  background-color: white;
+  border-left: 1px solid #ddd;
   display: flex;
   flex-direction: column;
-  overflow-y: auto; /* Additional safety for scrolling */
+  overflow: hidden;
 }
 
 /* --- Loading Indicator --- */
@@ -26,74 +29,66 @@
   color: #6c757d;
 }
 
-/* --- Radius Search Results --- */
-.radius-results {
-  /* No outer border/padding/background needed */
-}
-
-.radius-results h3 {
+/* --- Property Results --- */
+.property-results h3 {
   margin-top: 0;
   margin-bottom: 15px;
   font-size: 1.1em;
   color: #333;
-  padding-left: 5px; /* Align slightly */
+  padding-left: 5px;
 }
 
-.radius-results > p {
-  /* For "No properties found" message */
-  margin: 5px 0;
-  color: #555;
-  padding: 10px 15px;
-  background-color: #e9ecef; /* Slightly different grey for message */
-  border-radius: 4px;
-  border: 1px solid #dee2e6;
-}
-
-/* Ensure the property list grows within the scrollable area */
 .property-list {
   list-style: none;
   padding: 0;
   margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 10px; /* Space between cards */
 }
 
-/* --- Property Card Item Styling (Refined Look) --- */
+/* --- Property Card Item Styling --- */
 .property-item {
-  background-color: #f5f5f5; /* Lighter grey background */
-  border-left: 3px solid #28a745; /* Thinner green left border */
-  border-top: none;
-  border-right: none;
-  border-bottom: none;
-  padding: 10px 15px; /* Padding inside the card */
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); /* Slightly softer shadow */
-  border-radius: 4px; /* Apply rounded corners */
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+  transition: background-color 0.2s ease;
+}
+
+.property-item:hover {
+  background-color: #f5f5f5;
 }
 
 .property-id {
-  font-size: 0.8em;
-  color: #6c757d; /* Dark grey text */
-  margin-bottom: 4px;
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 5px;
 }
 
 .property-title {
   font-weight: bold;
   margin-bottom: 5px;
-  color: #343a40; /* Darker text color */
-  font-size: 1em;
 }
 
 .property-price {
-  font-weight: bold;
-  color: #28a745; /* Green for price */
+  color: #0066cc;
+  font-weight: 500;
   margin-bottom: 5px;
-  font-size: 1em;
 }
 
 .property-location {
-  font-size: 0.9em;
-  color: #495057; /* Darker grey for location text */
+  font-size: 12px;
+  color: #666;
+}
+
+/* --- No Results Message --- */
+.no-results {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  margin: 10px;
+}
+
+.no-results p {
+  margin: 5px 0;
 }
 
 /* --- Saved Polygons / Areas --- */
@@ -272,4 +267,199 @@
   padding: 10px;
   border-radius: 4px;
   margin-top: 15px;
+}
+
+.filters-section {
+  padding: 1rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.filter-toggle {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-toggle:hover {
+  background-color: #e0e0e0;
+}
+
+.filter-toggle.active {
+  background-color: #e3f2fd;
+  border-color: #2196f3;
+}
+
+.filters-container {
+  margin-top: 1rem;
+  padding: 1rem;
+  background-color: #fff;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.filter-group {
+  margin-bottom: 1rem;
+}
+
+.filter-group label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #333;
+}
+
+.price-inputs,
+.beds-inputs {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.price-inputs input,
+.beds-inputs input,
+.filter-group select {
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.filter-group select {
+  width: 100%;
+}
+
+.filter-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.apply-filters,
+.reset-filters {
+  flex: 1;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.apply-filters {
+  background-color: #2196f3;
+  color: white;
+}
+
+.apply-filters:hover {
+  background-color: #1976d2;
+}
+
+.reset-filters {
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+.reset-filters:hover {
+  background-color: #e0e0e0;
+}
+
+/* RTL Support */
+.filters-container {
+  direction: rtl;
+}
+
+.filter-group label,
+.filter-toggle {
+  direction: rtl;
+  text-align: right;
+}
+
+.filter-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: none;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  color: #333;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-button:hover {
+  background-color: #f5f5f5;
+}
+
+.filter-button.active {
+  background-color: #e6f3ff;
+  border-color: #0066cc;
+  color: #0066cc;
+}
+
+.filter-button svg {
+  font-size: 14px;
+}
+
+.filter-dropdown {
+  padding: 10px;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-top: 5px;
+}
+
+.price-range,
+.beds-range {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.price-range input,
+.beds-range input {
+  width: 80px;
+  padding: 6px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.filter-dropdown select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: white;
+}
+
+.sidebar-section {
+  padding: 15px;
+  overflow-y: auto;
+}
+
+.property-results h3 {
+  margin: 0 0 15px 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.no-results-message {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+}
+
+.no-results-message p {
+  margin: 5px 0;
 }
