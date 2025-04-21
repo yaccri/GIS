@@ -6,19 +6,23 @@ const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const app = express();
+
+// --- Import Routes ---
 const authUserRoutes = require("./routes/authUser");
 const authPropertyRoutes = require("./routes/authProperty");
 const neighborhoodRoutes = require("./routes/neighborhood");
+const restaurantRoutes = require("./routes/restaurantRoutes");
 const protectedRoute = require("./routes/protectedRoute");
-const errorHandler = require("./middleware/errorHandler"); // Import the central error handler
+const errorHandler = require("./middleware/errorHandler");
 
 app.use(express.json());
 app.use(cors());
 
-// --- Routes ---
+// --- Mount Routes ---
 app.use("/authUser", authUserRoutes);
 app.use("/api/properties", authPropertyRoutes);
 app.use("/api/neighborhoods", neighborhoodRoutes);
+app.use("/api/restaurants", restaurantRoutes);
 app.use("/protected", protectedRoute);
 
 // --- MongoDB Connection ---
