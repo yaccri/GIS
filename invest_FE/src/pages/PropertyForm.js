@@ -7,6 +7,19 @@ import usePropertyApi from "../hooks/usePropertyApi";
 import { parseCurrency } from "../utils/currencyFormatter";
 import { states } from "../utils/states";
 
+// Add a map of required fields based on your schema
+const requiredFields = [
+  "propertyID",
+  "address",
+  "city",
+  "state",
+  "zipCode",
+  "type",
+  "price",
+  "location.type",
+  "location.coordinates",
+];
+
 const PropertyForm = ({
   mode,
   property,
@@ -180,6 +193,7 @@ const PropertyForm = ({
 
   const isReadOnly = mode === "view";
 
+  // Pass requiredFields to PropertyFields
   return (
     <div className="property-page-container">
       <div className="property-container">
@@ -212,6 +226,7 @@ const PropertyForm = ({
             currentYear={currentYear}
             mode={mode}
             displayAddress={displayAddress}
+            requiredFields={requiredFields}
           />
           {!isReadOnly && (
             <div className="button-group">

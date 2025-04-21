@@ -15,6 +15,20 @@ const PROPERTY_TYPES = [
   "Vacation home",
 ];
 
+const requiredFields = [
+  "propertyID",
+  "address",
+  "city",
+  "state",
+  "zipCode",
+  "type",
+  "price",
+  "location.type",
+  "location.coordinates",
+];
+
+const isRequired = (field) => requiredFields.includes(field);
+
 const PropertyFields = ({
   formData,
   handleChange,
@@ -36,64 +50,62 @@ const PropertyFields = ({
     insurance: formData.insurance,
   });
 
-  console.log("PropertyFields formData:", formData);
-  console.log("calcROI inputs:", {
-    price: formData.price,
-    rent: formData.Rent,
-    hoa: formData.hoa,
-    propertyTax: formData.propertyTax,
-    insurance: formData.insurance,
-  });
-  console.log("roiValue:", roiValue);
-
   return (
     <>
       <div className="form-group">
-        <label htmlFor="propertyID">Property ID:</label>
+        <label htmlFor="propertyID">
+          Property ID{isRequired("propertyID") && <span className="required-asterisk">*</span>}:
+        </label>
         <input
           type="number"
           id="propertyID"
           name="propertyID"
           value={formData.propertyID}
           onChange={handleChange}
-          required
+          required={isRequired("propertyID")}
           min="1"
           step="1"
           disabled={isReadOnly || mode === "edit"}
         />
       </div>
       <div className="form-group">
-        <label htmlFor="address">Address Search:</label>
+        <label htmlFor="address">
+          Address Search{isRequired("address") && <span className="required-asterisk">*</span>}:
+        </label>
         <AddressSearch
           id="address"
           initialValue={displayAddress}
-          onLocationSelect={handleAddressSelect} // Changed to onLocationSelect
-          disabled={isReadOnly} // Add disabled prop
-          required
+          onLocationSelect={handleAddressSelect}
+          disabled={isReadOnly}
+          required={isRequired("address")}
           placeholder="Start typing address..."
         />
       </div>
       <div className="form-group">
-        <label htmlFor="city">City:</label>
+        <label htmlFor="city">
+          City{isRequired("city") && <span className="required-asterisk">*</span>}:
+        </label>
         <input
           type="text"
           id="city"
           name="city"
           value={formData.city}
           onChange={handleChange}
-          required
-          disabled={true}
+          required={isRequired("city")}
+          disabled={isReadOnly}
         />
       </div>
       <div className="form-group">
-        <label htmlFor="state">State:</label>
+        <label htmlFor="state">
+          State{isRequired("state") && <span className="required-asterisk">*</span>}:
+        </label>
         <select
           id="state"
           name="state"
           value={formData.state}
           onChange={handleChange}
-          required
-          disabled={true}
+          required={isRequired("state")}
+          disabled={isReadOnly}
         >
           <option value="">Select State</option>
           {states.map((state) => (
@@ -104,26 +116,30 @@ const PropertyFields = ({
         </select>
       </div>
       <div className="form-group">
-        <label htmlFor="zipCode">Zip Code:</label>
+        <label htmlFor="zipCode">
+          Zip Code{isRequired("zipCode") && <span className="required-asterisk">*</span>}:
+        </label>
         <input
           type="text"
           id="zipCode"
           name="zipCode"
           value={formData.zipCode}
           onChange={handleChange}
-          required
-          disabled={true}
+          required={isRequired("zipCode")}
+          disabled={isReadOnly}
           maxLength="10"
         />
       </div>
       <div className="form-group">
-        <label htmlFor="type">Type:</label>
+        <label htmlFor="type">
+          Type{isRequired("type") && <span className="required-asterisk">*</span>}:
+        </label>
         <select
           id="type"
           name="type"
           value={formData.type}
           onChange={handleChange}
-          required
+          required={isRequired("type")}
           disabled={isReadOnly}
         >
           <option value="">Select Type</option>
@@ -145,14 +161,16 @@ const PropertyFields = ({
         />
       </div>
       <div className="form-group">
-        <label htmlFor="price">Price:</label>
+        <label htmlFor="price">
+          Price{isRequired("price") && <span className="required-asterisk">*</span>}:
+        </label>
         <input
           type="text"
           id="price"
           name="price"
           value={formatCurrencyForDisplay(formData.price)}
           onChange={handleChange}
-          required
+          required={isRequired("price")}
           readOnly={isReadOnly}
         />
       </div>
@@ -287,6 +305,36 @@ const PropertyFields = ({
           min="1800"
           max={currentYear}
           step="1"
+          readOnly={isReadOnly}
+        />
+      </div>
+      {/* Location Type */}
+      <div className="form-group">
+        <label htmlFor="locationType">
+          Location Type{isRequired("location.type") && <span className="required-asterisk">*</span>}:
+        </label>
+        <input
+          type="text"
+          id="locationType"
+          name="location.type"
+          value={formData.location?.type || ""}
+          onChange={handleChange}
+          required={isRequired("location.type")}
+          readOnly={isReadOnly}
+        />
+      </div>
+      {/* Location Coordinates */}
+      <div className="form-group">
+        <label htmlFor="locationCoordinates">
+          Location Coordinates{isRequired("location.coordinates") && <span className="required-asterisk">*</span>}:
+        </label>
+        <input
+          type="text"
+          id="locationCoordinates"
+          name="location.coordinates"
+          value={formData.location?.coordinates?.join(", ") || ""}
+          onChange={handleChange}
+          required={isRequired("location.coordinates")}
           readOnly={isReadOnly}
         />
       </div>
