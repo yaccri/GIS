@@ -5,7 +5,7 @@ import { useMapContext } from "../context/MapContext";
 // Import useLocation along with other router hooks
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import AddressSearchInput from "./AddressSearch-OpenStreetMap";
-import { FaFilter, FaChevronDown } from "react-icons/fa";
+import { FaFilter, FaChevronDown, FaHome, FaBed, FaBath, FaRuler, FaCalendar, FaMoneyBill, FaUser } from "react-icons/fa";
 import "./TopBar.css";
 import menuIcon from "../assets/images/account.svg";
 
@@ -19,9 +19,24 @@ const TopBar = () => {
   const [isAdminSubMenuOpen, setIsAdminSubMenuOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState(null);
   const [filters, setLocalFilters] = useState({
+    propertyID: "",
+    address: "",
+    city: "",
+    state: "",
+    zipCode: "",
+    type: "",
     price: { min: "", max: "" },
     beds: { min: "", max: "" },
-    type: "",
+    baths: { min: "", max: "" },
+    size: { min: "", max: "" },
+    lotSize: { min: "", max: "" },
+    yearBuilt: { min: "", max: "" },
+    hoa: { min: "", max: "" },
+    propertyTax: { min: "", max: "" },
+    insurance: { min: "", max: "" },
+    rent: { min: "", max: "" },
+    tenantInPlace: "",
+    createdOn: { start: "", end: "" }
   });
   const adminMenuTimerRef = useRef(null);
   const menuRef = useRef(null);
@@ -114,14 +129,164 @@ const TopBar = () => {
     
     const newFilters = {
       ...filters,
-      [mainKey]: {
+      [mainKey]: subKey ? {
         ...filters[mainKey],
         [subKey]: value
-      }
+      } : value
     };
     
     setLocalFilters(newFilters);
     updateFilters(newFilters);
+  };
+
+  const renderFilterInputs = (filterType) => {
+    switch (filterType) {
+      case 'price':
+      case 'hoa':
+      case 'propertyTax':
+      case 'insurance':
+      case 'rent':
+        return (
+          <div className="filter-dropdown">
+            <div className="range-inputs">
+              <input
+                type="number"
+                name={`${filterType}.min`}
+                placeholder={`Min ${filterType}`}
+                value={filters[filterType].min}
+                onChange={handleFilterChange}
+              />
+              <span>to</span>
+              <input
+                type="number"
+                name={`${filterType}.max`}
+                placeholder={`Max ${filterType}`}
+                value={filters[filterType].max}
+                onChange={handleFilterChange}
+              />
+            </div>
+          </div>
+        );
+      case 'beds':
+      case 'baths':
+        return (
+          <div className="filter-dropdown">
+            <div className="range-inputs">
+              <input
+                type="number"
+                name={`${filterType}.min`}
+                placeholder={`Min ${filterType}`}
+                value={filters[filterType].min}
+                onChange={handleFilterChange}
+              />
+              <span>to</span>
+              <input
+                type="number"
+                name={`${filterType}.max`}
+                placeholder={`Max ${filterType}`}
+                value={filters[filterType].max}
+                onChange={handleFilterChange}
+              />
+            </div>
+          </div>
+        );
+      case 'size':
+      case 'lotSize':
+        return (
+          <div className="filter-dropdown">
+            <div className="range-inputs">
+              <input
+                type="number"
+                name={`${filterType}.min`}
+                placeholder={`Min ${filterType} (sqft)`}
+                value={filters[filterType].min}
+                onChange={handleFilterChange}
+              />
+              <span>to</span>
+              <input
+                type="number"
+                name={`${filterType}.max`}
+                placeholder={`Max ${filterType} (sqft)`}
+                value={filters[filterType].max}
+                onChange={handleFilterChange}
+              />
+            </div>
+          </div>
+        );
+      case 'yearBuilt':
+        return (
+          <div className="filter-dropdown">
+            <div className="range-inputs">
+              <input
+                type="number"
+                name={`${filterType}.min`}
+                placeholder="Min Year"
+                value={filters[filterType].min}
+                onChange={handleFilterChange}
+              />
+              <span>to</span>
+              <input
+                type="number"
+                name={`${filterType}.max`}
+                placeholder="Max Year"
+                value={filters[filterType].max}
+                onChange={handleFilterChange}
+              />
+            </div>
+          </div>
+        );
+      case 'type':
+        return (
+          <div className="filter-dropdown">
+            <select
+              name="type"
+              value={filters.type}
+              onChange={handleFilterChange}
+            >
+              <option value="">All Types</option>
+              <option value="Apartment">Apartment</option>
+              <option value="House">House</option>
+              <option value="Condo">Condo</option>
+            </select>
+          </div>
+        );
+      case 'tenantInPlace':
+        return (
+          <div className="filter-dropdown">
+            <select
+              name="tenantInPlace"
+              value={filters.tenantInPlace}
+              onChange={handleFilterChange}
+            >
+              <option value="">Any</option>
+              <option value="true">With Tenant</option>
+              <option value="false">Without Tenant</option>
+            </select>
+          </div>
+        );
+      case 'createdOn':
+        return (
+          <div className="filter-dropdown">
+            <div className="date-range-inputs">
+              <input
+                type="date"
+                name="createdOn.start"
+                value={filters.createdOn.start}
+                onChange={handleFilterChange}
+              />
+              <span>to</span>
+              <input
+                type="date"
+                name="createdOn.end"
+                value={filters.createdOn.end}
+                onChange={handleFilterChange}
+              />
+            </div>
+          </div>
+        );
+      default:
+        return null;
+    }
   };
 
   return (
@@ -138,81 +303,52 @@ const TopBar = () => {
           className={`filter-button ${activeFilter === 'price' ? 'active' : ''}`}
           onClick={() => toggleFilter('price')}
         >
-          <FaFilter /> Price <FaChevronDown />
+          <FaMoneyBill /> Price
         </button>
 
         <button 
           className={`filter-button ${activeFilter === 'beds' ? 'active' : ''}`}
           onClick={() => toggleFilter('beds')}
         >
-          <FaFilter /> Beds <FaChevronDown />
+          <FaBed /> Beds
+        </button>
+
+        <button 
+          className={`filter-button ${activeFilter === 'baths' ? 'active' : ''}`}
+          onClick={() => toggleFilter('baths')}
+        >
+          <FaBath /> Baths
         </button>
 
         <button 
           className={`filter-button ${activeFilter === 'type' ? 'active' : ''}`}
           onClick={() => toggleFilter('type')}
         >
-          <FaFilter /> Type <FaChevronDown />
+          <FaHome /> Type
         </button>
 
-        {activeFilter === 'price' && (
-          <div className="filter-dropdown">
-            <div className="price-range">
-              <input
-                type="number"
-                name="price.min"
-                placeholder="Min Price"
-                value={filters.price.min}
-                onChange={handleFilterChange}
-              />
-              <span>to</span>
-              <input
-                type="number"
-                name="price.max"
-                placeholder="Max Price"
-                value={filters.price.max}
-                onChange={handleFilterChange}
-              />
-            </div>
-          </div>
-        )}
+        <button 
+          className={`filter-button ${activeFilter === 'size' ? 'active' : ''}`}
+          onClick={() => toggleFilter('size')}
+        >
+          <FaRuler /> Size
+        </button>
 
-        {activeFilter === 'beds' && (
-          <div className="filter-dropdown">
-            <div className="beds-range">
-              <input
-                type="number"
-                name="beds.min"
-                placeholder="Min Beds"
-                value={filters.beds.min}
-                onChange={handleFilterChange}
-              />
-              <span>to</span>
-              <input
-                type="number"
-                name="beds.max"
-                placeholder="Max Beds"
-                value={filters.beds.max}
-                onChange={handleFilterChange}
-              />
-            </div>
-          </div>
-        )}
+        <button 
+          className={`filter-button ${activeFilter === 'yearBuilt' ? 'active' : ''}`}
+          onClick={() => toggleFilter('yearBuilt')}
+        >
+          <FaCalendar /> Year Built
+        </button>
 
-        {activeFilter === 'type' && (
-          <div className="filter-dropdown">
-            <select
-              name="type"
-              value={filters.type}
-              onChange={handleFilterChange}
-            >
-              <option value="">All Types</option>
-              <option value="Apartment">Apartment</option>
-              <option value="House">House</option>
-              <option value="Condo">Condo</option>
-            </select>
-          </div>
-        )}
+        <button 
+          className={`filter-button ${activeFilter === 'tenantInPlace' ? 'active' : ''}`}
+          onClick={() => toggleFilter('tenantInPlace')}
+        >
+          <FaUser /> Tenant
+        </button>
+
+        {activeFilter && renderFilterInputs(activeFilter)}
       </div>
 
       <div className="menu-container" ref={menuRef}>

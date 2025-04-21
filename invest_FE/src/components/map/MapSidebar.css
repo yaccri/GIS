@@ -29,37 +29,22 @@
   color: #6c757d;
 }
 
-/* --- Radius Search Results --- */
-.radius-results {
-  /* No outer border/padding/background needed */
-}
-
-.radius-results h3 {
+/* --- Property Results --- */
+.property-results h3 {
   margin-top: 0;
   margin-bottom: 15px;
   font-size: 1.1em;
   color: #333;
-  padding-left: 5px; /* Align slightly */
+  padding-left: 5px;
 }
 
-.radius-results > p {
-  /* For "No properties found" message */
-  margin: 5px 0;
-  color: #555;
-  padding: 10px 15px;
-  background-color: #e9ecef; /* Slightly different grey for message */
-  border-radius: 4px;
-  border: 1px solid #dee2e6;
-}
-
-/* Ensure the property list grows within the scrollable area */
 .property-list {
   list-style: none;
   padding: 0;
   margin: 0;
 }
 
-/* --- Property Card Item Styling (Refined Look) --- */
+/* --- Property Card Item Styling --- */
 .property-item {
   padding: 10px;
   border-bottom: 1px solid #eee;
@@ -90,6 +75,20 @@
 .property-location {
   font-size: 12px;
   color: #666;
+}
+
+/* --- No Results Message --- */
+.no-results {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  margin: 10px;
+}
+
+.no-results p {
+  margin: 5px 0;
 }
 
 /* --- Saved Polygons / Areas --- */
