@@ -36,7 +36,8 @@ const TopBar = () => {
     insurance: { min: "", max: "" },
     rent: { min: "", max: "" },
     tenantInPlace: "",
-    createdOn: { start: "", end: "" }
+    createdOn: { start: "", end: "" },
+    builtYear: { min: "", max: "" }
   });
   const adminMenuTimerRef = useRef(null);
   const menuRef = useRef(null);
@@ -284,6 +285,32 @@ const TopBar = () => {
             </div>
           </div>
         );
+      case 'builtYear':
+        return (
+          <div className="filter-dropdown">
+            <div className="range-inputs">
+              <input
+                type="number"
+                name="builtYear.min"
+                placeholder="משנה"
+                value={filters.builtYear.min}
+                onChange={handleFilterChange}
+                min="1800"
+                max={new Date().getFullYear()}
+              />
+              <span>עד</span>
+              <input
+                type="number"
+                name="builtYear.max"
+                placeholder="עד שנה"
+                value={filters.builtYear.max}
+                onChange={handleFilterChange}
+                min="1800"
+                max={new Date().getFullYear()}
+              />
+            </div>
+          </div>
+        );
       default:
         return null;
     }
@@ -346,6 +373,13 @@ const TopBar = () => {
           onClick={() => toggleFilter('tenantInPlace')}
         >
           <FaUser /> Tenant
+        </button>
+
+        <button 
+          className={`filter-button ${activeFilter === 'builtYear' ? 'active' : ''}`}
+          onClick={() => toggleFilter('builtYear')}
+        >
+          <FaCalendar /> שנת בנייה
         </button>
 
         {activeFilter && renderFilterInputs(activeFilter)}

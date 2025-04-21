@@ -244,6 +244,28 @@ const MapComponent = () => {
     hideDetails: hideActivePolygonDetails,
   } = useActiveShapeDetails();
 
+  // הגדרת פונקציית הסינון לפני השימוש בה
+  const filterProperties = (properties, filters) => {
+    return properties.filter(property => {
+      // בדיקת מחיר
+      if (filters.price?.min && property.price < parseFloat(filters.price.min)) return false;
+      if (filters.price?.max && property.price > parseFloat(filters.price.max)) return false;
+
+      // בדיקת חדרי שינה
+      if (filters.beds?.min && property.beds < parseInt(filters.beds.min)) return false;
+      if (filters.beds?.max && property.beds > parseInt(filters.beds.max)) return false;
+
+      // בדיקת סוג נכס
+      if (filters.type && property.type !== filters.type) return false;
+
+      // בדיקת שנת בנייה
+      if (filters.builtYear?.min && property.yearBuilt < parseInt(filters.builtYear.min)) return false;
+      if (filters.builtYear?.max && property.yearBuilt > parseInt(filters.builtYear.max)) return false;
+
+      return true;
+    });
+  };
+
   // Combined property filtering and display logic
   const propertiesToDisplay = useMemo(() => {
     // First, get properties from the appropriate source
@@ -268,14 +290,7 @@ const MapComponent = () => {
     }
 
     // Then apply filters
-    return sourceProperties.filter(property => {
-      if (filters.price.min && property.price < parseInt(filters.price.min)) return false;
-      if (filters.price.max && property.price > parseInt(filters.price.max)) return false;
-      if (filters.beds.min && property.beds < parseInt(filters.beds.min)) return false;
-      if (filters.beds.max && property.beds > parseInt(filters.beds.max)) return false;
-      if (filters.type && property.type !== filters.type) return false;
-      return true;
-    });
+    return filterProperties(sourceProperties, filters);
   }, [
     propertiesByPolygon,
     neighborhoodProperties,
