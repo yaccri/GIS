@@ -23,8 +23,6 @@ const requiredFields = [
   "zipCode",
   "type",
   "price",
-  "location.type",
-  "location.coordinates",
 ];
 
 const isRequired = (field) => requiredFields.includes(field);
@@ -310,36 +308,6 @@ const PropertyFields = ({
           min="1800"
           max={currentYear}
           step="1"
-          readOnly={isReadOnly}
-        />
-      </div>
-      {/* Location Type */}
-      <div className="form-group">
-        <label htmlFor="locationType">
-          Location Type{isRequired("location.type") && <span className="required-asterisk">*</span>}:
-        </label>
-        <input
-          type="text"
-          id="locationType"
-          name="location.type"
-          value={formData.location?.type || ""}
-          onChange={handleChange}
-          required={isRequired("location.type")}
-          readOnly={isReadOnly}
-        />
-      </div>
-      {/* Location Coordinates */}
-      <div className="form-group">
-        <label htmlFor="locationCoordinates">
-          Location Coordinates{isRequired("location.coordinates") && <span className="required-asterisk">*</span>}:
-        </label>
-        <input
-          type="text"
-          id="locationCoordinates"
-          name="location.coordinates"
-          value={formData.location?.coordinates?.join(", ") || ""}
-          onChange={handleChange}
-          required={isRequired("location.coordinates")}
           readOnly={isReadOnly}
         />
       </div>
