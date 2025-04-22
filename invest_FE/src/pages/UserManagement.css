@@ -395,4 +395,92 @@
 .user-details-sidebar .form-actions button[type="button"] {
   background-color: #95a5a6;
   color: white;
+}
+
+.edit-form {
+  padding: 0.8rem;
+}
+
+.form-group {
+  margin-bottom: 0.8rem;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.85rem;
+  color: #7f8c8d;
+  margin-bottom: 0.3rem;
+  font-weight: 500;
+}
+
+.form-group input[type="text"],
+.form-group input[type="password"],
+.form-group input[type="email"],
+.form-group input[type="date"],
+.form-group select {
+  width: 100%;
+  padding: 0.6rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  transition: border-color 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  border-color: #3498db;
+  outline: none;
+}
+
+.radio-container {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-top: 0.3rem;
+}
+
+.radio-container input[type="radio"] {
+  margin-right: 0.3rem;
+}
+
+.radio-container label {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #2c3e50;
+}
+
+.error-message {
+  color: #e74c3c;
+  font-size: 0.8rem;
+  margin-top: 0.2rem;
+}
+
+.form-actions {
+  display: flex;
+  gap: 0.8rem;
+  margin-top: 1.2rem;
+}
+
+.form-actions button {
+  flex: 1;
+  padding: 0.6rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background-color 0.2s;
+}
+
+.form-actions button[type="submit"] {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.form-actions button[type="submit"]:hover {
+  background-color: #388E3C;
+}
+
+.form-actions button[type="button"] {
+  background-color: #95a5a6;
+  color: white;
 } 

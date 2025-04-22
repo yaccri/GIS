@@ -2,17 +2,30 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserContext } from '../context/UserContext';
 import './UserManagement.css';
+import { validateName, validateDOB, validatePassword, validateEmail, validateUsername } from '../utils/userValidation';
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [isAddingNew, setIsAddingNew] = useState(false);
   const [editForm, setEditForm] = useState({
     firstName: '',
     lastName: '',
     username: '',
     email: '',
   });
+  const [newUserForm, setNewUserForm] = useState({
+    firstName: '',
+    lastName: '',
+    username: '',
+    password: '',
+    email: '',
+    gender: '',
+    dateOfBirth: '',
+    preferences: { subscribe: true }
+  });
+  const [formErrors, setFormErrors] = useState({});
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showUserDetails, setShowUserDetails] = useState(false);
@@ -148,6 +161,113 @@ const UserManagement = () => {
     }
   };
 
+  const handleAddNewUser = () => {
+    setIsAddingNew(true);
+    setShowUserDetails(false);
+    setSelectedUser(null);
+    setIsEditing(false);
+  };
+
+  const handleNewUserChange = (e) => {
+    const { name, value } = e.target;
+    if (name === 'preferences.subscribe') {
+      setNewUserForm(prev => ({
+        ...prev,
+        preferences: {
+          ...prev.preferences,
+          subscribe: value === 'yes'
+        }
+      }));
+    } else {
+      setNewUserForm(prev => ({ ...prev, [name]: value }));
+    }
+
+    // Validate on change
+    if (name === 'firstName' || name === 'lastName') {
+      const error = validateName(value);
+      setFormErrors(prev => ({ ...prev, [name]: error }));
+    }
+  };
+
+  const handleNewUserBlur = (e) => {
+    const { name, value } = e.target;
+    let error = null;
+    switch (name) {
+      case 'dateOfBirth':
+        error = validateDOB(value);
+        break;
+      case 'password':
+        error = validatePassword(value);
+        break;
+      case 'email':
+        error = validateEmail(value);
+        break;
+      case 'username':
+        error = validateUsername(value);
+        break;
+      default:
+        break;
+    }
+    setFormErrors(prev => ({ ...prev, [name]: error }));
+  };
+
+  const handleNewUserSubmit = async (e) => {
+    e.preventDefault();
+
+    // Validate all fields
+    const nameError = validateName(newUserForm.firstName) || validateName(newUserForm.lastName);
+    const dobError = validateDOB(newUserForm.dateOfBirth);
+    const passwordError = validatePassword(newUserForm.password);
+    const emailError = validateEmail(newUserForm.email);
+    const usernameError = validateUsername(newUserForm.username);
+
+    setFormErrors({
+      firstName: validateName(newUserForm.firstName),
+      lastName: validateName(newUserForm.lastName),
+      dateOfBirth: dobError,
+      password: passwordError,
+      email: emailError,
+      username: usernameError,
+    });
+
+    if (nameError || dobError || passwordError || emailError || usernameError) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/authUser/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user.token}`
+        },
+        body: JSON.stringify(newUserForm)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create user');
+      }
+
+      // Refresh users list
+      fetchUsers();
+      setIsAddingNew(false);
+      setNewUserForm({
+        firstName: '',
+        lastName: '',
+        username: '',
+        password: '',
+        email: '',
+        gender: '',
+        dateOfBirth: '',
+        preferences: { subscribe: true }
+      });
+      setFormErrors({});
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
   useEffect(() => {
     fetchUsers();
   }, []);
@@ -165,7 +285,7 @@ const UserManagement = () => {
       <div className="user-management-header">
         <h1>User Management</h1>
         <div className="header-actions">
-          <button className="add-user-btn">Add New User</button>
+          <button className="add-user-btn" onClick={handleAddNewUser}>Add New User</button>
         </div>
       </div>
       
@@ -222,10 +342,179 @@ const UserManagement = () => {
           </table>
         </div>
 
-        {/* Sidebar for both user details and edit form */}
-        {(showUserDetails || isEditing) && selectedUser && (
+        {/* Sidebar for user details, edit form, or new user form */}
+        {(showUserDetails || isEditing || isAddingNew) && (
           <div className="user-details-sidebar">
-            {isEditing ? (
+            {isAddingNew ? (
+              <>
+                <div className="user-details-header">
+                  <h2>Add New User</h2>
+                  <button 
+                    className="close-btn"
+                    onClick={() => {
+                      setIsAddingNew(false);
+                      setNewUserForm({
+                        firstName: '',
+                        lastName: '',
+                        username: '',
+                        password: '',
+                        email: '',
+                        gender: '',
+                        dateOfBirth: '',
+                        preferences: { subscribe: true }
+                      });
+                      setFormErrors({});
+                    }}
+                  >
+                    ×
+                  </button>
+                </div>
+                <form onSubmit={handleNewUserSubmit} className="edit-form">
+                  <div className="form-group">
+                    <label>First Name:</label>
+                    <input
+                      type="text"
+                      name="firstName"
+                      value={newUserForm.firstName}
+                      onChange={handleNewUserChange}
+                      onBlur={handleNewUserBlur}
+                      required
+                    />
+                    {formErrors.firstName && (
+                      <div className="error-message">{formErrors.firstName}</div>
+                    )}
+                  </div>
+                  <div className="form-group">
+                    <label>Last Name:</label>
+                    <input
+                      type="text"
+                      name="lastName"
+                      value={newUserForm.lastName}
+                      onChange={handleNewUserChange}
+                      onBlur={handleNewUserBlur}
+                      required
+                    />
+                    {formErrors.lastName && (
+                      <div className="error-message">{formErrors.lastName}</div>
+                    )}
+                  </div>
+                  <div className="form-group">
+                    <label>Username:</label>
+                    <input
+                      type="text"
+                      name="username"
+                      value={newUserForm.username}
+                      onChange={handleNewUserChange}
+                      onBlur={handleNewUserBlur}
+                      required
+                    />
+                    {formErrors.username && (
+                      <div className="error-message">{formErrors.username}</div>
+                    )}
+                  </div>
+                  <div className="form-group">
+                    <label>Password:</label>
+                    <input
+                      type="password"
+                      name="password"
+                      value={newUserForm.password}
+                      onChange={handleNewUserChange}
+                      onBlur={handleNewUserBlur}
+                      required
+                    />
+                    {formErrors.password && (
+                      <div className="error-message">{formErrors.password}</div>
+                    )}
+                  </div>
+                  <div className="form-group">
+                    <label>Email:</label>
+                    <input
+                      type="email"
+                      name="email"
+                      value={newUserForm.email}
+                      onChange={handleNewUserChange}
+                      onBlur={handleNewUserBlur}
+                      required
+                    />
+                    {formErrors.email && (
+                      <div className="error-message">{formErrors.email}</div>
+                    )}
+                  </div>
+                  <div className="form-group">
+                    <label>Gender:</label>
+                    <select
+                      name="gender"
+                      value={newUserForm.gender}
+                      onChange={handleNewUserChange}
+                    >
+                      <option value="">Select Gender</option>
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>Date of Birth:</label>
+                    <input
+                      type="date"
+                      name="dateOfBirth"
+                      value={newUserForm.dateOfBirth}
+                      onChange={handleNewUserChange}
+                      onBlur={handleNewUserBlur}
+                      required
+                    />
+                    {formErrors.dateOfBirth && (
+                      <div className="error-message">{formErrors.dateOfBirth}</div>
+                    )}
+                  </div>
+                  <div className="form-group">
+                    <label>Send me promotions:</label>
+                    <div className="radio-container">
+                      <input
+                        type="radio"
+                        id="subscribeYes"
+                        name="preferences.subscribe"
+                        value="yes"
+                        checked={newUserForm.preferences.subscribe === true}
+                        onChange={handleNewUserChange}
+                      />
+                      <label htmlFor="subscribeYes">Yes</label>
+                      <input
+                        type="radio"
+                        id="subscribeNo"
+                        name="preferences.subscribe"
+                        value="no"
+                        checked={newUserForm.preferences.subscribe === false}
+                        onChange={handleNewUserChange}
+                      />
+                      <label htmlFor="subscribeNo">No</label>
+                    </div>
+                  </div>
+                  <div className="form-actions">
+                    <button type="submit">Create User</button>
+                    <button 
+                      type="button" 
+                      onClick={() => {
+                        setIsAddingNew(false);
+                        setNewUserForm({
+                          firstName: '',
+                          lastName: '',
+                          username: '',
+                          password: '',
+                          email: '',
+                          gender: '',
+                          dateOfBirth: '',
+                          preferences: { subscribe: true }
+                        });
+                        setFormErrors({});
+                      }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              </>
+            ) : isEditing ? (
               <>
                 <div className="user-details-header">
                   <h2>Edit User</h2>
