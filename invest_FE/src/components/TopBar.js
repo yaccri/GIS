@@ -189,6 +189,11 @@ const TopBar = () => {
                             Properties
                           </Link>
                         </li>
+                        <li>
+                          <Link to="/user-management" onClick={closeMenu}>
+                            User Management
+                          </Link>
+                        </li>
                       </ul>
                     )}
                   </li>
