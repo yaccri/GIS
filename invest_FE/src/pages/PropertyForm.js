@@ -178,15 +178,6 @@ const PropertyForm = ({
     return <p>Loading property...</p>;
   }
 
-  if (error) {
-    return (
-      <div>
-        <p>Error: {error}</p>
-        <button onClick={handleCancelClick}>Close</button>
-      </div>
-    );
-  }
-
   if (!formData) {
     return <p>Initializing form...</p>;
   }
@@ -204,6 +195,11 @@ const PropertyForm = ({
             ? "Edit Property"
             : "View Property"}
         </h2>
+        {error && (
+          <div className="form-error" title={error}>
+            Error: {error}
+          </div>
+        )}
         {mode === "view" && user.isAdmin && (
           <div className="admin-buttons">
             <button className="edit-btn" onClick={() => onEdit(formData)}>

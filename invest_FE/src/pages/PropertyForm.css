@@ -105,3 +105,30 @@
   cursor: pointer;
   font-weight: bold;
 }
+
+.input-error {
+  border: 2px solid #e53935 !important;
+  background: #fff6f6;
+}
+
+.field-error {
+  color: #e53935;
+  font-size: 0.97em;
+  margin-top: 2px;
+}
+
+.form-error {
+  color: #fff;
+  background: #e53935;
+  padding: 10px 16px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+  font-weight: bold;
+  box-shadow: 0 2px 8px #e5393533;
+  cursor: help;
+}
+
+.required-asterisk {
+  color: #e53935;
+  margin-left: 2px;
+}

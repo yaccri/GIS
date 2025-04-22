@@ -1,5 +1,5 @@
 // src/components/PropertyFields.js
-import React from "react";
+import React, { useState } from "react";
 import { states } from "../utils/states";
 import { formatCurrencyForDisplay } from "../utils/currencyFormatter";
 import { format } from "date-fns";
@@ -37,7 +37,10 @@ const PropertyFields = ({
   currentYear,
   mode,
   displayAddress,
+  fieldErrors = {},
 }) => {
+  if (!formData) return null; // Prevent rendering until formData is ready
+
   const formattedCreatedOn = formData.createdOn
     ? format(new Date(formData.createdOn), "MMM-dd-yyyy HH:mm")
     : "N/A";
@@ -66,7 +69,9 @@ const PropertyFields = ({
           min="1"
           step="1"
           disabled={isReadOnly || mode === "edit"}
+          className={fieldErrors.propertyID ? "input-error" : ""}
         />
+        {fieldErrors.propertyID && <div className="field-error">{fieldErrors.propertyID}</div>}
       </div>
       <div className="form-group">
         <label htmlFor="address">
@@ -350,6 +355,44 @@ const PropertyFields = ({
         />
       </div>
     </>
+  );
+};
+
+const PropertyForm = (props) => {
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [generalError, setGeneralError] = useState("");
+
+  const handleSubmit = async (e, formData) => {
+    e.preventDefault();
+    setFieldErrors({});
+    setGeneralError("");
+    try {
+      // ...your API call...
+    } catch (err) {
+      // Example error handling:
+      if (err.response && err.response.data && err.response.data.errors) {
+        setFieldErrors(err.response.data.errors); // { propertyID: "Already exists" }
+      } else if (err.response && err.response.data && err.response.data.message) {
+        setGeneralError(err.response.data.message);
+      } else {
+        setGeneralError("An unexpected error occurred.");
+      }
+    }
+  };
+
+  return (
+    <form onSubmit={(e) => handleSubmit(e, props.formData)}>
+      {generalError && (
+        <div className="form-error" title={generalError}>
+          {generalError}
+        </div>
+      )}
+      <PropertyFields
+        {...props}
+        fieldErrors={fieldErrors}
+      />
+      {/* ...buttons... */}
+    </form>
   );
 };
 
