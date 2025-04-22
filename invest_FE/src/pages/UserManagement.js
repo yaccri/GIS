@@ -15,6 +15,7 @@ const UserManagement = () => {
   });
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [showUserDetails, setShowUserDetails] = useState(false);
 
   const { user } = React.useContext(UserContext);
   const navigate = useNavigate();
@@ -71,6 +72,27 @@ const UserManagement = () => {
   // Format date for display
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-GB');
+  };
+
+  // Handle row click
+  const handleRowClick = async (userId) => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/authUser/users/${userId}`, {
+        headers: {
+          'Authorization': `Bearer ${user.token}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch user details');
+      }
+      
+      const data = await response.json();
+      setSelectedUser(data);
+      setShowUserDetails(true);
+    } catch (err) {
+      setError(err.message);
+    }
   };
 
   // Update user
@@ -145,7 +167,123 @@ const UserManagement = () => {
         </div>
       </div>
       
-      {isEditing ? (
+      <div className="content-wrapper">
+        <div className="table-container">
+          <table className="users-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>ID</th>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {users.map((user, index) => (
+                <tr 
+                  key={user._id}
+                  onClick={() => handleRowClick(user._id)}
+                  className={selectedUser?._id === user._id ? 'selected' : ''}
+                >
+                  <td>{index + 1}</td>
+                  <td>{user._id}</td>
+                  <td>{user.firstName}</td>
+                  <td>{user.lastName}</td>
+                  <td>{user.username}</td>
+                  <td>{user.email}</td>
+                  <td className="actions-cell">
+                    <button 
+                      className="edit-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        fetchUser(user._id);
+                      }}
+                    >
+                      Edit
+                    </button>
+                    <button 
+                      className="delete-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteUser(user._id);
+                      }}
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {showUserDetails && selectedUser && (
+          <div className="user-details-sidebar">
+            <div className="user-details-header">
+              <h2>User Details</h2>
+              <button 
+                className="close-btn"
+                onClick={() => {
+                  setShowUserDetails(false);
+                  setSelectedUser(null);
+                }}
+              >
+                ×
+              </button>
+            </div>
+            <div className="user-details-content">
+              <div className="detail-group">
+                <label>ID:</label>
+                <span>{selectedUser._id}</span>
+              </div>
+              <div className="detail-group">
+                <label>First Name:</label>
+                <span>{selectedUser.firstName}</span>
+              </div>
+              <div className="detail-group">
+                <label>Last Name:</label>
+                <span>{selectedUser.lastName}</span>
+              </div>
+              <div className="detail-group">
+                <label>Username:</label>
+                <span>{selectedUser.username}</span>
+              </div>
+              <div className="detail-group">
+                <label>Email:</label>
+                <span>{selectedUser.email}</span>
+              </div>
+              <div className="detail-group">
+                <label>Gender:</label>
+                <span>{selectedUser.gender || 'Not specified'}</span>
+              </div>
+              <div className="detail-group">
+                <label>Date of Birth:</label>
+                <span>{selectedUser.dateOfBirth ? formatDate(selectedUser.dateOfBirth) : 'Not specified'}</span>
+              </div>
+              <div className="detail-group">
+                <label>Admin Status:</label>
+                <span>{selectedUser.isAdmin ? 'Yes' : 'No'}</span>
+              </div>
+              <div className="detail-group">
+                <label>Registration Date:</label>
+                <span>{formatDate(selectedUser.subscriptionTime)}</span>
+              </div>
+              <div className="detail-group">
+                <label>Preferences:</label>
+                <div className="preferences-details">
+                  <div>Items per page: {selectedUser.preferences?.itemsPerPage || 12}</div>
+                  <div>Subscribed to updates: {selectedUser.preferences?.subscribe ? 'Yes' : 'No'}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {isEditing && (
         <div className="edit-form">
           <h2>Edit User</h2>
           <form onSubmit={updateUser}>
@@ -193,46 +331,6 @@ const UserManagement = () => {
               }}>Cancel</button>
             </div>
           </form>
-        </div>
-      ) : (
-        <div className="table-container">
-          <table className="users-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>First Name</th>
-                <th>Last Name</th>
-                <th>Username</th>
-                <th>Email</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map(user => (
-                <tr key={user._id}>
-                  <td>{user._id}</td>
-                  <td>{user.firstName}</td>
-                  <td>{user.lastName}</td>
-                  <td>{user.username}</td>
-                  <td>{user.email}</td>
-                  <td className="actions-cell">
-                    <button 
-                      className="edit-btn"
-                      onClick={() => fetchUser(user._id)}
-                    >
-                      Edit
-                    </button>
-                    <button 
-                      className="delete-btn"
-                      onClick={() => deleteUser(user._id)}
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
         </div>
       )}
     </div>

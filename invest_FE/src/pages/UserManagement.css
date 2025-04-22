@@ -5,6 +5,12 @@
   direction: ltr;
 }
 
+.content-wrapper {
+  display: flex;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
 .user-management-header {
   display: flex;
   justify-content: space-between;
@@ -39,11 +45,11 @@
 }
 
 .table-container {
+  flex: 1;
   background: white;
   border-radius: 10px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   overflow-x: auto;
-  margin-bottom: 2rem;
 }
 
 .users-table {
@@ -51,6 +57,19 @@
   border-collapse: collapse;
   background: white;
   font-size: 0.9rem;
+}
+
+.users-table tr {
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.users-table tr:hover {
+  background-color: #f5f5f5;
+}
+
+.users-table tr.selected {
+  background-color: #e3f2fd;
 }
 
 .users-table th,
@@ -76,12 +95,16 @@
   text-overflow: ellipsis;
 }
 
-.users-table tr:hover {
-  background-color: #f8f9fa;
-}
-
 .users-table tr:last-child td {
   border-bottom: none;
+}
+
+.users-table th:first-child,
+.users-table td:first-child {
+  width: 50px;
+  text-align: center;
+  color: #666;
+  font-weight: 500;
 }
 
 .actions-cell {
@@ -219,4 +242,79 @@
   border-radius: 8px;
   margin: 1rem 0;
   font-size: 1rem;
+}
+
+.user-details-sidebar {
+  width: 350px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  height: fit-content;
+  position: sticky;
+  top: 2rem;
+}
+
+.user-details-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.user-details-header h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #2c3e50;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #95a5a6;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.close-btn:hover {
+  color: #7f8c8d;
+}
+
+.user-details-content {
+  padding: 1.5rem;
+}
+
+.detail-group {
+  margin-bottom: 1rem;
+}
+
+.detail-group:last-child {
+  margin-bottom: 0;
+}
+
+.detail-group label {
+  display: block;
+  font-size: 0.9rem;
+  color: #7f8c8d;
+  margin-bottom: 0.3rem;
+}
+
+.detail-group span {
+  display: block;
+  color: #2c3e50;
+  font-size: 1rem;
+  word-break: break-word;
+}
+
+.preferences-details {
+  margin-top: 0.5rem;
+  padding-left: 1rem;
+  font-size: 0.9rem;
+  color: #2c3e50;
+}
+
+.preferences-details div {
+  margin-bottom: 0.3rem;
 } 
