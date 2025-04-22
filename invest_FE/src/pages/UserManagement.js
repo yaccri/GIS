@@ -1,8 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { UserContext } from '../context/UserContext';
-import './UserManagement.css';
-import { validateName, validateDOB, validatePassword, validateEmail, validateUsername } from '../utils/userValidation';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { UserContext } from "../context/UserContext";
+import "./UserManagement.css";
+import {
+  validateName,
+  validateDOB,
+  validatePassword,
+  validateEmail,
+  validateUsername,
+} from "../utils/userValidation";
+import { BASE_URL } from "../utils/config";
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
@@ -10,20 +17,20 @@ const UserManagement = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [editForm, setEditForm] = useState({
-    firstName: '',
-    lastName: '',
-    username: '',
-    email: '',
+    firstName: "",
+    lastName: "",
+    username: "",
+    email: "",
   });
   const [newUserForm, setNewUserForm] = useState({
-    firstName: '',
-    lastName: '',
-    username: '',
-    password: '',
-    email: '',
-    gender: '',
-    dateOfBirth: '',
-    preferences: { subscribe: true }
+    firstName: "",
+    lastName: "",
+    username: "",
+    password: "",
+    email: "",
+    gender: "",
+    dateOfBirth: "",
+    preferences: { subscribe: true },
   });
   const [formErrors, setFormErrors] = useState({});
   const [error, setError] = useState(null);
@@ -36,16 +43,16 @@ const UserManagement = () => {
   // Fetch all users
   const fetchUsers = async () => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/authUser/users`, {
+      const response = await fetch(`${BASE_URL}/authUser/users`, {
         headers: {
-          'Authorization': `Bearer ${user.token}`
-        }
+          Authorization: `Bearer ${user.token}`,
+        },
       });
-      
+
       if (!response.ok) {
-        throw new Error('Failed to fetch users');
+        throw new Error("Failed to fetch users");
       }
-      
+
       const data = await response.json();
       setUsers(data);
     } catch (err) {
@@ -58,16 +65,19 @@ const UserManagement = () => {
   // Fetch single user
   const fetchUser = async (userId) => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/authUser/users/${userId}`, {
-        headers: {
-          'Authorization': `Bearer ${user.token}`
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/authUser/users/${userId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+          },
         }
-      });
-      
+      );
+
       if (!response.ok) {
-        throw new Error('Failed to fetch user');
+        throw new Error("Failed to fetch user");
       }
-      
+
       const data = await response.json();
       setSelectedUser(data);
       setEditForm({
@@ -85,23 +95,26 @@ const UserManagement = () => {
 
   // Format date for display
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-GB');
+    return new Date(dateString).toLocaleDateString("en-GB");
   };
 
   // Handle row click
   const handleRowClick = async (userId) => {
     if (isEditing) return; // Don't show details while editing
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/authUser/users/${userId}`, {
-        headers: {
-          'Authorization': `Bearer ${user.token}`
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/authUser/users/${userId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+          },
         }
-      });
-      
+      );
+
       if (!response.ok) {
-        throw new Error('Failed to fetch user details');
+        throw new Error("Failed to fetch user details");
       }
-      
+
       const data = await response.json();
       setSelectedUser(data);
       setShowUserDetails(true);
@@ -114,19 +127,22 @@ const UserManagement = () => {
   const updateUser = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/authUser/users/${selectedUser._id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user.token}`
-        },
-        body: JSON.stringify(editForm)
-      });
-      
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/authUser/users/${selectedUser._id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${user.token}`,
+          },
+          body: JSON.stringify(editForm),
+        }
+      );
+
       if (!response.ok) {
-        throw new Error('Failed to update user');
+        throw new Error("Failed to update user");
       }
-      
+
       // Refresh users list
       fetchUsers();
       setIsEditing(false);
@@ -138,22 +154,25 @@ const UserManagement = () => {
 
   // Delete user
   const deleteUser = async (userId) => {
-    if (!window.confirm('Are you sure you want to delete this user?')) {
+    if (!window.confirm("Are you sure you want to delete this user?")) {
       return;
     }
 
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/authUser/users/${userId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${user.token}`
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/authUser/users/${userId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+          },
         }
-      });
-      
+      );
+
       if (!response.ok) {
-        throw new Error('Failed to delete user');
+        throw new Error("Failed to delete user");
       }
-      
+
       // Refresh users list
       fetchUsers();
     } catch (err) {
@@ -170,22 +189,22 @@ const UserManagement = () => {
 
   const handleNewUserChange = (e) => {
     const { name, value } = e.target;
-    if (name === 'preferences.subscribe') {
-      setNewUserForm(prev => ({
+    if (name === "preferences.subscribe") {
+      setNewUserForm((prev) => ({
         ...prev,
         preferences: {
           ...prev.preferences,
-          subscribe: value === 'yes'
-        }
+          subscribe: value === "yes",
+        },
       }));
     } else {
-      setNewUserForm(prev => ({ ...prev, [name]: value }));
+      setNewUserForm((prev) => ({ ...prev, [name]: value }));
     }
 
     // Validate on change
-    if (name === 'firstName' || name === 'lastName') {
+    if (name === "firstName" || name === "lastName") {
       const error = validateName(value);
-      setFormErrors(prev => ({ ...prev, [name]: error }));
+      setFormErrors((prev) => ({ ...prev, [name]: error }));
     }
   };
 
@@ -193,29 +212,30 @@ const UserManagement = () => {
     const { name, value } = e.target;
     let error = null;
     switch (name) {
-      case 'dateOfBirth':
+      case "dateOfBirth":
         error = validateDOB(value);
         break;
-      case 'password':
+      case "password":
         error = validatePassword(value);
         break;
-      case 'email':
+      case "email":
         error = validateEmail(value);
         break;
-      case 'username':
+      case "username":
         error = validateUsername(value);
         break;
       default:
         break;
     }
-    setFormErrors(prev => ({ ...prev, [name]: error }));
+    setFormErrors((prev) => ({ ...prev, [name]: error }));
   };
 
   const handleNewUserSubmit = async (e) => {
     e.preventDefault();
 
     // Validate all fields
-    const nameError = validateName(newUserForm.firstName) || validateName(newUserForm.lastName);
+    const nameError =
+      validateName(newUserForm.firstName) || validateName(newUserForm.lastName);
     const dobError = validateDOB(newUserForm.dateOfBirth);
     const passwordError = validatePassword(newUserForm.password);
     const emailError = validateEmail(newUserForm.email);
@@ -235,32 +255,35 @@ const UserManagement = () => {
     }
 
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/authUser/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user.token}`
-        },
-        body: JSON.stringify(newUserForm)
-      });
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/authUser/register`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${user.token}`,
+          },
+          body: JSON.stringify(newUserForm),
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to create user');
+        throw new Error(errorData.error || "Failed to create user");
       }
 
       // Refresh users list
       fetchUsers();
       setIsAddingNew(false);
       setNewUserForm({
-        firstName: '',
-        lastName: '',
-        username: '',
-        password: '',
-        email: '',
-        gender: '',
-        dateOfBirth: '',
-        preferences: { subscribe: true }
+        firstName: "",
+        lastName: "",
+        username: "",
+        password: "",
+        email: "",
+        gender: "",
+        dateOfBirth: "",
+        preferences: { subscribe: true },
       });
       setFormErrors({});
     } catch (err) {
@@ -285,10 +308,12 @@ const UserManagement = () => {
       <div className="user-management-header">
         <h1>User Management</h1>
         <div className="header-actions">
-          <button className="add-user-btn" onClick={handleAddNewUser}>Add New User</button>
+          <button className="add-user-btn" onClick={handleAddNewUser}>
+            Add New User
+          </button>
         </div>
       </div>
-      
+
       <div className="content-wrapper">
         <div className="table-container">
           <table className="users-table">
@@ -305,10 +330,10 @@ const UserManagement = () => {
             </thead>
             <tbody>
               {users.map((user, index) => (
-                <tr 
+                <tr
                   key={user._id}
                   onClick={() => handleRowClick(user._id)}
-                  className={selectedUser?._id === user._id ? 'selected' : ''}
+                  className={selectedUser?._id === user._id ? "selected" : ""}
                 >
                   <td>{index + 1}</td>
                   <td>{user._id}</td>
@@ -317,7 +342,7 @@ const UserManagement = () => {
                   <td>{user.username}</td>
                   <td>{user.email}</td>
                   <td className="actions-cell">
-                    <button 
+                    <button
                       className="edit-btn"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -326,7 +351,7 @@ const UserManagement = () => {
                     >
                       Edit
                     </button>
-                    <button 
+                    <button
                       className="delete-btn"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -349,19 +374,19 @@ const UserManagement = () => {
               <>
                 <div className="user-details-header">
                   <h2>Add New User</h2>
-                  <button 
+                  <button
                     className="close-btn"
                     onClick={() => {
                       setIsAddingNew(false);
                       setNewUserForm({
-                        firstName: '',
-                        lastName: '',
-                        username: '',
-                        password: '',
-                        email: '',
-                        gender: '',
-                        dateOfBirth: '',
-                        preferences: { subscribe: true }
+                        firstName: "",
+                        lastName: "",
+                        username: "",
+                        password: "",
+                        email: "",
+                        gender: "",
+                        dateOfBirth: "",
+                        preferences: { subscribe: true },
                       });
                       setFormErrors({});
                     }}
@@ -381,7 +406,9 @@ const UserManagement = () => {
                       required
                     />
                     {formErrors.firstName && (
-                      <div className="error-message">{formErrors.firstName}</div>
+                      <div className="error-message">
+                        {formErrors.firstName}
+                      </div>
                     )}
                   </div>
                   <div className="form-group">
@@ -464,7 +491,9 @@ const UserManagement = () => {
                       required
                     />
                     {formErrors.dateOfBirth && (
-                      <div className="error-message">{formErrors.dateOfBirth}</div>
+                      <div className="error-message">
+                        {formErrors.dateOfBirth}
+                      </div>
                     )}
                   </div>
                   <div className="form-group">
@@ -492,19 +521,19 @@ const UserManagement = () => {
                   </div>
                   <div className="form-actions">
                     <button type="submit">Create User</button>
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       onClick={() => {
                         setIsAddingNew(false);
                         setNewUserForm({
-                          firstName: '',
-                          lastName: '',
-                          username: '',
-                          password: '',
-                          email: '',
-                          gender: '',
-                          dateOfBirth: '',
-                          preferences: { subscribe: true }
+                          firstName: "",
+                          lastName: "",
+                          username: "",
+                          password: "",
+                          email: "",
+                          gender: "",
+                          dateOfBirth: "",
+                          preferences: { subscribe: true },
                         });
                         setFormErrors({});
                       }}
@@ -518,7 +547,7 @@ const UserManagement = () => {
               <>
                 <div className="user-details-header">
                   <h2>Edit User</h2>
-                  <button 
+                  <button
                     className="close-btn"
                     onClick={() => {
                       setIsEditing(false);
@@ -534,7 +563,9 @@ const UserManagement = () => {
                     <input
                       type="text"
                       value={editForm.firstName}
-                      onChange={(e) => setEditForm({...editForm, firstName: e.target.value})}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, firstName: e.target.value })
+                      }
                       required
                     />
                   </div>
@@ -543,7 +574,9 @@ const UserManagement = () => {
                     <input
                       type="text"
                       value={editForm.lastName}
-                      onChange={(e) => setEditForm({...editForm, lastName: e.target.value})}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, lastName: e.target.value })
+                      }
                       required
                     />
                   </div>
@@ -552,7 +585,9 @@ const UserManagement = () => {
                     <input
                       type="text"
                       value={editForm.username}
-                      onChange={(e) => setEditForm({...editForm, username: e.target.value})}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, username: e.target.value })
+                      }
                       required
                     />
                   </div>
@@ -561,14 +596,16 @@ const UserManagement = () => {
                     <input
                       type="email"
                       value={editForm.email}
-                      onChange={(e) => setEditForm({...editForm, email: e.target.value})}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, email: e.target.value })
+                      }
                       required
                     />
                   </div>
                   <div className="form-actions">
                     <button type="submit">Save</button>
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       onClick={() => {
                         setIsEditing(false);
                         setSelectedUser(null);
@@ -583,7 +620,7 @@ const UserManagement = () => {
               <>
                 <div className="user-details-header">
                   <h2>User Details</h2>
-                  <button 
+                  <button
                     className="close-btn"
                     onClick={() => {
                       setShowUserDetails(false);
@@ -616,15 +653,19 @@ const UserManagement = () => {
                   </div>
                   <div className="detail-group">
                     <label>Gender:</label>
-                    <span>{selectedUser.gender || 'Not specified'}</span>
+                    <span>{selectedUser.gender || "Not specified"}</span>
                   </div>
                   <div className="detail-group">
                     <label>Date of Birth:</label>
-                    <span>{selectedUser.dateOfBirth ? formatDate(selectedUser.dateOfBirth) : 'Not specified'}</span>
+                    <span>
+                      {selectedUser.dateOfBirth
+                        ? formatDate(selectedUser.dateOfBirth)
+                        : "Not specified"}
+                    </span>
                   </div>
                   <div className="detail-group">
                     <label>Admin Status:</label>
-                    <span>{selectedUser.isAdmin ? 'Yes' : 'No'}</span>
+                    <span>{selectedUser.isAdmin ? "Yes" : "No"}</span>
                   </div>
                   <div className="detail-group">
                     <label>Registration Date:</label>
@@ -633,8 +674,14 @@ const UserManagement = () => {
                   <div className="detail-group">
                     <label>Preferences:</label>
                     <div className="preferences-details">
-                      <div>Items per page: {selectedUser.preferences?.itemsPerPage || 12}</div>
-                      <div>Subscribed to updates: {selectedUser.preferences?.subscribe ? 'Yes' : 'No'}</div>
+                      <div>
+                        Items per page:{" "}
+                        {selectedUser.preferences?.itemsPerPage || 12}
+                      </div>
+                      <div>
+                        Subscribed to updates:{" "}
+                        {selectedUser.preferences?.subscribe ? "Yes" : "No"}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -647,4 +694,4 @@ const UserManagement = () => {
   );
 };
 
-export default UserManagement; 
+export default UserManagement;
