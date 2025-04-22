@@ -8,9 +8,10 @@ const UserManagement = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({
-    fullName: '',
+    firstName: '',
+    lastName: '',
+    username: '',
     email: '',
-    isAdmin: false
   });
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -56,14 +57,20 @@ const UserManagement = () => {
       const data = await response.json();
       setSelectedUser(data);
       setEditForm({
-        fullName: data.fullName,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        username: data.username,
         email: data.email,
-        isAdmin: data.isAdmin
       });
       setIsEditing(true);
     } catch (err) {
       setError(err.message);
     }
+  };
+
+  // Format date for display
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-GB');
   };
 
   // Update user
@@ -131,18 +138,41 @@ const UserManagement = () => {
 
   return (
     <div className="user-management">
-      <h1>User Management</h1>
+      <div className="user-management-header">
+        <h1>User Management</h1>
+        <div className="header-actions">
+          <button className="add-user-btn">Add New User</button>
+        </div>
+      </div>
       
       {isEditing ? (
         <div className="edit-form">
           <h2>Edit User</h2>
           <form onSubmit={updateUser}>
             <div className="form-group">
-              <label>Full Name:</label>
+              <label>First Name:</label>
               <input
                 type="text"
-                value={editForm.fullName}
-                onChange={(e) => setEditForm({...editForm, fullName: e.target.value})}
+                value={editForm.firstName}
+                onChange={(e) => setEditForm({...editForm, firstName: e.target.value})}
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label>Last Name:</label>
+              <input
+                type="text"
+                value={editForm.lastName}
+                onChange={(e) => setEditForm({...editForm, lastName: e.target.value})}
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label>Username:</label>
+              <input
+                type="text"
+                value={editForm.username}
+                onChange={(e) => setEditForm({...editForm, username: e.target.value})}
                 required
               />
             </div>
@@ -155,16 +185,6 @@ const UserManagement = () => {
                 required
               />
             </div>
-            <div className="form-group">
-              <label>
-                <input
-                  type="checkbox"
-                  checked={editForm.isAdmin}
-                  onChange={(e) => setEditForm({...editForm, isAdmin: e.target.checked})}
-                />
-                Admin
-              </label>
-            </div>
             <div className="form-actions">
               <button type="submit">Save</button>
               <button type="button" onClick={() => {
@@ -175,39 +195,45 @@ const UserManagement = () => {
           </form>
         </div>
       ) : (
-        <table className="users-table">
-          <thead>
-            <tr>
-              <th>Full Name</th>
-              <th>Email</th>
-              <th>Admin</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map(user => (
-              <tr key={user._id}>
-                <td>{user.fullName}</td>
-                <td>{user.email}</td>
-                <td>{user.isAdmin ? 'Yes' : 'No'}</td>
-                <td>
-                  <button 
-                    className="edit-btn"
-                    onClick={() => fetchUser(user._id)}
-                  >
-                    Edit
-                  </button>
-                  <button 
-                    className="delete-btn"
-                    onClick={() => deleteUser(user._id)}
-                  >
-                    Delete
-                  </button>
-                </td>
+        <div className="table-container">
+          <table className="users-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {users.map(user => (
+                <tr key={user._id}>
+                  <td>{user._id}</td>
+                  <td>{user.firstName}</td>
+                  <td>{user.lastName}</td>
+                  <td>{user.username}</td>
+                  <td>{user.email}</td>
+                  <td className="actions-cell">
+                    <button 
+                      className="edit-btn"
+                      onClick={() => fetchUser(user._id)}
+                    >
+                      Edit
+                    </button>
+                    <button 
+                      className="delete-btn"
+                      onClick={() => deleteUser(user._id)}
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );
