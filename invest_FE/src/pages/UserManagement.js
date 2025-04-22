@@ -64,6 +64,7 @@ const UserManagement = () => {
         email: data.email,
       });
       setIsEditing(true);
+      setShowUserDetails(false);
     } catch (err) {
       setError(err.message);
     }
@@ -76,6 +77,7 @@ const UserManagement = () => {
 
   // Handle row click
   const handleRowClick = async (userId) => {
+    if (isEditing) return; // Don't show details while editing
     try {
       const response = await fetch(`${process.env.REACT_APP_API_URL}/authUser/users/${userId}`, {
         headers: {
@@ -220,119 +222,138 @@ const UserManagement = () => {
           </table>
         </div>
 
-        {showUserDetails && selectedUser && (
+        {/* Sidebar for both user details and edit form */}
+        {(showUserDetails || isEditing) && selectedUser && (
           <div className="user-details-sidebar">
-            <div className="user-details-header">
-              <h2>User Details</h2>
-              <button 
-                className="close-btn"
-                onClick={() => {
-                  setShowUserDetails(false);
-                  setSelectedUser(null);
-                }}
-              >
-                ×
-              </button>
-            </div>
-            <div className="user-details-content">
-              <div className="detail-group">
-                <label>ID:</label>
-                <span>{selectedUser._id}</span>
-              </div>
-              <div className="detail-group">
-                <label>First Name:</label>
-                <span>{selectedUser.firstName}</span>
-              </div>
-              <div className="detail-group">
-                <label>Last Name:</label>
-                <span>{selectedUser.lastName}</span>
-              </div>
-              <div className="detail-group">
-                <label>Username:</label>
-                <span>{selectedUser.username}</span>
-              </div>
-              <div className="detail-group">
-                <label>Email:</label>
-                <span>{selectedUser.email}</span>
-              </div>
-              <div className="detail-group">
-                <label>Gender:</label>
-                <span>{selectedUser.gender || 'Not specified'}</span>
-              </div>
-              <div className="detail-group">
-                <label>Date of Birth:</label>
-                <span>{selectedUser.dateOfBirth ? formatDate(selectedUser.dateOfBirth) : 'Not specified'}</span>
-              </div>
-              <div className="detail-group">
-                <label>Admin Status:</label>
-                <span>{selectedUser.isAdmin ? 'Yes' : 'No'}</span>
-              </div>
-              <div className="detail-group">
-                <label>Registration Date:</label>
-                <span>{formatDate(selectedUser.subscriptionTime)}</span>
-              </div>
-              <div className="detail-group">
-                <label>Preferences:</label>
-                <div className="preferences-details">
-                  <div>Items per page: {selectedUser.preferences?.itemsPerPage || 12}</div>
-                  <div>Subscribed to updates: {selectedUser.preferences?.subscribe ? 'Yes' : 'No'}</div>
+            {isEditing ? (
+              <>
+                <div className="user-details-header">
+                  <h2>Edit User</h2>
+                  <button 
+                    className="close-btn"
+                    onClick={() => {
+                      setIsEditing(false);
+                      setSelectedUser(null);
+                    }}
+                  >
+                    ×
+                  </button>
                 </div>
-              </div>
-            </div>
+                <form onSubmit={updateUser} className="edit-form">
+                  <div className="form-group">
+                    <label>First Name:</label>
+                    <input
+                      type="text"
+                      value={editForm.firstName}
+                      onChange={(e) => setEditForm({...editForm, firstName: e.target.value})}
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Last Name:</label>
+                    <input
+                      type="text"
+                      value={editForm.lastName}
+                      onChange={(e) => setEditForm({...editForm, lastName: e.target.value})}
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Username:</label>
+                    <input
+                      type="text"
+                      value={editForm.username}
+                      onChange={(e) => setEditForm({...editForm, username: e.target.value})}
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Email:</label>
+                    <input
+                      type="email"
+                      value={editForm.email}
+                      onChange={(e) => setEditForm({...editForm, email: e.target.value})}
+                      required
+                    />
+                  </div>
+                  <div className="form-actions">
+                    <button type="submit">Save</button>
+                    <button 
+                      type="button" 
+                      onClick={() => {
+                        setIsEditing(false);
+                        setSelectedUser(null);
+                      }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              </>
+            ) : (
+              <>
+                <div className="user-details-header">
+                  <h2>User Details</h2>
+                  <button 
+                    className="close-btn"
+                    onClick={() => {
+                      setShowUserDetails(false);
+                      setSelectedUser(null);
+                    }}
+                  >
+                    ×
+                  </button>
+                </div>
+                <div className="user-details-content">
+                  <div className="detail-group">
+                    <label>ID:</label>
+                    <span>{selectedUser._id}</span>
+                  </div>
+                  <div className="detail-group">
+                    <label>First Name:</label>
+                    <span>{selectedUser.firstName}</span>
+                  </div>
+                  <div className="detail-group">
+                    <label>Last Name:</label>
+                    <span>{selectedUser.lastName}</span>
+                  </div>
+                  <div className="detail-group">
+                    <label>Username:</label>
+                    <span>{selectedUser.username}</span>
+                  </div>
+                  <div className="detail-group">
+                    <label>Email:</label>
+                    <span>{selectedUser.email}</span>
+                  </div>
+                  <div className="detail-group">
+                    <label>Gender:</label>
+                    <span>{selectedUser.gender || 'Not specified'}</span>
+                  </div>
+                  <div className="detail-group">
+                    <label>Date of Birth:</label>
+                    <span>{selectedUser.dateOfBirth ? formatDate(selectedUser.dateOfBirth) : 'Not specified'}</span>
+                  </div>
+                  <div className="detail-group">
+                    <label>Admin Status:</label>
+                    <span>{selectedUser.isAdmin ? 'Yes' : 'No'}</span>
+                  </div>
+                  <div className="detail-group">
+                    <label>Registration Date:</label>
+                    <span>{formatDate(selectedUser.subscriptionTime)}</span>
+                  </div>
+                  <div className="detail-group">
+                    <label>Preferences:</label>
+                    <div className="preferences-details">
+                      <div>Items per page: {selectedUser.preferences?.itemsPerPage || 12}</div>
+                      <div>Subscribed to updates: {selectedUser.preferences?.subscribe ? 'Yes' : 'No'}</div>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         )}
       </div>
-
-      {isEditing && (
-        <div className="edit-form">
-          <h2>Edit User</h2>
-          <form onSubmit={updateUser}>
-            <div className="form-group">
-              <label>First Name:</label>
-              <input
-                type="text"
-                value={editForm.firstName}
-                onChange={(e) => setEditForm({...editForm, firstName: e.target.value})}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label>Last Name:</label>
-              <input
-                type="text"
-                value={editForm.lastName}
-                onChange={(e) => setEditForm({...editForm, lastName: e.target.value})}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label>Username:</label>
-              <input
-                type="text"
-                value={editForm.username}
-                onChange={(e) => setEditForm({...editForm, username: e.target.value})}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label>Email:</label>
-              <input
-                type="email"
-                value={editForm.email}
-                onChange={(e) => setEditForm({...editForm, email: e.target.value})}
-                required
-              />
-            </div>
-            <div className="form-actions">
-              <button type="submit">Save</button>
-              <button type="button" onClick={() => {
-                setIsEditing(false);
-                setSelectedUser(null);
-              }}>Cancel</button>
-            </div>
-          </form>
-        </div>
-      )}
     </div>
   );
 };
