@@ -31,7 +31,7 @@
 }
 
 .add-user-btn {
-  background-color: #4CAF50;
+  background-color: #007bff;
   color: white;
   border: none;
   padding: 0.75rem 1.5rem;
@@ -42,7 +42,7 @@
 }
 
 .add-user-btn:hover {
-  background-color: #388E3C;
+  background-color: #0056b3;
 }
 
 .table-container {
@@ -127,7 +127,7 @@
 }
 
 .edit-btn {
-  background-color: #3498db;
+  background-color: #007bff;
   color: white;
 }
 
@@ -136,7 +136,7 @@
 }
 
 .delete-btn {
-  background-color: #e74c3c;
+  background-color: #dc3545;
   color: white;
 }
 
@@ -211,12 +211,12 @@
 }
 
 .form-actions button[type="submit"] {
-  background-color: #4CAF50;
+  background-color: #007bff;
   color: white;
 }
 
 .form-actions button[type="submit"]:hover {
-  background-color: #388E3C;
+  background-color: #0056b3;
 }
 
 .form-actions button[type="button"] {
@@ -384,12 +384,12 @@
 }
 
 .user-details-sidebar .form-actions button[type="submit"] {
-  background-color: #4CAF50;
+  background-color: #007bff;
   color: white;
 }
 
 .user-details-sidebar .form-actions button[type="submit"]:hover {
-  background-color: #388E3C;
+  background-color: #0056b3;
 }
 
 .user-details-sidebar .form-actions button[type="button"] {
@@ -472,15 +472,15 @@
 }
 
 .form-actions button[type="submit"] {
-  background-color: #4CAF50;
+  background-color: #4caf50;
   color: white;
 }
 
 .form-actions button[type="submit"]:hover {
-  background-color: #388E3C;
+  background-color: #388e3c;
 }
 
 .form-actions button[type="button"] {
   background-color: #95a5a6;
   color: white;
-} 
+}
