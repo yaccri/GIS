@@ -1,0 +1,486 @@
+.user-management {
+  padding: 2rem;
+  max-width: 90%;
+  margin: 0 auto;
+  direction: ltr;
+}
+
+.content-wrapper {
+  display: flex;
+  gap: 2rem;
+  margin-top: 2rem;
+  position: relative;
+}
+
+.user-management-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.user-management h1 {
+  color: #2c3e50;
+  margin: 0;
+  font-size: 1.8rem;
+}
+
+.header-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.add-user-btn {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.2s;
+}
+
+.add-user-btn:hover {
+  background-color: #388E3C;
+}
+
+.table-container {
+  flex: 1;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  overflow-x: auto;
+}
+
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  font-size: 0.9rem;
+}
+
+.users-table tr {
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.users-table tr:hover {
+  background-color: #f5f5f5;
+}
+
+.users-table tr.selected {
+  background-color: #e3f2fd;
+}
+
+.users-table th,
+.users-table td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+  white-space: nowrap;
+}
+
+.users-table th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  color: #2c3e50;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.users-table td {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.users-table tr:last-child td {
+  border-bottom: none;
+}
+
+.users-table th:first-child,
+.users-table td:first-child {
+  width: 50px;
+  text-align: center;
+  color: #666;
+  font-weight: 500;
+}
+
+.actions-cell {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-start;
+  min-width: 160px;
+}
+
+.edit-btn,
+.delete-btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.edit-btn {
+  background-color: #3498db;
+  color: white;
+}
+
+.edit-btn:hover {
+  background-color: #2980b9;
+}
+
+.delete-btn {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.delete-btn:hover {
+  background-color: #c0392b;
+}
+
+.edit-form {
+  background: white;
+  padding: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  max-width: 500px;
+  margin: 2rem auto;
+}
+
+.edit-form h2 {
+  color: #2c3e50;
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #2c3e50;
+  font-weight: 500;
+}
+
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="date"],
+.form-group select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+}
+
+.form-group input[type="text"]:focus,
+.form-group input[type="email"]:focus,
+.form-group input[type="date"]:focus,
+.form-group select:focus {
+  border-color: #3498db;
+  outline: none;
+}
+
+.form-group input[type="checkbox"] {
+  margin-right: 0.5rem;
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+  justify-content: flex-start;
+}
+
+.form-actions button {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.2s;
+}
+
+.form-actions button[type="submit"] {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.form-actions button[type="submit"]:hover {
+  background-color: #388E3C;
+}
+
+.form-actions button[type="button"] {
+  background-color: #95a5a6;
+  color: white;
+}
+
+.form-actions button[type="button"]:hover {
+  background-color: #7f8c8d;
+}
+
+.loading {
+  text-align: center;
+  padding: 2rem;
+  color: #7f8c8d;
+  font-size: 1.1rem;
+}
+
+.error {
+  color: #e74c3c;
+  padding: 1rem;
+  text-align: center;
+  background-color: #fadbd8;
+  border-radius: 8px;
+  margin: 1rem 0;
+  font-size: 1rem;
+}
+
+.user-details-sidebar {
+  width: 350px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  height: fit-content;
+  position: sticky;
+  top: 2rem;
+  transition: all 0.3s ease;
+  border: 1px solid #eee;
+}
+
+.user-details-header {
+  padding: 0.8rem;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #f8f9fa;
+  border-radius: 10px 10px 0 0;
+}
+
+.user-details-header h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #95a5a6;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.close-btn:hover {
+  color: #7f8c8d;
+}
+
+.user-details-content {
+  padding: 0.8rem;
+}
+
+.detail-group {
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.detail-group:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.detail-group label {
+  display: block;
+  font-size: 0.8rem;
+  color: #7f8c8d;
+  margin-bottom: 0.2rem;
+  font-weight: 500;
+}
+
+.detail-group span {
+  display: block;
+  color: #2c3e50;
+  font-size: 0.85rem;
+  word-break: break-word;
+  line-height: 1.2;
+}
+
+.preferences-details {
+  margin-top: 0.2rem;
+  padding: 0.4rem;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  color: #2c3e50;
+}
+
+.preferences-details div {
+  margin-bottom: 0.2rem;
+  padding: 0.1rem 0;
+}
+
+.preferences-details div:last-child {
+  margin-bottom: 0;
+}
+
+.user-details-sidebar .edit-form {
+  padding: 1.5rem;
+}
+
+.user-details-sidebar .form-group {
+  margin-bottom: 1rem;
+}
+
+.user-details-sidebar .form-group label {
+  display: block;
+  font-size: 0.9rem;
+  color: #7f8c8d;
+  margin-bottom: 0.3rem;
+}
+
+.user-details-sidebar .form-group input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  transition: border-color 0.2s;
+}
+
+.user-details-sidebar .form-group input:focus {
+  border-color: #3498db;
+  outline: none;
+}
+
+.user-details-sidebar .form-actions {
+  margin-top: 1.5rem;
+  display: flex;
+  gap: 1rem;
+}
+
+.user-details-sidebar .form-actions button {
+  flex: 1;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.2s;
+}
+
+.user-details-sidebar .form-actions button[type="submit"] {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.user-details-sidebar .form-actions button[type="submit"]:hover {
+  background-color: #388E3C;
+}
+
+.user-details-sidebar .form-actions button[type="button"] {
+  background-color: #95a5a6;
+  color: white;
+}
+
+.edit-form {
+  padding: 0.8rem;
+}
+
+.form-group {
+  margin-bottom: 0.8rem;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.85rem;
+  color: #7f8c8d;
+  margin-bottom: 0.3rem;
+  font-weight: 500;
+}
+
+.form-group input[type="text"],
+.form-group input[type="password"],
+.form-group input[type="email"],
+.form-group input[type="date"],
+.form-group select {
+  width: 100%;
+  padding: 0.6rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  transition: border-color 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  border-color: #3498db;
+  outline: none;
+}
+
+.radio-container {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-top: 0.3rem;
+}
+
+.radio-container input[type="radio"] {
+  margin-right: 0.3rem;
+}
+
+.radio-container label {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #2c3e50;
+}
+
+.error-message {
+  color: #e74c3c;
+  font-size: 0.8rem;
+  margin-top: 0.2rem;
+}
+
+.form-actions {
+  display: flex;
+  gap: 0.8rem;
+  margin-top: 1.2rem;
+}
+
+.form-actions button {
+  flex: 1;
+  padding: 0.6rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background-color 0.2s;
+}
+
+.form-actions button[type="submit"] {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.form-actions button[type="submit"]:hover {
+  background-color: #388E3C;
+}
+
+.form-actions button[type="button"] {
+  background-color: #95a5a6;
+  color: white;
+} 

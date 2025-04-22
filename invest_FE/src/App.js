@@ -17,6 +17,7 @@ import Preferences from "./pages/Preferences";
 import MapComponent from "./pages/Map";
 import TestGoogleAddressSearch from "./pages/TestGoogleAddressSearch";
 import TestOpenStreetMapAddressSearch from "./pages/TestOpenStreetMapAddressSearch";
+import UserManagement from './pages/UserManagement';
 
 function App() {
   // selectedMapLocation and handleLocationSelectFromTopBar are removed from here
@@ -53,6 +54,7 @@ function App() {
                       path="/testOpenStreetMapAddress"
                       element={<TestOpenStreetMapAddressSearch />}
                     />
+                    <Route path="/user-management" element={<UserManagement />} />
                   </Route>
                 </Route>
                 <Route path="*" element={<NoPage />} />
