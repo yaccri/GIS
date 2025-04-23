@@ -1,5 +1,5 @@
 // src/components/PropertyFields.js
-import React from "react";
+import React, { useState } from "react";
 import { states } from "../utils/states";
 import { formatCurrencyForDisplay } from "../utils/currencyFormatter";
 import { format } from "date-fns";
@@ -15,6 +15,18 @@ const PROPERTY_TYPES = [
   "Vacation home",
 ];
 
+const requiredFields = [
+  "propertyID",
+  "address",
+  "city",
+  "state",
+  "zipCode",
+  "type",
+  "price",
+];
+
+const isRequired = (field) => requiredFields.includes(field);
+
 const PropertyFields = ({
   formData,
   handleChange,
@@ -23,7 +35,10 @@ const PropertyFields = ({
   currentYear,
   mode,
   displayAddress,
+  fieldErrors = {},
 }) => {
+  if (!formData) return null; // Prevent rendering until formData is ready
+
   const formattedCreatedOn = formData.createdOn
     ? format(new Date(formData.createdOn), "MMM-dd-yyyy HH:mm")
     : "N/A";
@@ -36,64 +51,64 @@ const PropertyFields = ({
     insurance: formData.insurance,
   });
 
-  console.log("PropertyFields formData:", formData);
-  console.log("calcROI inputs:", {
-    price: formData.price,
-    rent: formData.Rent,
-    hoa: formData.hoa,
-    propertyTax: formData.propertyTax,
-    insurance: formData.insurance,
-  });
-  console.log("roiValue:", roiValue);
-
   return (
     <>
       <div className="form-group">
-        <label htmlFor="propertyID">Property ID:</label>
+        <label htmlFor="propertyID">
+          Property ID{isRequired("propertyID") && <span className="required-asterisk">*</span>}:
+        </label>
         <input
           type="number"
           id="propertyID"
           name="propertyID"
           value={formData.propertyID}
           onChange={handleChange}
-          required
+          required={isRequired("propertyID")}
           min="1"
           step="1"
           disabled={isReadOnly || mode === "edit"}
+          className={fieldErrors.propertyID ? "input-error" : ""}
         />
+        {fieldErrors.propertyID && <div className="field-error">{fieldErrors.propertyID}</div>}
       </div>
       <div className="form-group">
-        <label htmlFor="address">Address Search:</label>
+        <label htmlFor="address">
+          Address Search{isRequired("address") && <span className="required-asterisk">*</span>}:
+        </label>
         <AddressSearch
           id="address"
           initialValue={displayAddress}
-          onLocationSelect={handleAddressSelect} // Changed to onLocationSelect
-          disabled={isReadOnly} // Add disabled prop
-          required
+          onLocationSelect={handleAddressSelect}
+          disabled={isReadOnly}
+          required={isRequired("address")}
           placeholder="Start typing address..."
         />
       </div>
       <div className="form-group">
-        <label htmlFor="city">City:</label>
+        <label htmlFor="city">
+          City{isRequired("city") && <span className="required-asterisk">*</span>}:
+        </label>
         <input
           type="text"
           id="city"
           name="city"
           value={formData.city}
           onChange={handleChange}
-          required
-          disabled={true}
+          required={isRequired("city")}
+          disabled={isReadOnly}
         />
       </div>
       <div className="form-group">
-        <label htmlFor="state">State:</label>
+        <label htmlFor="state">
+          State{isRequired("state") && <span className="required-asterisk">*</span>}:
+        </label>
         <select
           id="state"
           name="state"
           value={formData.state}
           onChange={handleChange}
-          required
-          disabled={true}
+          required={isRequired("state")}
+          disabled={isReadOnly}
         >
           <option value="">Select State</option>
           {states.map((state) => (
@@ -104,26 +119,30 @@ const PropertyFields = ({
         </select>
       </div>
       <div className="form-group">
-        <label htmlFor="zipCode">Zip Code:</label>
+        <label htmlFor="zipCode">
+          Zip Code{isRequired("zipCode") && <span className="required-asterisk">*</span>}:
+        </label>
         <input
           type="text"
           id="zipCode"
           name="zipCode"
           value={formData.zipCode}
           onChange={handleChange}
-          required
-          disabled={true}
+          required={isRequired("zipCode")}
+          disabled={isReadOnly}
           maxLength="10"
         />
       </div>
       <div className="form-group">
-        <label htmlFor="type">Type:</label>
+        <label htmlFor="type">
+          Type{isRequired("type") && <span className="required-asterisk">*</span>}:
+        </label>
         <select
           id="type"
           name="type"
           value={formData.type}
           onChange={handleChange}
-          required
+          required={isRequired("type")}
           disabled={isReadOnly}
         >
           <option value="">Select Type</option>
@@ -145,14 +164,16 @@ const PropertyFields = ({
         />
       </div>
       <div className="form-group">
-        <label htmlFor="price">Price:</label>
+        <label htmlFor="price">
+          Price{isRequired("price") && <span className="required-asterisk">*</span>}:
+        </label>
         <input
           type="text"
           id="price"
           name="price"
           value={formatCurrencyForDisplay(formData.price)}
           onChange={handleChange}
-          required
+          required={isRequired("price")}
           readOnly={isReadOnly}
         />
       </div>
@@ -302,6 +323,44 @@ const PropertyFields = ({
         />
       </div>
     </>
+  );
+};
+
+const PropertyForm = (props) => {
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [generalError, setGeneralError] = useState("");
+
+  const handleSubmit = async (e, formData) => {
+    e.preventDefault();
+    setFieldErrors({});
+    setGeneralError("");
+    try {
+      // ...your API call...
+    } catch (err) {
+      // Example error handling:
+      if (err.response && err.response.data && err.response.data.errors) {
+        setFieldErrors(err.response.data.errors); // { propertyID: "Already exists" }
+      } else if (err.response && err.response.data && err.response.data.message) {
+        setGeneralError(err.response.data.message);
+      } else {
+        setGeneralError("An unexpected error occurred.");
+      }
+    }
+  };
+
+  return (
+    <form onSubmit={(e) => handleSubmit(e, props.formData)}>
+      {generalError && (
+        <div className="form-error" title={generalError}>
+          {generalError}
+        </div>
+      )}
+      <PropertyFields
+        {...props}
+        fieldErrors={fieldErrors}
+      />
+      {/* ...buttons... */}
+    </form>
   );
 };
 

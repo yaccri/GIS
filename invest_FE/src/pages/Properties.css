@@ -1,25 +1,44 @@
 /* src/pages/Properties.css */
+
+/* Prevent horizontal scroll on body and html */
+html, body, #root, .App {
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  max-width: 100vw;
+  overflow-x: hidden !important;
+  box-sizing: border-box;
+}
+
+/* Ensure the main page container does not overflow */
 .properties-page-container {
   display: flex;
   width: 100%;
+  max-width: 100%;
   height: 100%;
-  box-sizing: border-box; /* Ensure padding and borders are included in width */
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+.properties-sidebar,
+.properties-list-container,
+.property-view-container {
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .properties-sidebar {
-  flex: 0 0 20%; /* Reduced from 25% to fit better */
+  flex: 0 0 16%;
   border-right: 1px solid #ccc;
 }
 
 .properties-list-container {
-  flex: 0 0 30%; /* Reduced from 35% to fit better */
-  padding: 10px; /* Reduced padding to save space */
+  flex: 0 0 24%;
+  padding: 10px;
   border-right: 1px solid #ccc;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  scrollbar-width: none; /* Hide scrollbar in Firefox */
-  -ms-overflow-style: none; /* Hide scrollbar in IE/Edge */
 }
 
 .properties-list-container::-webkit-scrollbar {
@@ -33,7 +52,6 @@
   background-color: #ffffff; /* White */
   border: 1px solid #e5e7eb; /* Light Gray border */
   border-radius: 4px;
-  padding: 10px;
   margin-bottom: 10px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* Subtle shadow */
 }
@@ -57,11 +75,9 @@
 }
 
 .property-view-container {
-  flex: 0 0 50%; /* Increased to 50% to balance the layout */
-  padding: 10px; /* Reduced padding to save space */
+  flex: 1 1 0%;
+  padding: 10px;
   overflow-y: auto;
-  scrollbar-width: none; /* Hide scrollbar in Firefox */
-  -ms-overflow-style: none; /* Hide scrollbar in IE/Edge */
 }
 
 .property-view-container::-webkit-scrollbar {

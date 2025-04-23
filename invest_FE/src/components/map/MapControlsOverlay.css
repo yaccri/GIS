@@ -1,34 +1,60 @@
 /* src/components/map/MapControlsOverlay.css */
 
-.map-controls-overlay {
+/* NEW: Wrapper to position both control groups */
+.map-controls-wrapper {
   position: absolute;
   top: 10px;
   right: 10px;
-  z-index: 1000;
+  z-index: 1000; /* Or higher if needed */
+  display: flex; /* Arrange the two containers horizontally */
+  align-items: flex-start; /* Align tops of containers */
+  gap: 10px; /* Space between the two containers */
+}
+
+/* MODIFIED: Styles for the MAIN controls container (Radius, Neighborhood) */
+/* Renamed from .map-controls-overlay to .map-controls-main for clarity,
+   or keep .map-controls-overlay if you prefer, but apply it only to this part */
+.map-controls-main {
+  /* Removed position, top, right, z-index (handled by wrapper) */
   background-color: rgba(255, 255, 255, 0.8);
-
-  /* --- Add this line --- */
-  min-width: max-content; /* Force container to be at least as wide as its content */
-
-  /* You can likely revert padding to something reasonable now */
-  padding: 8px 12px; /* Example: Reset to balanced padding */
-
+  min-width: max-content;
+  padding: 8px 12px;
   border-radius: 5px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 15px;
+  gap: 15px; /* Internal gap for radius/neighborhood controls */
 }
 
-/* ... other styles remain the same ... */
+/* NEW: Styles for the RESTAURANTS button container */
+.map-controls-restaurants {
+  /* Removed position, top, right, z-index (handled by wrapper) */
+  background-color: rgba(255, 255, 255, 0.8);
+  padding: 8px 12px; /* Match padding or adjust as needed */
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  display: flex; /* To center button if needed, or just for consistency */
+  align-items: center;
+}
 
+/* --- Styles for elements INSIDE the containers --- */
+
+/* Button style (can be used in either container) */
 .map-overlay-button {
-  padding: 8px 12px;
+  padding: 8px 12px; /* Adjust if needed, especially if container padding changes */
   cursor: pointer;
   white-space: nowrap;
+  /* Add other button styling (background, border) if desired */
+  background-color: #f0f0f0; /* Example background */
+  border: 1px solid #ccc; /* Example border */
+  border-radius: 3px; /* Example radius */
+}
+.map-overlay-button:hover {
+  background-color: #e0e0e0; /* Example hover */
 }
 
+/* Radius controls (remain inside .map-controls-main) */
 .radius-control {
   display: flex;
   flex-direction: row;
@@ -53,4 +79,19 @@
   cursor: pointer;
   gap: 4px;
   white-space: nowrap;
+}
+
+/* --- IMPORTANT: Adjust conditional hiding --- */
+/* If you have CSS rules that hide elements based on a class added
+   to the old .map-controls-overlay (like '.drawing-mode'),
+   make sure those rules now target elements within '.map-controls-main'
+   specifically, e.g.: */
+
+/* Example: Only hide radius controls within the main container during drawing */
+.map-controls-main.drawing-mode .radius-control {
+  display: none;
+}
+/* Ensure the restaurant button container is NOT affected by drawing mode hiding */
+.map-controls-restaurants {
+  /* display: flex !important; /* Or block, inline-flex etc. if needed */
 }
