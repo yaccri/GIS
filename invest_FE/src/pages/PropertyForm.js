@@ -7,6 +7,19 @@ import usePropertyApi from "../hooks/usePropertyApi";
 import { parseCurrency } from "../utils/currencyFormatter";
 import { states } from "../utils/states";
 
+// Add a map of required fields based on your schema
+const requiredFields = [
+  "propertyID",
+  "address",
+  "city",
+  "state",
+  "zipCode",
+  "type",
+  "price",
+  "location.type",
+  "location.coordinates",
+];
+
 const PropertyForm = ({
   mode,
   property,
@@ -165,21 +178,13 @@ const PropertyForm = ({
     return <p>Loading property...</p>;
   }
 
-  if (error) {
-    return (
-      <div>
-        <p>Error: {error}</p>
-        <button onClick={handleCancelClick}>Close</button>
-      </div>
-    );
-  }
-
   if (!formData) {
     return <p>Initializing form...</p>;
   }
 
   const isReadOnly = mode === "view";
 
+  // Pass requiredFields to PropertyFields
   return (
     <div className="property-page-container">
       <div className="property-container">
@@ -190,6 +195,11 @@ const PropertyForm = ({
             ? "Edit Property"
             : "View Property"}
         </h2>
+        {error && (
+          <div className="form-error" title={error}>
+            Error: {error}
+          </div>
+        )}
         {mode === "view" && user.isAdmin && (
           <div className="admin-buttons">
             <button className="edit-btn" onClick={() => onEdit(formData)}>
@@ -212,6 +222,7 @@ const PropertyForm = ({
             currentYear={currentYear}
             mode={mode}
             displayAddress={displayAddress}
+            requiredFields={requiredFields}
           />
           {!isReadOnly && (
             <div className="button-group">
