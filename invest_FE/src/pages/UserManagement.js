@@ -181,7 +181,11 @@ const UserManagement = () => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${user?.token}`,
           },
-          body: JSON.stringify(editForm),
+          body: JSON.stringify({
+            ...editForm,
+            dateOfBirth: selectedUser.dateOfBirth,  // Preserve existing dateOfBirth
+            gender: selectedUser.gender  // Preserve existing gender
+          }),
         }
       );
 
@@ -752,7 +756,7 @@ const UserManagement = () => {
                     {/* Add validation display if needed */}
                   </div>
                   <div className="form-group">
-                    <label htmlFor="edit-isAdmin">Admin Status:</label>
+                    <label>Admin Status:</label>
                     <div className="checkbox-container">
                       <input
                         type="checkbox"
@@ -762,11 +766,10 @@ const UserManagement = () => {
                           setEditForm({ ...editForm, isAdmin: e.target.checked })
                         }
                       />
-                      <label htmlFor="edit-isAdmin">Is Admin</label>
                     </div>
                   </div>
                   <div className="form-group">
-                    <label>Mailing List Subscription:</label>
+                    <label>Newsletter Subscription:</label>
                     <div className="checkbox-container">
                       <input
                         type="checkbox"
@@ -782,7 +785,6 @@ const UserManagement = () => {
                           })
                         }
                       />
-                      <label htmlFor="edit-subscribe">Subscribe to mailing list</label>
                     </div>
                   </div>
                   <div className="form-actions">

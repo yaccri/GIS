@@ -200,7 +200,7 @@ const updateUserById = async (req, res) => {
       .json({ error: "Invalid user ID format" });
   }
 
-  const { firstName, lastName, email, gender, dateOfBirth, preferences } =
+  const { firstName, lastName, email, gender, dateOfBirth, preferences, isAdmin } =
     req.body;
 
   const updateData = {};
@@ -209,6 +209,7 @@ const updateUserById = async (req, res) => {
   if (lastName !== undefined) updateData.lastName = lastName;
   if (email !== undefined) updateData.email = email;
   if (dateOfBirth !== undefined) updateData.dateOfBirth = dateOfBirth;
+  if (isAdmin !== undefined) updateData.isAdmin = isAdmin;
 
   if (gender !== undefined) {
     let genderValue;
@@ -237,7 +238,6 @@ const updateUserById = async (req, res) => {
 
   // Ensure no sensitive fields are included
   delete updateData.password;
-  delete updateData.isAdmin;
   delete updateData.username;
 
   if (Object.keys(updateData).length === 0) {
