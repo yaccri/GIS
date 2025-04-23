@@ -146,3 +146,44 @@ html, body, #root, .App {
   margin-top: 20px;
   margin-bottom: 20px;
 }
+
+/* Responsive adjustments for tablets and phones */
+@media (max-width: 900px) {
+  .properties-page-container {
+    flex-direction: column;
+    height: auto;
+  }
+  .properties-sidebar,
+  .properties-list-container,
+  .property-view-container {
+    width: 100%;
+    max-width: 100%;
+    border-right: none;
+    border-bottom: 1px solid #ccc;
+    padding: 10px 0;
+  }
+  .properties-list-container,
+  .property-view-container {
+    border-bottom: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .properties-sidebar,
+  .properties-list-container,
+  .property-view-container {
+    padding: 5px 0;
+  }
+  .property-list-item {
+    font-size: 0.95em;
+    padding: 8px;
+  }
+  .form-group label {
+    font-size: 1em;
+  }
+  .subscribe-btn,
+  .cancel-btn {
+    width: 100%;
+    margin-bottom: 8px;
+  }
+}
