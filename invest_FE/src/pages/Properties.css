@@ -1,7 +1,10 @@
 /* src/pages/Properties.css */
 
 /* Prevent horizontal scroll on body and html */
-html, body, #root, .App {
+html,
+body,
+#root,
+.App {
   margin: 0;
   padding: 0;
   width: 100vw;
@@ -15,7 +18,7 @@ html, body, #root, .App {
   display: flex;
   width: 100%;
   max-width: 100%;
-  height: 100%;
+  height: calc(100vh - 120px); /* Adjust for header (60px) + footer (60px) */
   box-sizing: border-box;
   overflow-x: hidden;
 }
@@ -30,15 +33,50 @@ html, body, #root, .App {
 .properties-sidebar {
   flex: 0 0 16%;
   border-right: 1px solid #ccc;
+  padding: 0 30px 0 10px;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Target the h2 inside the sidebar (Search Properties) */
+.properties-sidebar h2 {
+  margin: 0;
+  padding-top: 0;
+  line-height: 1.5;
+}
+
+/* Ensure PropertySearch wrapper has no extra padding */
+.properties-sidebar > div {
+  margin: 0;
+  padding: 0;
+}
+
+/* Reset margins for PropertySearch internal elements to ensure even padding */
+.properties-sidebar > div * {
+  box-sizing: border-box;
+  margin-left: 0; /* Reset left margins */
+  margin-right: 0; /* Reset right margins */
 }
 
 .properties-list-container {
   flex: 0 0 24%;
-  padding: 10px;
+  padding: 0px 30px 0px 30px;
   border-right: 1px solid #ccc;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
+}
+
+/* Target the h2 inside the list container (Properties) */
+.properties-list-container h2 {
+  margin: 0;
+  padding-top: 0;
+  padding-bottom: 20px;
+  line-height: 1.5;
 }
 
 .properties-list-container::-webkit-scrollbar {
@@ -111,7 +149,8 @@ html, body, #root, .App {
   justify-content: center;
   align-items: center;
   gap: 10px;
-  width: 100%; /* Make the pagination buttons take full width */
+  width: 100%;
+  margin-bottom: 0;
 }
 
 .pagination-button {
@@ -119,11 +158,10 @@ html, body, #root, .App {
   color: white;
   border: none;
   padding: 8px 16px;
-  margin-bottom: 20px;
   border-radius: 4px;
   cursor: pointer;
   font-weight: bold;
-  margin-top: 20px;
+  margin-top: 10px;
 }
 
 .pagination-button:disabled {
@@ -135,7 +173,7 @@ html, body, #root, .App {
 .add-property-button-container {
   display: flex;
   justify-content: center;
-  width: 100%; /* Make the container take full width */
+  width: 100%;
 }
 
 .pagination-container {
@@ -144,5 +182,12 @@ html, body, #root, .App {
   align-items: center;
   width: 100%;
   margin-top: 20px;
-  margin-bottom: 20px;
+  margin-bottom: 0;
+}
+
+/* Ensure gap above "Add New Property" button and center it */
+.subscribe-btn {
+  margin-top: 20px;
+  text-align: center; /* Center the button */
+  width: 100%;
 }
