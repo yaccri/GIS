@@ -166,8 +166,9 @@ const updateUserPreferences = async (req, res) => {
 // GET /users (Admin)
 const getAllUsers = async (req, res) => {
   const users = await User.find({})
-    .select("_id username firstName lastName email")
+    .select("_id username firstName lastName email isAdmin")
     .lean();
+  console.log("Fetched users:", users);
   res.status(HttpStatus.StatusCodes.OK).json(users);
 };
 
@@ -192,6 +193,7 @@ const getUserById = async (req, res) => {
 
 // PUT /users/:id (Admin)
 const updateUserById = async (req, res) => {
+  console.log("Updating user with body:", req.body);  // Debug log
   const { id } = req.params;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -200,7 +202,7 @@ const updateUserById = async (req, res) => {
       .json({ error: "Invalid user ID format" });
   }
 
-  const { firstName, lastName, email, gender, dateOfBirth, preferences } =
+  const { firstName, lastName, email, gender, dateOfBirth, preferences, isAdmin } =
     req.body;
 
   const updateData = {};
@@ -209,6 +211,9 @@ const updateUserById = async (req, res) => {
   if (lastName !== undefined) updateData.lastName = lastName;
   if (email !== undefined) updateData.email = email;
   if (dateOfBirth !== undefined) updateData.dateOfBirth = dateOfBirth;
+  if (isAdmin !== undefined) updateData.isAdmin = isAdmin;
+  
+  console.log("Update data before processing:", updateData);  // Debug log
 
   if (gender !== undefined) {
     let genderValue;
@@ -235,9 +240,8 @@ const updateUserById = async (req, res) => {
       updateData["preferences.subscribe"] = preferences.subscribe;
   }
 
-  // Ensure no sensitive fields are included
+  // הגנה על שדות רגישים - לא מאפשרים עדכון של סיסמה ושם משתמש
   delete updateData.password;
-  delete updateData.isAdmin;
   delete updateData.username;
 
   if (Object.keys(updateData).length === 0) {
@@ -246,6 +250,7 @@ const updateUserById = async (req, res) => {
       .json({ error: "No valid fields provided for update." });
   }
 
+  // עדכון המשתמש במסד הנתונים
   const updatedUser = await User.findByIdAndUpdate(
     id,
     { $set: updateData },
