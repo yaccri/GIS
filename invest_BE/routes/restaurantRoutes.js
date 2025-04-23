@@ -10,7 +10,7 @@ const {
   getGeoFilterForPolygon,
 } = require("../utils/geoQueryUtils");
 
-const DEFAULT_LIMIT = 500;
+const DEFAULT_LIMIT = 1000;
 
 // --- Routes ---
 
