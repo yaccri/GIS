@@ -112,27 +112,27 @@ const getGeoFilterForRadius = (lat, lon, radius) => {
 };
 
 /**
- * Validates polygonCoordinates and returns a $geoWithin filter.
+ * Validates coordinates and returns a $geoWithin filter.
  * Throws HttpError on validation failure.
- * @param {Array} polygonCoordinates - The coordinates array from the request body.
+ * @param {Array} coordinates - The coordinates array from the request body.
  * @returns {object} - The MongoDB geospatial filter object.
  */
-const getGeoFilterForPolygon = (polygonCoordinates) => {
+const getGeoFilterForPolygon = (coordinates) => {
   // 1. Validate Polygon Input from body
   if (
-    !polygonCoordinates ||
-    !Array.isArray(polygonCoordinates) ||
-    polygonCoordinates.length === 0 ||
-    !Array.isArray(polygonCoordinates[0]) ||
-    polygonCoordinates[0].length < 4 // Need at least 4 points for a closed polygon (first=last)
+    !coordinates ||
+    !Array.isArray(coordinates) ||
+    coordinates.length === 0 ||
+    !Array.isArray(coordinates[0]) ||
+    coordinates[0].length < 4 // Need at least 4 points for a closed polygon (first=last)
   ) {
     throw new HttpError(
       HttpStatus.StatusCodes.BAD_REQUEST,
-      "Invalid 'polygonCoordinates' in request body. Expected an array of coordinate arrays, e.g., [[[lng, lat], ...]]."
+      "Invalid 'coordinates' in request body. Expected an array of coordinate arrays, e.g., [[[lng, lat], ...]]."
     );
   }
   // Check if the polygon is closed
-  const outerRing = polygonCoordinates[0];
+  const outerRing = coordinates[0];
   if (
     outerRing[0][0] !== outerRing[outerRing.length - 1][0] ||
     outerRing[0][1] !== outerRing[outerRing.length - 1][1]
@@ -146,7 +146,7 @@ const getGeoFilterForPolygon = (polygonCoordinates) => {
   // 2. Construct GeoJSON Polygon Geometry for Query
   const polygonGeometry = {
     type: "Polygon",
-    coordinates: polygonCoordinates,
+    coordinates: coordinates,
   };
 
   // 3. Build and return the geospatial filter

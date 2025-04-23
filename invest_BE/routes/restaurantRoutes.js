@@ -10,7 +10,7 @@ const {
   getGeoFilterForPolygon,
 } = require("../utils/geoQueryUtils");
 
-const DEFAULT_LIMIT = 50;
+const DEFAULT_LIMIT = 500;
 
 // --- Routes ---
 
@@ -59,9 +59,9 @@ router.get("/radius", async (req, res) => {
 // POST /api/restaurants/in-polygon
 router.post("/in-polygon", async (req, res) => {
   // Keep async for consistency
-  const { polygonCoordinates } = req.body;
+  const { coordinates } = req.body;
 
-  const geoFilter = getGeoFilterForPolygon(polygonCoordinates); // No await needed
+  const geoFilter = getGeoFilterForPolygon(coordinates); // No await needed
 
   // Log the Filter
   console.log(
