@@ -44,42 +44,38 @@ const UserManagement = () => {
 
   // Fetch all users - wrapped in useCallback
   const fetchUsers = useCallback(async () => {
-    setIsLoading(true); // Set loading true at the start of fetch
-    setError(null); // Clear previous errors
+    setIsLoading(true);
+    setError(null);
     try {
       const response = await fetch(`${BASE_URL}/authUser/users`, {
         headers: {
-          // Ensure user and user.token exist before fetching
           Authorization: `Bearer ${user?.token}`,
         },
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({})); // Try to parse error, default to empty object
+        const errorData = await response.json().catch(() => ({}));
         throw new Error(
           errorData.message || `Failed to fetch users (${response.status})`
         );
       }
 
       const data = await response.json();
+      console.log("Fetched users list:", data); // Debug log
       setUsers(data);
     } catch (err) {
-      console.error("Error fetching users:", err); // Log the error
+      console.error("Error fetching users:", err);
       setError(err.message);
-      setUsers([]); // Clear users on error
+      setUsers([]);
     } finally {
       setIsLoading(false);
     }
-    // Add user.token as a dependency, as the fetch depends on it.
-    // State setters (setIsLoading, setError, setUsers) are stable and don't need to be dependencies.
-    // BASE_URL is a constant import, also stable.
   }, [user?.token]);
 
   // Fetch single user
   const fetchUser = async (userId) => {
-    setError(null); // Clear previous errors
+    setError(null);
     try {
-      // Use BASE_URL consistently
       const response = await fetch(`${BASE_URL}/authUser/users/${userId}`, {
         headers: {
           Authorization: `Bearer ${user?.token}`,
@@ -94,25 +90,26 @@ const UserManagement = () => {
       }
 
       const data = await response.json();
+      console.log("Fetched user data:", data); // Debug log
       setSelectedUser(data);
       setEditForm({
-        firstName: data.firstName || "", // Add fallbacks for safety
+        firstName: data.firstName || "",
         lastName: data.lastName || "",
         username: data.username || "",
         email: data.email || "",
-        isAdmin: data.isAdmin || false,
+        isAdmin: Boolean(data.isAdmin), // Ensure proper boolean conversion
         preferences: {
           subscribe: data.preferences?.subscribe ?? true
         }
       });
       setIsEditing(true);
-      setShowUserDetails(false); // Hide details view when editing starts
-      setIsAddingNew(false); // Ensure add new form is closed
+      setShowUserDetails(false);
+      setIsAddingNew(false);
     } catch (err) {
       console.error("Error fetching user:", err);
       setError(err.message);
-      setSelectedUser(null); // Clear selected user on error
-      setIsEditing(false); // Ensure edit mode is off on error
+      setSelectedUser(null);
+      setIsEditing(false);
     }
   };
 
@@ -171,8 +168,16 @@ const UserManagement = () => {
       setError("No user selected for update.");
       return;
     }
+
+    const updateData = {
+      ...editForm,
+      dateOfBirth: selectedUser.dateOfBirth,
+      gender: selectedUser.gender
+    };
+    
+    console.log("Sending update data:", updateData);  // Debug log
+
     try {
-      // Use BASE_URL consistently
       const response = await fetch(
         `${BASE_URL}/authUser/users/${selectedUser._id}`,
         {
@@ -181,11 +186,7 @@ const UserManagement = () => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${user?.token}`,
           },
-          body: JSON.stringify({
-            ...editForm,
-            dateOfBirth: selectedUser.dateOfBirth,  // Preserve existing dateOfBirth
-            gender: selectedUser.gender  // Preserve existing gender
-          }),
+          body: JSON.stringify(updateData),
         }
       );
 
@@ -196,16 +197,17 @@ const UserManagement = () => {
         );
       }
 
+      const updatedUser = await response.json();
+      console.log("Server response:", updatedUser);  // Debug log
+
       // Refresh users list
       fetchUsers();
       setIsEditing(false);
-      setSelectedUser(null); // Clear selection after successful update
-      alert("User updated successfully!"); // Provide feedback
+      setSelectedUser(null);
+      alert("User updated successfully!");
     } catch (err) {
       console.error("Error updating user:", err);
       setError(err.message);
-      // Optionally keep the form open on error:
-      // setIsEditing(true);
     }
   };
 
@@ -462,7 +464,7 @@ const UserManagement = () => {
                       <td>{u.lastName}</td>
                       <td>{u.username}</td>
                       <td>{u.email}</td>
-                      <td>{u.isAdmin ? "Yes" : "No"}</td>
+                      <td>{u.isAdmin === true ? "Yes" : "No"}</td>
                       <td className="actions-cell">
                         <button
                           className="edit-btn"
