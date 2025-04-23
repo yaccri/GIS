@@ -21,6 +21,8 @@ const UserManagement = () => {
     lastName: "",
     username: "",
     email: "",
+    isAdmin: false,
+    preferences: { subscribe: true }
   });
   const [newUserForm, setNewUserForm] = useState({
     firstName: "",
@@ -98,6 +100,10 @@ const UserManagement = () => {
         lastName: data.lastName || "",
         username: data.username || "",
         email: data.email || "",
+        isAdmin: data.isAdmin || false,
+        preferences: {
+          subscribe: data.preferences?.subscribe ?? true
+        }
       });
       setIsEditing(true);
       setShowUserDetails(false); // Hide details view when editing starts
@@ -745,19 +751,40 @@ const UserManagement = () => {
                     />
                     {/* Add validation display if needed */}
                   </div>
-                  {/* Add fields for Gender, DOB, Preferences if they should be editable */}
-                  {/* Example:
                   <div className="form-group">
-                    <label>Admin Status:</label>
-                    <select
-                      value={editForm.isAdmin ? 'true' : 'false'}
-                      onChange={(e) => setEditForm({ ...editForm, isAdmin: e.target.value === 'true' })}
-                    >
-                      <option value="false">No</option>
-                      <option value="true">Yes</option>
-                    </select>
+                    <label htmlFor="edit-isAdmin">Admin Status:</label>
+                    <div className="checkbox-container">
+                      <input
+                        type="checkbox"
+                        id="edit-isAdmin"
+                        checked={editForm.isAdmin}
+                        onChange={(e) =>
+                          setEditForm({ ...editForm, isAdmin: e.target.checked })
+                        }
+                      />
+                      <label htmlFor="edit-isAdmin">Is Admin</label>
+                    </div>
                   </div>
-                  */}
+                  <div className="form-group">
+                    <label>Mailing List Subscription:</label>
+                    <div className="checkbox-container">
+                      <input
+                        type="checkbox"
+                        id="edit-subscribe"
+                        checked={editForm.preferences.subscribe}
+                        onChange={(e) =>
+                          setEditForm({
+                            ...editForm,
+                            preferences: {
+                              ...editForm.preferences,
+                              subscribe: e.target.checked
+                            }
+                          })
+                        }
+                      />
+                      <label htmlFor="edit-subscribe">Subscribe to mailing list</label>
+                    </div>
+                  </div>
                   <div className="form-actions">
                     <button type="submit" className="subscribe-btn">
                       Save Changes
