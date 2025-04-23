@@ -147,6 +147,8 @@ html, body, #root, .App {
   margin-bottom: 20px;
 }
 
+
+
 /* Responsive adjustments for tablets and phones */
 @media (max-width: 900px) {
   .properties-page-container {
