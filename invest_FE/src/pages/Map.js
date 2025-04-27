@@ -22,7 +22,7 @@ import MapControlsOverlay from "../components/map/MapControlsOverlay";
 // --- Import Custom Hooks ---
 import useRadiusSearch from "../hooks/useRadiusSearch";
 import useDrawnShapes from "../hooks/useDrawnShapes";
-import useActiveShapeDetails from "../hooks/useActiveShapeDetails";
+//import useActiveShapeDetails from "../hooks/useActiveShapeDetails";
 import usePolygonPropertySearch from "../hooks/usePolygonPropertySearch";
 
 // --- Import Custom Components ---
@@ -53,7 +53,7 @@ const ChangeView = ({ center, zoom }) => {
     ) {
       const targetZoom = zoom || map.getZoom();
       map.flyTo([center.lat, center.lon], targetZoom, {
-        duration: 0.75,
+        duration: 1.0,
       });
     }
   }, [center, zoom, map]);
@@ -247,11 +247,11 @@ const MapComponent = () => {
     deleteShape: originalDeleteShape,
     clearShapes,
   } = useDrawnShapes();
-  const {
-    activeShape: activePolygon,
-    showDetails: showPolygonCoordinates,
-    hideDetails: hideActivePolygonDetails,
-  } = useActiveShapeDetails();
+  // const {
+  //   activeShape: activePolygon,
+  //   showDetails: showPolygonCoordinates,
+  //   hideDetails: hideActivePolygonDetails,
+  // } = useActiveShapeDetails();
 
   // --- Modified Delete Shape ---
   const deleteShape = useCallback(
@@ -419,7 +419,8 @@ const MapComponent = () => {
         },
       };
       setSelectedLocationDetails(tempPointGeoJSON);
-
+      // *** I suspect that the selectedLocationDetails is redundant and can be removed. Review later. ***
+      // *** If it is found redundant, remove the following fetch, and also the props from SelectedLocationMarker, MapSidebar, MapControlsOverlay ***
       let fetchedDetails = tempPointGeoJSON;
       try {
         const nominatimUrl = `${MAP_URL}/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1&accept-language=en`;
@@ -662,28 +663,28 @@ const MapComponent = () => {
     setShowRestaurants((prev) => !prev);
   };
 
-  const exportToGeoJSON = () => {
-    if (drawnItems.length === 0) {
-      alert("No shapes drawn to export.");
-      return;
-    }
-    const features = drawnItems.map((item) => item.geoJSON).filter((f) => f);
-    if (features.length === 0) {
-      alert("No valid shapes for export.");
-      return;
-    }
-    const geoJSONCollection = { type: "FeatureCollection", features: features };
-    const dataStr = JSON.stringify(geoJSONCollection, null, 2);
-    const dataUri =
-      "data:application/json;charset=utf-8," + encodeURIComponent(dataStr);
-    const exportFileDefaultName = "drawn_shapes.geojson";
-    const linkElement = document.createElement("a");
-    linkElement.setAttribute("href", dataUri);
-    linkElement.setAttribute("download", exportFileDefaultName);
-    document.body.appendChild(linkElement);
-    linkElement.click();
-    document.body.removeChild(linkElement);
-  };
+  // const exportToGeoJSON = () => {
+  //   if (drawnItems.length === 0) {
+  //     alert("No shapes drawn to export.");
+  //     return;
+  //   }
+  //   const features = drawnItems.map((item) => item.geoJSON).filter((f) => f);
+  //   if (features.length === 0) {
+  //     alert("No valid shapes for export.");
+  //     return;
+  //   }
+  //   const geoJSONCollection = { type: "FeatureCollection", features: features };
+  //   const dataStr = JSON.stringify(geoJSONCollection, null, 2);
+  //   const dataUri =
+  //     "data:application/json;charset=utf-8," + encodeURIComponent(dataStr);
+  //   const exportFileDefaultName = "drawn_shapes.geojson";
+  //   const linkElement = document.createElement("a");
+  //   linkElement.setAttribute("href", dataUri);
+  //   linkElement.setAttribute("download", exportFileDefaultName);
+  //   document.body.appendChild(linkElement);
+  //   linkElement.click();
+  //   document.body.removeChild(linkElement);
+  // };
 
   const radiusCircleCenter = useMemo(() => {
     return selectedLocationDetails?.geometry?.coordinates
@@ -847,29 +848,35 @@ const MapComponent = () => {
       {/* --- Sidebar --- */}
       <div className="search-container">
         <MapSidebar
-          isSearching={isLoadingProperties}
-          propertiesToDisplay={propertiesToDisplay}
-          searchRadius={searchRadius}
-          clickedNeighborhood={clickedNeighborhood}
-          selectedLocationDetails={selectedLocationDetails}
-          formatCurrencyForDisplay={formatCurrencyForDisplay}
-          formatArea={formatArea}
-          drawnItems={drawnItems}
-          showPolygonCoordinates={showPolygonCoordinates}
-          exportToGeoJSON={exportToGeoJSON}
-          activePolygon={activePolygon}
-          setActivePolygon={hideActivePolygonDetails}
-          isLoadingPolygonProps={isLoadingPolygonProps}
-          drawnShapePropertiesCount={
-            Object.keys(propertiesByPolygon).length > 0
-              ? propertiesToDisplay.length
-              : 0
-          }
-          isFetchingNeighborhoodProps={isFetchingNeighborhoodProps}
-          neighborhoodPropertiesCount={neighborhoodProperties.length}
-          isLoadingRestaurants={isLoadingRestaurants}
-          restaurantData={restaurantsToDisplay}
-          showRestaurants={showRestaurants}
+          // --- Loading States ---
+          isSearching={isLoadingProperties} // Combined loading state for any property search
+          // isLoadingPolygonProps={isLoadingPolygonProps} // Specific loading state for polygon property search
+          // isFetchingNeighborhoodProps={isFetchingNeighborhoodProps} // Specific loading state for neighborhood property search
+          // isLoadingRestaurants={isLoadingRestaurants} // Loading state for restaurant search
+          // --- Data ---
+          propertiesToDisplay={propertiesToDisplay} // Array of properties (from polygon, neighborhood, or radius)
+          // drawnItems={drawnItems} // Array of drawn shape objects (polygons/rectangles)
+          // restaurantData={restaurantsToDisplay} // Array of restaurant objects to display
+          // --- Context/State Information ---
+          searchRadius={searchRadius} // Current radius value (number)
+          clickedNeighborhood={clickedNeighborhood} // Object with details of the clicked neighborhood, or null
+          selectedLocationDetails={selectedLocationDetails} // GeoJSON Feature object of the last clicked/searched point, or null
+          // activePolygon={activePolygon} // The specific drawn shape object whose details are active, or null
+          // showRestaurants={showRestaurants} // Boolean indicating if restaurant layer/data is active
+          // --- Counts ---
+          // drawnShapePropertiesCount={
+          //   // Number of properties found within drawn shapes
+          //   Object.keys(propertiesByPolygon).length > 0
+          //     ? propertiesToDisplay.length
+          //     : 0
+          // }
+          // neighborhoodPropertiesCount={neighborhoodProperties.length} // Number of properties found in the clicked neighborhood
+          // --- Functions/Handlers ---
+          formatCurrencyForDisplay={formatCurrencyForDisplay} // Utility function for formatting currency
+          formatArea={formatArea} // Utility function (defined in Map.js) for formatting area
+          // showPolygonCoordinates={showPolygonCoordinates} // Function from useActiveShapeDetails hook to make a shape active
+          // exportToGeoJSON={exportToGeoJSON} // Function (defined in Map.js) to trigger GeoJSON export
+          // setActivePolygon={hideActivePolygonDetails} // Function from useActiveShapeDetails hook to deactivate the active shape (prop name might be slightly misleading)
         />
       </div>
     </div>
