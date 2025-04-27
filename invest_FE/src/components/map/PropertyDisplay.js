@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import ReactDOM from "react-dom";
 import "./PropertyDisplay.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
@@ -48,27 +48,30 @@ const formatDate = (dateStr) => {
 const PropertyDisplay = ({ isOpen, onClose, property }) => {
   const modalRef = useRef(null);
 
-  const initialFormData = {
-    propertyID: "",
-    address: "",
-    city: "",
-    state: "",
-    zip: "",
-    type: "",
-    description: "",
-    price: "",
-    hoa: "",
-    propertyTax: "",
-    insurance: "",
-    beds: "",
-    baths: "",
-    size: "",
-    lotSize: "",
-    yearBuilt: "",
-    tenantsInPlace: "",
-    createdOn: "",
-    Rent: "",
-  };
+  const initialFormData = useMemo(
+    () => ({
+      propertyID: "",
+      address: "",
+      city: "",
+      state: "",
+      zip: "",
+      type: "",
+      description: "",
+      price: "",
+      hoa: "",
+      propertyTax: "",
+      insurance: "",
+      beds: "",
+      baths: "",
+      size: "",
+      lotSize: "",
+      yearBuilt: "",
+      tenantsInPlace: "",
+      createdOn: "",
+      Rent: "",
+    }),
+    []
+  );
 
   const [formData, setFormData] = useState(initialFormData);
 
@@ -86,7 +89,7 @@ const PropertyDisplay = ({ isOpen, onClose, property }) => {
     } else {
       setFormData(initialFormData);
     }
-  }, [property]);
+  }, [property, initialFormData]);
 
   if (!isOpen) return null;
 
@@ -165,22 +168,32 @@ const PropertyDisplay = ({ isOpen, onClose, property }) => {
               </span>
             </div>
             <div className="grid-item">
+              <i className="fas fa-user-friends"></i>{" "}
+              <span className="zillow-detail-label">Tenant</span>{" "}
+              <span className="zillow-detail-value">
+                {formData.tenantsInPlace ? "Yes" : "No"}
+              </span>
+            </div>
+            <div className="grid-item">
+              <i className="fas fa-id-badge"></i>{" "}
+              <span className="zillow-detail-label">Property ID</span>{" "}
+              <span className="zillow-detail-value">
+                {formData.propertyID || "N/A"}
+              </span>
+            </div>
+            <div className="grid-item">
+              <i className="fas fa-calendar-plus"></i>{" "}
+              <span className="zillow-detail-label">Created On</span>{" "}
+              <span className="zillow-detail-value">
+                {formatDate(formData.createdOn)}
+              </span>
+            </div>
+            <div className="grid-item">
               <i className="fas fa-shield-alt"></i>{" "}
               <span className="zillow-detail-label">Insurance</span>{" "}
               <span className="zillow-detail-value">
                 {formData.insurance
                   ? `${formatCurrency(formData.insurance)}/mo`
-                  : "N/A"}
-              </span>
-            </div>
-            <div className="grid-item">
-              <i className="fas fa-dollar-sign"></i>{" "}
-              <span className="zillow-detail-label">$/sqft</span>{" "}
-              <span className="zillow-detail-value">
-                {formData.price && formData.size
-                  ? `$${Math.round(
-                      Number(formData.price) / Number(formData.size)
-                    ).toLocaleString()}`
                   : "N/A"}
               </span>
             </div>
@@ -203,31 +216,21 @@ const PropertyDisplay = ({ isOpen, onClose, property }) => {
               </span>
             </div>
             <div className="grid-item">
-              <i className="fas fa-user-friends"></i>{" "}
-              <span className="zillow-detail-label">Tenant</span>{" "}
-              <span className="zillow-detail-value">
-                {formData.tenantsInPlace ? "Yes" : "No"}
-              </span>
-            </div>
-            <div className="grid-item">
-              <i className="fas fa-id-badge"></i>{" "}
-              <span className="zillow-detail-label">Property ID</span>{" "}
-              <span className="zillow-detail-value">
-                {formData.propertyID || "N/A"}
-              </span>
-            </div>
-            <div className="grid-item">
-              <i className="fas fa-calendar-plus"></i>{" "}
-              <span className="zillow-detail-label">Created On</span>{" "}
-              <span className="zillow-detail-value">
-                {formatDate(formData.createdOn)}
-              </span>
-            </div>
-            <div className="grid-item">
               <i className="fas fa-money-bill-wave"></i>{" "}
               <span className="zillow-detail-label">Rent</span>{" "}
               <span className="zillow-detail-value zillow-rent-value">
                 {formData.Rent ? `${formatCurrency(formData.Rent)}/mo` : "N/A"}
+              </span>
+            </div>
+            <div className="grid-item">
+              <i className="fas fa-dollar-sign"></i>{" "}
+              <span className="zillow-detail-label">$/sqft</span>{" "}
+              <span className="zillow-detail-value zillow-price-sqft">
+                {formData.price && formData.size
+                  ? `$${Math.round(
+                      Number(formData.price) / Number(formData.size)
+                    ).toLocaleString()}`
+                  : "N/A"}
               </span>
             </div>
           </div>

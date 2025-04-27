@@ -156,6 +156,7 @@
 /* Green color for money-related icons */
 .grid-item i.fa-dollar-sign,
 .grid-item i.fa-coins,
+.grid-item i.fa-shield-alt,
 .grid-item i.fa-file-invoice-dollar,
 .grid-item i.fa-money-bill-wave {
   color: #28a745;
@@ -171,6 +172,7 @@
   font-weight: 500;
 }
 
+.zillow-price-sqft,
 .zillow-rent-value {
   color: #007bff; /* Blue for Rent to stand out */
 }

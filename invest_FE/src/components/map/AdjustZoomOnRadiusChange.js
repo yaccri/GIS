@@ -49,7 +49,7 @@ function AdjustZoomOnRadiusChange({ centerCoords, radius }) {
 
             // 3. Use flyTo to center on the location and apply the adjusted zoom level
             map.flyTo(centerLatLng, targetZoom, {
-              duration: 0.75, // Animation duration
+              duration: 0.95, // Animation duration
             });
           } else {
             console.warn(
